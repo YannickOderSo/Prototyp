@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_not_required
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render
 
@@ -8,6 +9,7 @@ def start(request: HttpRequest) -> HttpResponse:
     return render(request, "web/start.html")
 
 
+@login_not_required
 def rechtstext(request: HttpRequest, slug: str) -> HttpResponse:
     text = finde_rechtstext(slug)
     if text is None:

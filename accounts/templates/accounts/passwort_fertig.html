@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block titel %}Passwort gespeichert{% endblock %}
+{% block inhalt %}
+<h1>Passwort gespeichert</h1>
+<p class="karte">Sie können sich jetzt <a href="{% url 'accounts:login' %}">anmelden</a>.</p>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titel %}Neues Passwort{% endblock %}
+{% block inhalt %}
+<h1>Neues Passwort</h1>
+{% if validlink %}
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Passwort speichern</button></div>
+</form>
+{% else %}
+<p class="karte">Der Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an.</p>
+{% endif %}
+{% endblock %}

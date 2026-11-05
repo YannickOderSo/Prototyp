@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titel %}Einladung annehmen{% endblock %}
+{% block inhalt %}
+<h1>Einladung annehmen</h1>
+<form method="post" class="karte">
+  {% csrf_token %}
+  <p>Sie wurden zu <strong>{{ einladung.firma.name }}</strong> als {{ einladung.get_rolle_display }} eingeladen.</p>
+  <div class="knopfreihe"><button type="submit">Annehmen</button></div>
+</form>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titel %}Passwort vergessen{% endblock %}
+{% block inhalt %}
+<h1>Passwort vergessen</h1>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Link anfordern</button></div>
+</form>
+{% endblock %}

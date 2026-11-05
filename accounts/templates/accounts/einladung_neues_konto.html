@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titel %}Konto anlegen{% endblock %}
+{% block inhalt %}
+<h1>Konto anlegen</h1>
+<p>Einladung zu <strong>{{ einladung.firma.name }}</strong> als {{ einladung.get_rolle_display }} für {{ einladung.email }}.</p>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Konto anlegen</button></div>
+</form>
+{% endblock %}

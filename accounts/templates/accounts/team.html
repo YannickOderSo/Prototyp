@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titel %}Team{% endblock %}
+{% block inhalt %}
+<h1>Team</h1>
+<p class="leise">Inhaber und Freigeber dürfen Mahnungen und Entwürfe freigeben. Mitarbeiter dürfen erfassen und ansehen.</p>
+<ul class="liste">
+  {% for m in mitglieder %}
+  <li><div class="zeile"><strong>{{ m.nutzer.name|default:m.nutzer.email }}</strong><span class="marke-status">{{ m.get_rolle_display }}</span></div>
+      <div class="neben">{{ m.nutzer.email }}</div></li>
+  {% endfor %}
+  {% for e in offen %}
+  <li><div class="zeile"><span>{{ e.email }}</span><span class="marke-status warnung">eingeladen, {{ e.get_rolle_display }}</span></div>
+      <div class="neben">gültig bis {{ e.gueltig_bis|date:"d.m.Y" }}</div></li>
+  {% endfor %}
+</ul>
+<h2>Person einladen</h2>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Einladung senden</button></div>
+</form>
+{% endblock %}

@@ -64,3 +64,82 @@ class Firma(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class Rolle(models.TextChoices):
+    INHABER = "inhaber", "Inhaber"
+    FREIGEBER = "freigeber", "Freigeber"
+    MITARBEITER = "mitarbeiter", "Mitarbeiter"
+
+
+ROLLEN_MIT_FREIGABE = {Rolle.INHABER, Rolle.FREIGEBER}
+
+
+class Mitgliedschaft(models.Model):
+    """Ein Nutzer kann mehreren Firmen angehören, je Firma mit genau einer Rolle (A3)."""
+
+    nutzer = models.ForeignKey(Nutzer, on_delete=models.CASCADE, related_name="mitgliedschaften")
+    firma = models.ForeignKey(Firma, on_delete=models.CASCADE, related_name="mitgliedschaften")
+    rolle = models.CharField(max_length=20, choices=Rolle.choices)
+    erstellt = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["nutzer", "firma"], name="mitgliedschaft_einmal")]
+        verbose_name_plural = "Mitgliedschaften"
+
+    def __str__(self) -> str:
+        return f"{self.nutzer} @ {self.firma} ({self.rolle})"
+
+    @property
+    def darf_freigeben(self) -> bool:
+        return self.rolle in ROLLEN_MIT_FREIGABE
+
+    @property
+    def ist_inhaber(self) -> bool:
+        return self.rolle == Rolle.INHABER
+
+
+class Einladung(models.Model):
+    """Einladungscode für die geschlossene Beta (A1). Gespeichert wird nur der Hash, Code ist einmal verwendbar."""
+
+    code_hash = models.CharField(max_length=64, unique=True)
+    notiz = models.CharField(max_length=200, blank=True)
+    erstellt_von = models.ForeignKey(Nutzer, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    erstellt = models.DateTimeField(default=timezone.now)
+    gueltig_bis = models.DateTimeField(null=True, blank=True)
+    verwendet_am = models.DateTimeField(null=True, blank=True)
+    verwendet_von = models.ForeignKey(Firma, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        verbose_name_plural = "Einladungen"
+
+    def __str__(self) -> str:
+        return f"Einladung {self.code_hash[:8]}…"
+
+
+class TeamEinladung(models.Model):
+    """Inhaber lädt eine Person mit Rolle in die Firma ein. Link per Mail, Token nur als Hash gespeichert."""
+
+    firma = models.ForeignKey(Firma, on_delete=models.CASCADE, related_name="team_einladungen")
+    email = models.EmailField()
+    rolle = models.CharField(max_length=20, choices=Rolle.choices)
+    token_hash = models.CharField(max_length=64, unique=True)
+    erstellt_von = models.ForeignKey(Nutzer, on_delete=models.CASCADE, related_name="+")
+    erstellt = models.DateTimeField(default=timezone.now)
+    gueltig_bis = models.DateTimeField()
+    angenommen_am = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.email} → {self.firma} ({self.rolle})"
+
+
+class Zustimmung(models.Model):
+    """Zustimmung zu einem Rechtstext in einer bestimmten Version (F5)."""
+
+    nutzer = models.ForeignKey(Nutzer, on_delete=models.CASCADE, related_name="zustimmungen")
+    dokument = models.CharField(max_length=50)
+    version = models.CharField(max_length=50)
+    zeit = models.DateTimeField(default=timezone.now)
+
+    def __str__(self) -> str:
+        return f"{self.nutzer} → {self.dokument} {self.version}"

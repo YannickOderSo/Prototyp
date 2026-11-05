@@ -10,7 +10,7 @@ from web.rechtstexte import RECHTSTEXTE
 
 @pytest.fixture
 def startseite(client, db):
-    return client.get(reverse("web:start"))
+    return client.get(reverse("accounts:login"))
 
 
 def test_layout_laedt_htmx_lokal_und_viewport(startseite):

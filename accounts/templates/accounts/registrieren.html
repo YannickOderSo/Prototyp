@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titel %}Registrieren{% endblock %}
+{% block inhalt %}
+<h1>Betrieb registrieren</h1>
+<p>Die Beta ist geschlossen. Für die Registrierung benötigen Sie einen Einladungscode.</p>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Konto anlegen</button></div>
+</form>
+{% endblock %}

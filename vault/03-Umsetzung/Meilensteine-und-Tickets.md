@@ -13,7 +13,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 
 ## M1 Konto, Lexware lesen, Cockpit (ca. 10 PT)
 
-- [ ] **M1-01** `accounts`: Firma, Mitgliedschaft mit Rollen, Einladungscodes, Registrierung (A1), Login mit E-Mail.
+- [x] **M1-01** `accounts`: Firma, Mitgliedschaft mit Rollen, Einladungscodes, Registrierung (A1), Login mit E-Mail.
 - [ ] **M1-02** TOTP-2FA Pflicht mit Wiederherstellungscodes (A2). Bibliothek: `django-otp` oder eigene RFC-6238-Implementierung mit Replay-Schutz.
 - [ ] **M1-03** Rate-Limits (A5) mit `django-ratelimit` je IP und je Konto.
 - [ ] **M1-04** Mandantentrennung: `FirmaManager`, Middleware, generischer IDOR-Test (A4).

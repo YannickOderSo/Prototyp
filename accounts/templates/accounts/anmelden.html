@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block titel %}Anmelden{% endblock %}
+{% block inhalt %}
+<h1>Anmelden</h1>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Weiter</button></div>
+  <p><a href="{% url 'accounts:passwort_vergessen' %}">Passwort vergessen?</a></p>
+</form>
+<p class="leise">Noch kein Konto? Die Registrierung ist nur mit Einladungscode möglich: <a href="{% url 'accounts:registrieren' %}">Jetzt registrieren</a>.</p>
+{% endblock %}

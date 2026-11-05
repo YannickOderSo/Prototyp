@@ -1,9 +1,8 @@
 {% extends "base.html" %}
-{% block titel %}Start{% endblock %}
+{% block titel %}Cockpit{% endblock %}
 {% block inhalt %}
 <h1>Forderungs-Cockpit</h1>
-<div class="karte">
-  <p>Damit Ihr Betrieb sein Geld schneller bekommt, ohne das Rechnungsprogramm zu wechseln.</p>
-  <p>Bitte melden Sie sich an.</p>
-</div>
+{% if not request.firma %}
+<div class="karte"><p>Ihr Konto gehört noch zu keiner Firma. Bitte lassen Sie sich vom Inhaber einladen.</p></div>
+{% endif %}
 {% endblock %}
