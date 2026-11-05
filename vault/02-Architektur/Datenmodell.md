@@ -1,0 +1,42 @@
+# Datenmodell
+
+Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich über einen Manager abgefragt, der nach `firma` filtert. Geldbeträge als `Decimal(12,2)`, Zinssätze als `Decimal(6,4)`. Zeiten in UTC, Anzeige Europe/Berlin.
+
+## Konto
+
+- **Firma**: name, strasse, plz, ort, email_absender, reply_to, mahn_signatur, zeitzone, aktiv, erstellt
+- **Nutzer** (Django User, E-Mail als Login)
+- **Mitgliedschaft**: nutzer, firma, rolle (`inhaber` | `freigeber` | `mitarbeiter`). Ein Nutzer kann mehreren Firmen angehören.
+- **ZweiFaktor**: nutzer, geheimnis_verschluesselt, letzter_schritt, wiederherstellungscodes_hash[]
+- **Einladung**: code_hash, verwendet_am, erstellt_von
+
+## Anbindung
+
+- **Verbindung**: firma, typ (`lexware` | `sevdesk`), schluessel_verschluesselt, status, letzter_abgleich, webhook_ids[], fehler
+- **WebhookEreignis**: verbindung, event_typ, resource_id, empfangen_am, verarbeitet_am, rohdaten (JSON) — für Idempotenz eindeutig auf (verbindung, event_id oder resource_id+zeitstempel)
+
+## Spiegel (aus dem Bestandstool, schreibgeschützt in der App)
+
+- **Kontakt**: extern_id, name, email, kundentyp (`privat` | `unternehmer` | `unbekannt`, **in der App gepflegt**, nicht aus Lexware), mahnpause_bis, notiz
+- **Artikel**: extern_id, bezeichnung, einheit, netto, steuersatz, typ
+- **Beleg**: extern_id, art (`rechnung` | `angebot` | `abschlag`), nummer, belegdatum, faellig_am, kontakt, brutto, offen, status (`entwurf` | `offen` | `ueberfaellig` | `bezahlt` | `storniert`), bezahlt_am, verzugshinweis_enthalten (bool, Firmeneinstellung oder manuell), mahnpause_bis, aktualisiert_extern
+
+## Mahnen
+
+- **Mahnplan**: firma, tage_erinnerung (7), tage_mahnung1 (21), tage_mahnung2 (35), pauschale_aktiv (true), zinsen_aktiv (true), wochentag_freigabe (Mo), uhrzeit (07:00), vorlagen je Stufe
+- **Basiszins**: gueltig_ab, satz — gepflegte Tabelle, Startwerte siehe `Mahnlogik-und-Recht.md`
+- **Mahnvorschlag**: beleg, stufe (0 Erinnerung, 1, 2), erstellt_am, faellig_seit_tagen, offen_betrag, zinsen, pauschale, gesamt, status (`vorgeschlagen` | `freigegeben` | `versendet` | `verworfen` | `fehler`), freigegeben_von, freigegeben_am, verworfen_grund, lexware_dunning_id, eindeutig auf (beleg, stufe)
+- **Versand**: vorschlag oder entwurf, empfaenger, betreff, text, anhang_name, message_id, gesendet_am, zustellfehler
+
+## Erfassen
+
+- **Erfassung**: firma, erstellt_von, kanal (`aufnahme` | `upload` | `mail`), status (`wartet` | `transkribiert` | `extrahiert` | `pruefung` | `freigegeben` | `uebertragen` | `verworfen` | `fehler`), transkript, transkript_bearbeitet, ki_ergebnis (JSON), entwurf (JSON nach Regeln), blocker[], hinweise[], ziel_extern_id, fehler
+- **Datei**: erfassung, name, mime, groesse, inhalt (Objektspeicher oder BinaryField mit Limit), loeschen_ab
+
+## Protokoll
+
+- **Protokolleintrag**: firma, nutzer (nullable), zeit, ereignis, objekt_typ, objekt_id, daten (JSON). Nur INSERT. In Postgres per Trigger UPDATE und DELETE verbieten.
+
+## Jobs
+
+- **Job**: typ, payload (JSON), firma, status, versuche, naechster_versuch, gesperrt_bis, fehler, eindeutig_schluessel (optional, für Idempotenz)
