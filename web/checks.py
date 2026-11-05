@@ -3,7 +3,7 @@
 from typing import Any
 
 from django.conf import settings
-from django.core.checks import Error, register
+from django.core.checks import Error, Warning, register
 
 from cockpit.fehlererfassung import erlaubter_host
 
@@ -19,3 +19,20 @@ def fehlererfassung_eu(app_configs: Any = None, **kwargs: Any) -> list[Error]:
             )
         ]
     return []
+
+
+@register(deploy=True)
+def rechtstexte_vollstaendig(app_configs: Any = None, **kwargs: Any) -> list[Warning]:
+    """Vor dem Produktivbetrieb müssen die Platzhalter durch die Texte des Teams ersetzt sein (M4-07)."""
+    from .rechtstexte import RECHTSTEXTE
+
+    offen = [t.titel for t in RECHTSTEXTE if t.platzhalter]
+    if not offen:
+        return []
+    return [
+        Warning(
+            f"Rechtstexte sind noch Platzhalter: {', '.join(offen)}. Vor dem Produktivbetrieb ersetzen.",
+            hint="Siehe vault/03-Umsetzung/Pruefliste-Team.md",
+            id="cockpit.W001",
+        )
+    ]

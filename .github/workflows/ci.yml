@@ -57,6 +57,8 @@ jobs:
           DJANGO_SECRET_KEY: ci-nur-fuer-check-kein-geheimnis-aber-lang-genug-1234567890
           COCKPIT_FERNET_KEYS: Q0ktbnVyLWZ1ZXItQ2hlY2tzLWtlaW4tR2VoZWltbmlz
           DJANGO_ALLOWED_HOSTS: cockpit.example
+          # cockpit.W001 (Platzhalter-Rechtstexte) bleibt bis zur Lieferung durch das Team offen (Pruefliste-Team.md)
+          COCKPIT_CHECKS_STUMM: cockpit.W001
         run: uv run python manage.py check --deploy --fail-level WARNING
       - name: Tests mit Abdeckung
         run: uv run pytest -m "not e2e" --cov --cov-report=term-missing:skip-covered --cov-report=xml

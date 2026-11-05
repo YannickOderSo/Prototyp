@@ -249,5 +249,5 @@ Vor dem ersten Pilotbetrieb, in dieser Reihenfolge. Alles hier ist bisher nur mi
 - [ ] Mistral: Transkription eines echten Sprachmemos funktioniert, Audio wird danach gelöscht.
 - [ ] Belegpostfach: Testmail mit DKIM wird angenommen, gefälschter Absender abgelehnt.
 - [ ] Mahntexte, Zinslogik und Verzugstabelle durch Anwalt/Steuerberater geprüft (M4-07, Offene Fragen).
-- [ ] Datenschutz: AVV-Vorlage, Liste der Unterauftragsverarbeiter in App und AVV, Datenschutzerklärung und Impressum mit echten Daten (Rechtstexte unter `/rechtliches/`).
+- [ ] Datenschutz und Recht: alle Punkte aus [[Pruefliste-Team]]; `manage.py check --deploy` ohne `cockpit.W001` (keine Platzhalter-Rechtstexte mehr).
 - [ ] Basiszins für das laufende Halbjahr eingetragen (`/healthz` ohne `basiszins: warnung`).

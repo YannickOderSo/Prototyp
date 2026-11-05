@@ -20,6 +20,8 @@ migrieren() {
 
 case "${1:-web}" in
   web)
+    # Warnungen (z. B. Platzhalter-Rechtstexte) erscheinen im Log, Fehler (z. B. Nicht-EU-Endpunkte) brechen ab
+    python manage.py check --deploy
     if [ "${COCKPIT_MIGRATE_ON_START:-1}" = "1" ]; then
       migrieren
     fi

@@ -201,3 +201,9 @@ def test_basiszins_setzen(capsys):
         call_command("basiszins_setzen", "2031-01-01", "1.0", "--quelle", "x")
     call_command("basiszins_setzen", "2031-01-01", "1.0", "--quelle", "Korrektur", "--korrigieren")
     assert Basiszins.objects.get(gueltig_ab="2031-01-01").satz == Decimal("1.0")
+
+
+def test_platzhalter_rechtstexte_warnen_beim_deploy_check():
+    ids = {f.id for f in run_checks(include_deployment_checks=True)}
+    assert "cockpit.W001" in ids
+    assert "cockpit.W001" not in {f.id for f in run_checks()}

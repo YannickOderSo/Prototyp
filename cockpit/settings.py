@@ -141,7 +141,8 @@ SECURE_REDIRECT_EXEMPT = [r"^healthz$"]
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # HSTS-Preload ist eine Domain-Entscheidung des Teams, nicht des Codes
-SILENCED_SYSTEM_CHECKS = ["security.W021"]
+# Weitere nur bewusst und begründet stummschalten (z. B. in der CI cockpit.W001, solange die Rechtstexte fehlen)
+SILENCED_SYSTEM_CHECKS = ["security.W021", *env.list("COCKPIT_CHECKS_STUMM", default=[])]
 
 # Hinter Caddy: Client-IP aus X-Forwarded-For (nur aktivieren, wenn die App nicht direkt erreichbar ist)
 HINTER_PROXY = env.bool("COCKPIT_HINTER_PROXY", default=False)
