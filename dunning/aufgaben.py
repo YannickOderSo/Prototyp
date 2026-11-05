@@ -7,6 +7,7 @@ from jobs.queue import enqueue
 from jobs.registry import job, zeitplan
 from jobs.worker import JobAbbruch
 
+from . import sammelmail
 from .models import Mahnplan
 from .versand import versand_job
 from .vorschlaege import vorschlagslauf
@@ -34,4 +35,22 @@ def _vorschlaege(j: Job) -> None:
 
 job("dunning.versenden")(versand_job)
 
+
+@job("dunning.sammelmails_pruefen")
+def _sammelmails_pruefen(j: Job) -> None:
+    """Alle 15 Minuten: Firmen, deren Sammelfreigabe-Termin erreicht ist, bekommen einen eigenen Job."""
+    for firma in Firma.objects.filter(aktiv=True):
+        if sammelmail.faellig(firma):
+            enqueue("dunning.sammelmail", {}, firma=firma, eindeutig=f"sammelmail:{firma.pk}")
+
+
+@job("dunning.sammelmail")
+def _sammelmail(j: Job) -> None:
+    if j.firma is None:
+        raise JobAbbruch("Firma fehlt")
+    if sammelmail.faellig(j.firma):
+        sammelmail.senden(j.firma)
+
+
 zeitplan("mahnvorschlaege", "0 5 * * *", "dunning.vorschlaege_alle")
+zeitplan("sammelmails", "*/15 * * * *", "dunning.sammelmails_pruefen")

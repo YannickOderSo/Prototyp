@@ -34,7 +34,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 - [x] **M2-04** Freigabe-Ansicht: Liste, Einzel- und Sammelfreigabe, Verwerfen mit Grund, Vorschau der Mail (D6, D10).
 - [x] **M2-05** Versand-Job: Frische-Check (D9), Lexware-Mahnungsentwurf ab Stufe 1 und PDF (B6), Rechnungs-PDF für Stufe 0, E-Mail mit Anhang, Versand-Datensatz, Protokoll (D7). Fehler sichtbar mit Neuversuch.
 - [x] **M2-06** E-Mail-Versand: Plattform-SMTP (EU-Anbieter) mit Absendername und Reply-To der Firma; optional eigenes SMTP der Firma. Zustellfehler (Bounce) erfassen, soweit der Anbieter das meldet.
-- [ ] **M2-07** Sammelfreigabe-Mail montags 7 Uhr mit Link ins Cockpit (Login nötig).
+- [x] **M2-07** Sammelfreigabe-Mail montags 7 Uhr mit Link ins Cockpit (Login nötig).
 - [ ] **M2-08** Pausen für Kunde und Beleg (D8).
 
 **Meilenstein-Abnahme M2:** Im Testkonto mit 20 präparierten Rechnungen (Mix Privat/Unternehmer, Teilzahlung, pausiert, bezahlt kurz vor Versand) entstehen exakt die erwarteten Vorschläge; nach Freigabe gehen die Mails an eine Test-Mailbox (Mailpit) mit korrekten Beträgen.

@@ -184,3 +184,19 @@ class SmtpZugang(FirmaModel):
 
     def __str__(self) -> str:
         return f"{self.host}:{self.port}"
+
+
+class Sammelmail(FirmaModel):
+    """Wöchentliche Sammelfreigabe-Mail; eindeutig je Firma und ISO-Woche (genau eine Mail je Woche)."""
+
+    woche = models.CharField(max_length=10)
+    gesendet_am = models.DateTimeField(default=timezone.now)
+    empfaenger = models.JSONField(default=list)
+    anzahl_vorschlaege = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = "Sammelmails"
+        constraints = [models.UniqueConstraint(fields=["firma", "woche"], name="sammelmail_je_woche")]
+
+    def __str__(self) -> str:
+        return f"Sammelmail {self.woche}"
