@@ -98,6 +98,20 @@ Entscheidung in ADR-008. Gilt nur für Betriebe mit Lexware Office.
 | H8 MUSS | Mahnwesen für importierte Posten nach denselben Regeln; Versand prüft den Zahlstatus im Cockpit; Mahnschreiben-PDF (Stufe 1 und 2, Postversand) erzeugt die App; Freigabe weist auf den manuell gepflegten Zahlstatus hin | Mahnung zu einem importierten Posten geht mit PDF der App hinaus; bezahlt markierte Posten werden nicht versendet |
 | H9 MUSS | Jeder Import und jede Freigabe wird protokolliert; die Importdatei wird wie Rohdateien nach 7 Tagen gelöscht | Protokoll zeigt Datei, Anzahl und Ergebnis |
 
+## I. Rückmeldung Lukas (Meilenstein 7)
+
+Rückmeldung vom 5. November 2026, Entscheidungen von Yannick am selben Tag. Die großen Punkte (Abo-Verwaltung, Team-Chat, KI-Hilfe-Chat, KI-Telefonassistent) stehen als Konzept in [[Konzept-Erweiterungen]].
+
+| ID | Anforderung | Abnahme |
+| --- | --- | --- |
+| I1 MUSS | Menüpunkt „Erfassen“ heißt „Angebote & Rechnungen“: neu erstellen per Sprache, Foto oder Mail, Entwürfe in Arbeit, offene Angebote mit Gültigkeit | Menü, Titel und Texte umbenannt; Angebote mit „gültig bis“ sichtbar |
+| I2 MUSS | Cockpit mit Reitern: Überblick, Rechnungen, Angebote, Mahnungen; je Reiter Kennzahlen und eine kurze Liste mit Sprung zur Detailseite | Reiter über Links (ohne JavaScript), auf dem Handy bedienbar |
+| I3 MUSS | „Berichte“ heißt „Statistik“, umschaltbar Woche und Monat; zusätzlich Angebote: verschickt, angenommen, abgelehnt, abgelaufen, Annahmequote, Volumen | Zahlen stimmen mit dem Spiegel überein (Tests) |
+| I4 MUSS | Erinnerung an Angebote kurz vor Ablauf an den Endkunden, nur nach Freigabe (ADR-009) | Kein Versand ohne Freigabe; Frische-Check verwirft angenommene, abgelehnte und abgelaufene Angebote |
+| I5 SOLL | Profil-Menü mit eigenem Avatar je Teammitglied (spielerische Symbole), Zugang zu Profil, Sicherheit, Team und Abmelden; „Abo und Zahlung“ als angekündigter Punkt | Avatar wählbar, in Seitenleiste und Team-Liste sichtbar |
+| I6 SOLL | Hinweis zur E-Rechnung: Lexware erzeugt E-Rechnungen beim Abschließen; Pflichten nach Kundentyp und Datum verständlich erklärt | Hinweis bei Rechnungsentwürfen an Unternehmer und in den Lexware-Einstellungen |
+| I7 – | PDF im Anhang: Erinnerungen tragen die Rechnung, Mahnungen das Mahnungs-PDF aus Lexware, Angebots-Erinnerungen das Angebots-PDF | bereits umgesetzt (D7, M2-05) bzw. mit I4 |
+
 ## G. sevdesk (Meilenstein 5)
 
 | ID | Anforderung | Abnahmekriterium |
