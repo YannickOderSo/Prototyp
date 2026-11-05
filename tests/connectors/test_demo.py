@@ -58,3 +58,19 @@ def test_demo_lokal_durchspielen_ohne_anfrage_nach_aussen(settings, worker, mail
     assert all(name.endswith(".pdf") for m in mailoutbox for name, *_ in m.attachments)
     assert not Job.objects.filter(status="fehler").exists()
     assert Beleg.objects.fuer(firma).filter(status__in=Beleg.OFFENE_STATUS).count() == offen_vorher
+
+
+def test_demo_angebot_als_entwurf_ohne_anfrage_nach_aussen(settings, worker):
+    from capture.models import Erfassung
+    from capture.uebertragung import freigeben as erfassung_freigeben
+
+    settings.DEBUG = True
+    call_command("demo_daten")
+    nutzer = Nutzer.objects.get(email="demo@cockpit.local")
+    angebot = Erfassung.objects.get(transkript__contains="Praxis Dr. Sommer")
+    with respx.mock(assert_all_mocked=True, assert_all_called=False) as router:
+        erfassung_freigeben(angebot, nutzer)
+        alle_jobs_ausfuehren(worker)
+        assert router.calls.call_count == 0
+    angebot.refresh_from_db()
+    assert angebot.status == "uebertragen" and angebot.ziel_art == "quotation"

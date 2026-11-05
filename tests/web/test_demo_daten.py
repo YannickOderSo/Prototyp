@@ -23,8 +23,10 @@ def test_demo_daten(settings, client, mailoutbox):
     assert Beleg.objects.filter(status__in=Beleg.OFFENE_STATUS).count() == 9
     stufen = set(Mahnvorschlag.objects.filter(status="vorgeschlagen").values_list("stufe", flat=True))
     assert stufen == {0, 1}
-    erfassung = Erfassung.objects.get()
-    assert erfassung.status == "pruefung" and erfassung.blocker  # Sockelleiste ohne Preis
+    rechnung = Erfassung.objects.get(transkript__contains="Sockelleiste")
+    assert rechnung.status == "pruefung" and rechnung.blocker  # Sockelleiste ohne Preis
+    angebot = Erfassung.objects.get(transkript__contains="Praxis Dr. Sommer")
+    assert angebot.entwurf["belegart"] == "angebot" and angebot.blocker == []
     assert not Job.objects.exists() and mailoutbox == []
     with pytest.raises(CommandError, match="existiert bereits"):
         call_command("demo_daten")

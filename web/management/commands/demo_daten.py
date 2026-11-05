@@ -1,11 +1,13 @@
 """Demo-Daten zum Ansehen der Oberfläche auf localhost (nur mit DJANGO_DEBUG=true).
 
 Legt eine Demo-Firma mit Inhaber, gespiegelten Kunden, Artikeln und Rechnungen in allen Altersstufen an,
-erzeugt die heutigen Mahnvorschläge und eine Erfassung in der Prüfansicht. Es wird nichts an Lexware,
-Mistral oder Bedrock gesendet: Die Lexware-Verbindung nutzt den Demo-Connector (connectors/demo.py), der nur
-auf der eigenen Datenbank arbeitet. Freigegebene Mahnungen gehen an das eingestellte Mail-Backend (lokal Mailpit).
+erzeugt die heutigen Mahnvorschläge und zwei Erfassungen in der Prüfansicht (Rechnung mit fehlendem Preis,
+Angebot). Es wird nichts an Lexware, Mistral oder Bedrock gesendet: Die Lexware-Verbindung nutzt den
+Demo-Connector (connectors/demo.py), der nur auf der eigenen Datenbank arbeitet. Freigegebene Mahnungen
+gehen an das eingestellte Mail-Backend (lokal Mailpit).
 
-Beim ersten Anmelden richtet der Demo-Nutzer die Zwei-Faktor-Anmeldung ein (Authenticator-App), wie im echten Betrieb.
+Beim ersten Anmelden richtet der Demo-Nutzer die Zwei-Faktor-Anmeldung ein (Authenticator-App), wie im
+echten Betrieb.
 """
 
 from datetime import timedelta
@@ -203,6 +205,33 @@ class Command(BaseCommand):
             },
         )
         regeln_anwenden(erfassung)
+        # Ein Angebot aus einem Sprachmemo, vollständig zugeordnet und freigabebereit
+        angebot = Erfassung.objects.create(
+            firma=firma,
+            erstellt_von=nutzer,
+            kanal=Erfassung.Kanal.AUFNAHME,
+            status=Erfassung.Status.PRUEFUNG,
+            transkript=(
+                "Angebot für Praxis Dr. Sommer: Wartezimmer und Flur streichen, etwa 85 Quadratmeter. "
+                "Zwei Facharbeiter für zwei Tage, also 32 Stunden, vier Eimer Dispersionsfarbe weiß, "
+                "Abdeckmaterial und zweimal Anfahrt. Farbton im Flur noch mit der Praxis abstimmen."
+            ),
+            ki_ergebnis={
+                "belegart": "angebot",
+                "kunde": "Praxis Dr. Sommer",
+                "angebot_nummer": "",
+                "leistung_von": "",
+                "leistung_bis": "",
+                "positionen": [
+                    _pos("art-maler-stunde", "Wartezimmer und Flur streichen, ca. 85 m²", 32, "Stunde"),
+                    _pos("art-dispersion", "Dispersionsfarbe weiß", 4, "Eimer"),
+                    _pos("art-abdeckung", "Abdeckmaterial", 1, "pauschal"),
+                    _pos("art-anfahrt", "Anfahrt", 2, "pauschal"),
+                ],
+                "offene_fragen": ["Farbton im Flur mit der Praxis abstimmen."],
+            },
+        )
+        regeln_anwenden(angebot)
 
 
 def _pos(artikel_id: str, beschreibung: str, menge: int, einheit: str) -> dict[str, object]:
