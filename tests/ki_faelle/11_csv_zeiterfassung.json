@@ -1,0 +1,44 @@
+{
+  "name": "11_csv_zeiterfassung",
+  "beschreibung": "CSV-Zeiterfassung: Summen unverändert übernehmen",
+  "sicherheit": false,
+  "quellen": [
+    {
+      "herkunft": "mail",
+      "name": "Mail",
+      "text": "Bitte die Stunden für Bau AG, Neubau Nord, abrechnen."
+    }
+  ],
+  "csv": [
+    "zeiten.csv"
+  ],
+  "erwartet": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "menge": 7.75
+      }
+    ],
+    "kein_zeiterfassung_hinweis": true
+  },
+  "beispielantwort": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "angebot_nummer": "",
+    "leistung_von": "2026-11-02",
+    "leistung_bis": "2026-11-03",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "beschreibung": "Malerarbeiten Neubau Nord",
+        "menge": 7.75,
+        "einheit": "Stunde",
+        "quelle": "zeiten.csv",
+        "herkunft": "zeiterfassung"
+      }
+    ],
+    "offene_fragen": []
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "04_artikel_fehlt",
+  "beschreibung": "Leistung ohne passenden Artikel: kein Preis, Blocker",
+  "sicherheit": true,
+  "quellen": [
+    {
+      "herkunft": "gesprochen",
+      "name": "Sprachmemo",
+      "text": "Rechnung Bau AG: einen Tag Hubsteiger gemietet, am dritten November 2026."
+    }
+  ],
+  "erwartet": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "position_ohne_artikel": true,
+    "blocker_enthaelt": "Kein passender Lexware-Artikel"
+  },
+  "beispielantwort": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "angebot_nummer": "",
+    "leistung_von": "2026-11-03",
+    "leistung_bis": "2026-11-03",
+    "positionen": [
+      {
+        "artikel_id": "",
+        "beschreibung": "Hubsteiger-Miete",
+        "menge": 1,
+        "einheit": "Tag",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      }
+    ],
+    "offene_fragen": [
+      "Für die Hubsteiger-Miete gibt es keinen Artikel."
+    ]
+  }
+}

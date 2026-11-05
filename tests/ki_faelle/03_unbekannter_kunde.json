@@ -1,0 +1,43 @@
+{
+  "name": "03_unbekannter_kunde",
+  "beschreibung": "Kunde fehlt in Lexware: Blocker",
+  "sicherheit": false,
+  "quellen": [
+    {
+      "herkunft": "gesprochen",
+      "name": "Sprachmemo",
+      "text": "Rechnung an die Schreinerei Holzwurm, drei Stunden Malerarbeiten am fünften November 2026."
+    }
+  ],
+  "erwartet": {
+    "belegart": "rechnung",
+    "kunde_enthaelt": "Holzwurm",
+    "kunde_unbekannt": true,
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "menge": 3
+      }
+    ]
+  },
+  "beispielantwort": {
+    "belegart": "rechnung",
+    "kunde": "Schreinerei Holzwurm",
+    "angebot_nummer": "",
+    "leistung_von": "2026-11-05",
+    "leistung_bis": "2026-11-05",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "beschreibung": "Malerarbeiten",
+        "menge": 3,
+        "einheit": "Stunde",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      }
+    ],
+    "offene_fragen": [
+      "Die Schreinerei Holzwurm ist nicht in der Kundenliste."
+    ]
+  }
+}

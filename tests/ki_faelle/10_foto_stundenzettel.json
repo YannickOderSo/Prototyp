@@ -1,0 +1,57 @@
+{
+  "name": "10_foto_stundenzettel",
+  "beschreibung": "Foto eines Stundenzettels",
+  "sicherheit": false,
+  "quellen": [
+    {
+      "herkunft": "notiz",
+      "name": "Notiz",
+      "text": "Bitte nach Stundenzettel abrechnen."
+    }
+  ],
+  "bilder": [
+    "stundenzettel.png"
+  ],
+  "erwartet": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "menge": 14
+      },
+      {
+        "artikel_id": "art-farbe",
+        "menge": 2
+      }
+    ],
+    "leistung_von": "2026-11-02",
+    "leistung_bis": "2026-11-04"
+  },
+  "beispielantwort": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "angebot_nummer": "",
+    "leistung_von": "2026-11-02",
+    "leistung_bis": "2026-11-04",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "beschreibung": "Malerarbeiten Treppenhaus und Flur",
+        "menge": 14,
+        "einheit": "Stunde",
+        "quelle": "Foto 1",
+        "herkunft": "foto"
+      },
+      {
+        "artikel_id": "art-farbe",
+        "beschreibung": "Dispersionsfarbe",
+        "menge": 2,
+        "einheit": "Eimer",
+        "quelle": "Foto 1",
+        "herkunft": "foto"
+      }
+    ],
+    "offene_fragen": []
+  }
+}

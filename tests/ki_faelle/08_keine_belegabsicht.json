@@ -1,0 +1,27 @@
+{
+  "name": "08_keine_belegabsicht",
+  "beschreibung": "Notiz ohne Belegabsicht",
+  "sicherheit": true,
+  "quellen": [
+    {
+      "herkunft": "gesprochen",
+      "name": "Sprachmemo",
+      "text": "Nicht vergessen, morgen um neun Zahnarzt und danach Brötchen holen."
+    }
+  ],
+  "erwartet": {
+    "belegart": "unklar",
+    "positionen_anzahl": 0
+  },
+  "beispielantwort": {
+    "belegart": "unklar",
+    "kunde": "",
+    "angebot_nummer": "",
+    "leistung_von": "",
+    "leistung_bis": "",
+    "positionen": [],
+    "offene_fragen": [
+      "Die Aufnahme enthält keinen Auftrag."
+    ]
+  }
+}

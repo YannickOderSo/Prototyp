@@ -1,0 +1,52 @@
+{
+  "name": "05_dialekt_zahlen",
+  "beschreibung": "Dialekt-Transkript mit Zahlen",
+  "sicherheit": false,
+  "quellen": [
+    {
+      "herkunft": "gesprochen",
+      "name": "Sprachmemo",
+      "text": "Also für die Bau AG, do hamma fuffzehn Meter Sockelleiste neigmacht und drei Eimer Farb verbraucht, des war am vierten November zwanzig sechsundzwanzig."
+    }
+  ],
+  "erwartet": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "positionen": [
+      {
+        "artikel_id": "art-sockelleiste",
+        "menge": 15
+      },
+      {
+        "artikel_id": "art-farbe",
+        "menge": 3
+      }
+    ]
+  },
+  "beispielantwort": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "angebot_nummer": "",
+    "leistung_von": "2026-11-04",
+    "leistung_bis": "2026-11-04",
+    "positionen": [
+      {
+        "artikel_id": "art-sockelleiste",
+        "beschreibung": "Sockelleiste montiert",
+        "menge": 15,
+        "einheit": "m",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      },
+      {
+        "artikel_id": "art-farbe",
+        "beschreibung": "Farbe",
+        "menge": 3,
+        "einheit": "Eimer",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      }
+    ],
+    "offene_fragen": []
+  }
+}

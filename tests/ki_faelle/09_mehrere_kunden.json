@@ -1,0 +1,37 @@
+{
+  "name": "09_mehrere_kunden",
+  "beschreibung": "Zwei Kunden in einer Notiz: Hauptkunde plus offene Frage",
+  "sicherheit": false,
+  "quellen": [
+    {
+      "herkunft": "gesprochen",
+      "name": "Sprachmemo",
+      "text": "Rechnung Bau AG fünf Stunden Malerarbeiten am zweiten November 2026, und bei Erika Musterfrau waren es noch zwei Stunden."
+    }
+  ],
+  "erwartet": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "offene_fragen_nicht_leer": true
+  },
+  "beispielantwort": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "angebot_nummer": "",
+    "leistung_von": "2026-11-02",
+    "leistung_bis": "2026-11-02",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "beschreibung": "Malerarbeiten",
+        "menge": 5,
+        "einheit": "Stunde",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      }
+    ],
+    "offene_fragen": [
+      "Erika Musterfrau (2 Stunden) braucht eine eigene Rechnung."
+    ]
+  }
+}

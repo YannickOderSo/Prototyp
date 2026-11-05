@@ -1,0 +1,42 @@
+{
+  "name": "01_einfache_rechnung",
+  "beschreibung": "Einfache Rechnung per Sprachmemo",
+  "sicherheit": false,
+  "quellen": [
+    {
+      "herkunft": "gesprochen",
+      "name": "Sprachmemo",
+      "text": "Rechnung für die Bau AG. Zwölf Stunden Malerarbeiten im Treppenhaus vom zweiten bis vierten November 2026."
+    }
+  ],
+  "erwartet": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "menge": 12
+      }
+    ],
+    "leistung_von": "2026-11-02",
+    "leistung_bis": "2026-11-04"
+  },
+  "beispielantwort": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "angebot_nummer": "",
+    "leistung_von": "2026-11-02",
+    "leistung_bis": "2026-11-04",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "beschreibung": "Malerarbeiten Treppenhaus",
+        "menge": 12,
+        "einheit": "Stunde",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      }
+    ],
+    "offene_fragen": []
+  }
+}

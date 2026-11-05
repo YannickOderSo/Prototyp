@@ -1,0 +1,52 @@
+{
+  "name": "06_zahl_als_wort",
+  "beschreibung": "Zahl als Wort mit Komma",
+  "sicherheit": false,
+  "quellen": [
+    {
+      "herkunft": "gesprochen",
+      "name": "Sprachmemo",
+      "text": "Rechnung für die Hausverwaltung Sonnenhof: zwölf Komma fünf Stunden Malerarbeiten und eine Anfahrt, Leistung am zweiten November 2026."
+    }
+  ],
+  "erwartet": {
+    "belegart": "rechnung",
+    "kunde": "Hausverwaltung Sonnenhof GmbH",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "menge": 12.5
+      },
+      {
+        "artikel_id": "art-anfahrt",
+        "menge": 1
+      }
+    ]
+  },
+  "beispielantwort": {
+    "belegart": "rechnung",
+    "kunde": "Hausverwaltung Sonnenhof GmbH",
+    "angebot_nummer": "",
+    "leistung_von": "2026-11-02",
+    "leistung_bis": "2026-11-02",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "beschreibung": "Malerarbeiten",
+        "menge": 12.5,
+        "einheit": "Stunde",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      },
+      {
+        "artikel_id": "art-anfahrt",
+        "beschreibung": "Anfahrt",
+        "menge": 1,
+        "einheit": "pauschal",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      }
+    ],
+    "offene_fragen": []
+  }
+}

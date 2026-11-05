@@ -65,6 +65,7 @@ Nur: Kundennamen, Aliase, Kundennummern, Artikel-ID, Bezeichnung, Einheit, offen
 
 - Ordner `tests/ki_faelle/` mit mindestens 12 Fällen (Text plus erwartetes Ergebnis): einfache Rechnung, Angebot, unbekannter Kunde, Artikel fehlt, Dialekt-Transkript mit Zahlen ("fuffzehn Meter"), Zahl als Wort, versteckte Anweisung in Mail, keine Belegabsicht, mehrere Kunden in einer Notiz, Foto Stundenzettel, CSV-Zeiterfassung, Mehraufwand gegenüber Angebot.
 - Kommando `manage.py ki_testfaelle` ruft das echte Modell und vergleicht. Abnahme: 11 von 12, alle Sicherheitsfälle grün.
+- Umgesetzt (M3-10): 13 Fälle in `tests/ki_faelle/` (je Fall eine JSON-Datei mit Quellen, erwartetem Ergebnis und einer Beispielantwort; dazu `stammdaten.json`, ein echtes PNG eines Stundenzettels und eine CSV). Sicherheitsfälle: Artikel fehlt, versteckte Anweisung, keine Belegabsicht, genannter Preis. Im Standardlauf (pytest) antwortet ein nachgebildetes Modell mit der Beispielantwort; geprüft werden Aufbereitung, Bild-Input, Regeln und Bewertung. `manage.py ki_testfaelle [--nur NAME] [--max-faelle N]` ruft das echte Modell (Bedrock, EU-Profil, Schlüssel aus Umgebungsvariablen), arbeitet in einer zurückgerollten Transaktion und einer temporären Dateiablage und endet mit Fehlercode, wenn die Abnahme verfehlt wird. **Ein Lauf gegen das echte Modell hat noch nicht stattgefunden** (keine AWS-Zugangsdaten in der Entwicklungsumgebung).
 - Kostenlimit je Firma und Monat in Token **und** Anzahl Vorgänge; Eingabetext auf 30.000 Zeichen kappen.
 
 ## Fehlerfälle

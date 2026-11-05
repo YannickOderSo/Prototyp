@@ -1,0 +1,54 @@
+{
+  "name": "12_mehraufwand_angebot",
+  "beschreibung": "Mehraufwand gegenüber Angebot",
+  "sicherheit": false,
+  "quellen": [
+    {
+      "herkunft": "gesprochen",
+      "name": "Sprachmemo",
+      "text": "Rechnung zum Angebot AN-2026-7 für die Bau AG: 22 Stunden Malerarbeiten und 4 Eimer Farbe, ausgeführt vom zweiten bis vierten November 2026."
+    }
+  ],
+  "erwartet": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "angebot_nummer": "AN-2026-7",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "menge": 22
+      },
+      {
+        "artikel_id": "art-farbe",
+        "menge": 4
+      }
+    ],
+    "hinweis_enthaelt": "Mehraufwand"
+  },
+  "beispielantwort": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "angebot_nummer": "AN-2026-7",
+    "leistung_von": "2026-11-02",
+    "leistung_bis": "2026-11-04",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "beschreibung": "Malerarbeiten",
+        "menge": 22,
+        "einheit": "Stunde",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      },
+      {
+        "artikel_id": "art-farbe",
+        "beschreibung": "Farbe",
+        "menge": 4,
+        "einheit": "Eimer",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      }
+    ],
+    "offene_fragen": []
+  }
+}

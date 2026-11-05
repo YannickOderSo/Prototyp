@@ -50,7 +50,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 - [x] **M3-07** Prüfansicht mit Herkunft, Hinweisen, Blockern, Bearbeiten (E6).
 - [x] **M3-08** Übertragung als Entwurf in Lexware (E7, B5). Test, dass nie `finalize` gesendet wird.
 - [x] **M3-09** Belegpostfach: IMAP-Abruf eines Sammelpostfachs mit Plus-Adressen je Firma (`belege+<token>@…`), Whitelist und DKIM/SPF-Prüfung über `Authentication-Results` (E2). IMAP mit Timeout, jede Firma isoliert.
-- [ ] **M3-10** KI-Testfälle und Kommando `ki_testfaelle` (siehe KI-Pipeline).
+- [x] **M3-10** KI-Testfälle und Kommando `ki_testfaelle` (siehe KI-Pipeline).
 
 ## M4 Bericht, Onboarding, Härtung (ca. 8 PT)
 

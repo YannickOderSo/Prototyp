@@ -1,0 +1,17 @@
+{
+  "kunden": [
+    {"extern_id": "kon-bau", "name": "Bau AG", "kundennummer": "10001"},
+    {"extern_id": "kon-erika", "name": "Musterfrau, Erika", "kundennummer": "10002"},
+    {"extern_id": "kon-hausverwaltung", "name": "Hausverwaltung Sonnenhof GmbH", "kundennummer": "10003"}
+  ],
+  "artikel": [
+    {"extern_id": "art-maler-stunde", "bezeichnung": "Malerarbeiten Facharbeiter", "einheit": "Stunde", "netto": "58.00", "steuersatz": "19", "typ": "SERVICE"},
+    {"extern_id": "art-helfer-stunde", "bezeichnung": "Helfer", "einheit": "Stunde", "netto": "42.00", "steuersatz": "19", "typ": "SERVICE"},
+    {"extern_id": "art-farbe", "bezeichnung": "Dispersionsfarbe weiß 10 l", "einheit": "Eimer", "netto": "49.90", "steuersatz": "19", "typ": "PRODUCT"},
+    {"extern_id": "art-sockelleiste", "bezeichnung": "Sockelleiste Kiefer", "einheit": "m", "netto": "6.50", "steuersatz": "19", "typ": "PRODUCT"},
+    {"extern_id": "art-anfahrt", "bezeichnung": "Anfahrt pauschal", "einheit": "pauschal", "netto": "30.00", "steuersatz": "19", "typ": "SERVICE"}
+  ],
+  "angebote": [
+    {"extern_id": "an-7", "nummer": "AN-2026-7", "kunde_extern_id": "kon-bau", "positionen": [["art-maler-stunde", "20"], ["art-farbe", "4"]]}
+  ]
+}

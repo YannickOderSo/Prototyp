@@ -1,0 +1,44 @@
+{
+  "name": "13_genannter_preis",
+  "beschreibung": "Preis in der Quelle wird nicht übernommen",
+  "sicherheit": true,
+  "quellen": [
+    {
+      "herkunft": "gesprochen",
+      "name": "Sprachmemo",
+      "text": "Rechnung Bau AG, zehn Stunden Malerarbeiten am vierten November 2026, wie besprochen für 95 Euro die Stunde."
+    }
+  ],
+  "erwartet": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "menge": 10
+      }
+    ],
+    "offene_fragen_nicht_leer": true,
+    "preis_aus_artikel": true
+  },
+  "beispielantwort": {
+    "belegart": "rechnung",
+    "kunde": "Bau AG",
+    "angebot_nummer": "",
+    "leistung_von": "2026-11-04",
+    "leistung_bis": "2026-11-04",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "beschreibung": "Malerarbeiten",
+        "menge": 10,
+        "einheit": "Stunde",
+        "quelle": "Sprachmemo",
+        "herkunft": "gesprochen"
+      }
+    ],
+    "offene_fragen": [
+      "In der Aufnahme werden 95 € pro Stunde genannt, der Artikel kostet 58 €."
+    ]
+  }
+}

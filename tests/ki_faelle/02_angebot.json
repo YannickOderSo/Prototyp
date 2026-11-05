@@ -1,0 +1,52 @@
+{
+  "name": "02_angebot",
+  "beschreibung": "Angebot aus einer Notiz",
+  "sicherheit": false,
+  "quellen": [
+    {
+      "herkunft": "notiz",
+      "name": "Notiz",
+      "text": "Angebot für Erika Musterfrau: Wohnzimmer streichen, etwa 8 Stunden, dazu 2 Eimer weiße Dispersionsfarbe."
+    }
+  ],
+  "erwartet": {
+    "belegart": "angebot",
+    "kunde": "Musterfrau, Erika",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "menge": 8
+      },
+      {
+        "artikel_id": "art-farbe",
+        "menge": 2
+      }
+    ]
+  },
+  "beispielantwort": {
+    "belegart": "angebot",
+    "kunde": "Musterfrau, Erika",
+    "angebot_nummer": "",
+    "leistung_von": "",
+    "leistung_bis": "",
+    "positionen": [
+      {
+        "artikel_id": "art-maler-stunde",
+        "beschreibung": "Wohnzimmer streichen",
+        "menge": 8,
+        "einheit": "Stunde",
+        "quelle": "Notiz",
+        "herkunft": "notiz"
+      },
+      {
+        "artikel_id": "art-farbe",
+        "beschreibung": "Dispersionsfarbe weiß",
+        "menge": 2,
+        "einheit": "Eimer",
+        "quelle": "Notiz",
+        "herkunft": "notiz"
+      }
+    ],
+    "offene_fragen": []
+  }
+}
