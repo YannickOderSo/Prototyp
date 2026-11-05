@@ -105,6 +105,29 @@ def versaende(firma: Firma) -> str:
     )
 
 
+def angebotserinnerungen(firma: Firma) -> str:
+    from dunning.models import Angebotserinnerung
+
+    kopf = ["id", "angebot", "status", "gueltig_bis", "empfaenger", "freigegeben_am", "versendet_am", "message_id"]
+    qs = Angebotserinnerung.objects.fuer(firma).select_related("beleg").order_by("pk")
+    return csv_text(
+        kopf,
+        (
+            [
+                e.pk,
+                e.beleg.nummer,
+                e.status,
+                e.gueltig_bis,
+                e.empfaenger,
+                e.freigegeben_am,
+                e.versendet_am,
+                e.message_id,
+            ]
+            for e in qs
+        ),
+    )
+
+
 def protokoll(firma: Firma) -> str:
     kopf = ["id", "zeit", "nutzer", "ereignis", "objekt_typ", "objekt_id", "daten"]
     qs = Protokolleintrag.objects.filter(firma=firma).select_related("nutzer").order_by("zeit", "id")
@@ -143,6 +166,7 @@ def zip_export(firma: Firma) -> bytes:
     with zipfile.ZipFile(puffer, "w", zipfile.ZIP_DEFLATED) as archiv:
         archiv.writestr("vorschlaege.csv", vorschlaege(firma))
         archiv.writestr("versaende.csv", versaende(firma))
+        archiv.writestr("angebotserinnerungen.csv", angebotserinnerungen(firma))
         archiv.writestr("protokoll.csv", protokoll(firma))
         archiv.writestr("erfassungen.csv", erfassungen(firma))
         archiv.writestr(

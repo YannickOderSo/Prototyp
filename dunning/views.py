@@ -14,7 +14,7 @@ from . import freigabe as dienst
 from .forms import MahnplanForm, SmtpForm
 from .mail import inhalt, zinsberechnung_text
 from .mailversand import testmail
-from .models import Mahnvorschlag, SmtpZugang, Versand
+from .models import Angebotserinnerung, Mahnvorschlag, SmtpZugang, Versand
 from .services import basiszins_fehlt, basiszinsen, mahnplan_fuer
 from .vorschlaege import klaerung_noetig
 
@@ -69,6 +69,17 @@ def freigabe(request: FirmaRequest) -> HttpResponse:
             .exclude(zustellfehler="")
             .order_by("-gesendet_am")[:20],
             "basiszins_fehlt": basiszins_fehlt(timezone.localdate()),
+            "erinnerungen": Angebotserinnerung.objects.fuer(request.firma)
+            .filter(status=Angebotserinnerung.Status.VORGESCHLAGEN)
+            .select_related("beleg", "beleg__kontakt")
+            .order_by("gueltig_bis", "pk"),
+            "erinnerungen_fehler": Angebotserinnerung.objects.fuer(request.firma)
+            .filter(status=Angebotserinnerung.Status.FEHLER)
+            .select_related("beleg"),
+            "erinnerungen_versendet": Angebotserinnerung.objects.fuer(request.firma)
+            .filter(status=Angebotserinnerung.Status.VERSENDET)
+            .select_related("beleg")
+            .order_by("-versendet_am")[:10],
         },
     )
 
@@ -183,3 +194,49 @@ def smtp(request: FirmaRequest) -> HttpResponse:
         messages.success(request, "SMTP-Einstellungen gespeichert." + (" Testmail gesendet." if zugang.aktiv else ""))
         return redirect("dunning:smtp")
     return render(request, "dunning/smtp.html", {"form": form})
+
+
+# ------------------------------------------------------------------ Angebots-Erinnerungen (ADR-009)
+
+
+@require_POST
+@freigabe_berechtigt
+def angebote_freigeben(request: FirmaRequest) -> HttpResponse:
+    from . import angebote
+
+    ids = [int(i) for i in request.POST.getlist("erinnerung") if i.isdigit()]
+    if not ids:
+        messages.warning(request, "Bitte markieren Sie mindestens eine Angebots-Erinnerung.")
+        return redirect("dunning:freigabe")
+    ergebnis = angebote.freigeben(request.firma, request.user, ids)
+    if ergebnis.freigegeben:
+        messages.success(
+            request, f"{len(ergebnis.freigegeben)} Angebots-Erinnerung(en) freigegeben. Der Versand läuft."
+        )
+    for e, grund in ergebnis.abgelehnt:
+        messages.error(request, f"Erinnerung zu {e.beleg.nummer} {grund} und wurde nicht freigegeben.")
+    return redirect("dunning:freigabe")
+
+
+@require_POST
+@freigabe_berechtigt
+def angebot_verwerfen(request: FirmaRequest, pk: int) -> HttpResponse:
+    from . import angebote
+
+    e = hole_oder_404(Angebotserinnerung, request.firma, pk=pk)
+    try:
+        angebote.verwerfen(e, request.user, request.POST.get("grund", "").strip() or "Nicht nachfassen")
+    except ValueError as fehler:
+        messages.error(request, str(fehler))
+    else:
+        messages.info(request, f"Erinnerung zu {e.beleg.nummer} verworfen.")
+    return redirect("dunning:freigabe")
+
+
+@require_GET
+@freigabe_berechtigt
+def angebot_vorschau(request: FirmaRequest, pk: int) -> HttpResponse:
+    from . import angebote
+
+    e = hole_oder_404(Angebotserinnerung, request.firma, pk=pk)
+    return render(request, "dunning/angebot_vorschau.html", {"e": e, "mail": angebote.inhalt(e)})

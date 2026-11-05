@@ -47,7 +47,18 @@ def _import(firma, nutzer=None):
     return {"pk": v.pk}
 
 
+def _angebotserinnerung(firma, nutzer=None):
+    from dunning.models import Angebotserinnerung
+    from ledger.models import Beleg
+
+    n = Beleg.objects.count()
+    b = Beleg.objects.create(firma=firma, extern_id=f"idor-q-{n}", art="angebot", nummer=f"Q{n}", status="offen")
+    return {"pk": Angebotserinnerung.objects.create(firma=firma, beleg=b).pk}
+
+
 FAELLE: dict[str, Fabrik] = {
+    "dunning:angebot_verwerfen": _angebotserinnerung,
+    "dunning:angebot_vorschau": _angebotserinnerung,
     "datenimport:vorgang": _import,
     "datenimport:zuordnung": _import,
     "datenimport:freigeben": _import,

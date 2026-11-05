@@ -12,7 +12,7 @@ Geprüft in der Lexware-Doku am 5. November 2026:
 
 ## Entscheidung
 1. **Vorschlag statt Automatik.** Ein täglicher Lauf schlägt für jedes offene Angebot eine Erinnerung vor, wenn:
-   - der Ablauf in höchstens X Tagen bevorsteht (Standard 5),
+   - der Ablauf in höchstens X Tagen bevorsteht (Standard 7, damit die wöchentliche Sammelfreigabe die Erinnerung rechtzeitig erfasst; je Firma einstellbar von 1 bis 30),
    - der Kunde eine E-Mail-Adresse hat,
    - für dieses Angebot noch keine Erinnerung vorgeschlagen wurde.
 

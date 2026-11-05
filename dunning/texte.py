@@ -102,3 +102,40 @@ def ersetzen(vorlage: str, werte: dict[str, str]) -> str:
 def unbekannte_platzhalter(vorlage: str) -> list[str]:
     erlaubt = set(PLATZHALTER) | INTERN
     return sorted({m.group(1) for m in _MUSTER.finditer(vorlage) if m.group(1) not in erlaubt})
+
+
+# ADR-009: Erinnerung an ein Angebot kurz vor Ablauf (eigene Platzhalter)
+PLATZHALTER_ANGEBOT = {
+    "kunde": "Name des Kunden",
+    "anrede": "Anrede",
+    "angebotsnummer": "Angebotsnummer",
+    "angebotsdatum": "Angebotsdatum",
+    "gueltig_bis": "Ablaufdatum des Angebots",
+    "betrag": "Angebotsbetrag (brutto)",
+    "firma": "Name der Firma",
+    "signatur": "Signatur der Firma",
+}
+
+ANGEBOT_STANDARD = (
+    "Unser Angebot {angebotsnummer}: Haben Sie noch Fragen?",
+    """{anrede},
+
+vor einiger Zeit haben wir Ihnen unser Angebot {angebotsnummer} vom {angebotsdatum} geschickt. Es ist noch bis zum {gueltig_bis} gültig.
+
+Haben Sie Fragen oder möchten Sie etwas anpassen? Antworten Sie einfach auf diese Mail. Wir freuen uns über eine kurze Rückmeldung, auch wenn das Angebot nicht passt.
+
+Das Angebot finden Sie zur Sicherheit noch einmal im Anhang.
+
+Freundliche Grüße
+{signatur}""",
+)
+
+
+def ersetzen_angebot(vorlage: str, werte: dict[str, str]) -> str:
+    return _MUSTER.sub(
+        lambda m: werte.get(m.group(1), "") if m.group(1) in PLATZHALTER_ANGEBOT else m.group(0), vorlage
+    )
+
+
+def unbekannte_platzhalter_angebot(vorlage: str) -> list[str]:
+    return sorted({m.group(1) for m in _MUSTER.finditer(vorlage) if m.group(1) not in PLATZHALTER_ANGEBOT})

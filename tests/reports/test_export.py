@@ -64,7 +64,14 @@ def _dateien(inhalt):
 
 def test_zip_enthaelt_alles_nur_von_der_eigenen_firma(daten):
     dateien = _dateien(zip_export(daten))
-    assert set(dateien) == {"vorschlaege.csv", "versaende.csv", "protokoll.csv", "erfassungen.csv", "LIESMICH.txt"}
+    assert set(dateien) == {
+        "vorschlaege.csv",
+        "versaende.csv",
+        "angebotserinnerungen.csv",
+        "protokoll.csv",
+        "erfassungen.csv",
+        "LIESMICH.txt",
+    }
     vorschlaege = list(csv.DictReader(io.StringIO(dateien["vorschlaege.csv"]), delimiter=";"))
     assert len(vorschlaege) == 1
     assert vorschlaege[0]["kunde"] == "'=Böse GmbH"

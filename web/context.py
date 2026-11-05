@@ -32,8 +32,11 @@ def _zaehler(request: HttpRequest, darf_freigeben: bool) -> dict[str, int]:
     firma = request.firma  # type: ignore[attr-defined]
     zaehler = {"capture:liste": Erfassung.objects.fuer(firma).filter(status=Erfassung.Status.PRUEFUNG).count()}
     if darf_freigeben:
+        from dunning.models import Angebotserinnerung
+
         zaehler["dunning:freigabe"] = (
             Mahnvorschlag.objects.fuer(firma).filter(status=Mahnvorschlag.Status.VORGESCHLAGEN).count()
+            + Angebotserinnerung.objects.fuer(firma).filter(status=Angebotserinnerung.Status.VORGESCHLAGEN).count()
         )
     return zaehler
 

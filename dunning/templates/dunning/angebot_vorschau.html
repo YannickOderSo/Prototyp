@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Vorschau Angebots-Erinnerung{% endblock %}
+{% block inhalt %}
+<h1>Vorschau: Erinnerung zu Angebot {{ e.beleg.nummer }}</h1>
+<p>So geht die Mail hinaus, wenn Sie heute freigeben. Vor dem Versand prüft Belegfluss in Lexware, ob das Angebot noch offen ist.</p>
+<section class="karte">
+  <p><strong>An:</strong> {{ mail.empfaenger|default:"(keine E-Mail-Adresse)" }}<br>
+     <strong>Antwort an:</strong> {{ mail.reply_to|default:"–" }}<br>
+     <strong>Betreff:</strong> {{ mail.betreff }}<br>
+     <strong>Anhang:</strong> {{ mail.anhang_name }} (Angebot aus Lexware)</p>
+  <div class="mailtext">{{ mail.text }}</div>
+</section>
+{% if e.status == "vorgeschlagen" %}
+<form method="post" action="{% url 'dunning:angebote_freigeben' %}" class="knopfreihe">
+  {% csrf_token %}<input type="hidden" name="erinnerung" value="{{ e.pk }}">
+  <button type="submit">Jetzt freigeben</button>
+  <a class="knopf zweitrangig" href="{% url 'dunning:freigabe' %}#angebote">Zurück</a>
+</form>
+{% else %}<p><span class="marke-status">{{ e.get_status_display }}</span> <a href="{% url 'dunning:freigabe' %}">Zurück</a></p>{% endif %}
+{% endblock %}

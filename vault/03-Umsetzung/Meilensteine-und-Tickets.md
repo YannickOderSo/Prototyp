@@ -90,6 +90,6 @@ Rückmeldung von Lukas, Umfang am 5. November 2026 von Yannick entschieden: Die 
 - [x] **M7-02** Angebote im Spiegel: Ablaufdatum, Status „angenommen“ und „abgelehnt“, Abgleich der letzten 12 Monate.
 - [x] **M7-03** „Angebote & Rechnungen“ statt „Erfassen“; Cockpit mit Reitern Überblick, Rechnungen, Angebote, Mahnungen (I1, I2).
 - [x] **M7-04** Statistik Woche und Monat inklusive Angebote (I3).
-- [ ] **M7-05** Angebots-Erinnerung an den Endkunden nach Freigabe (I4, ADR-009).
+- [x] **M7-05** Angebots-Erinnerung an den Endkunden nach Freigabe (I4, ADR-009).
 - [ ] **M7-06** Profil-Menü mit Avataren (I5).
 - [ ] **M7-07** Hinweis zur E-Rechnung (I6).

@@ -46,6 +46,37 @@
 <p class="karte">Zurzeit liegen keine Vorschläge zur Freigabe vor.</p>
 {% endif %}
 
+{% if erinnerungen %}
+<h2 id="angebote">Angebote nachfassen ({{ erinnerungen|length }})</h2>
+<p class="hilfe">Diese Angebote laufen bald ab. Belegfluss fragt freundlich beim Kunden nach, mit dem Angebots-PDF aus Lexware im Anhang. Vor dem Versand prüft Belegfluss in Lexware, ob das Angebot noch offen ist.</p>
+<form method="post" action="{% url 'dunning:angebote_freigeben' %}" id="angebotsfreigabe">
+  {% csrf_token %}
+  <ul class="liste">
+    {% for e in erinnerungen %}
+    <li id="erinnerung-{{ e.pk }}">
+      <div class="zeile">
+        <span class="checkbox"><input type="checkbox" name="erinnerung" value="{{ e.pk }}" id="e{{ e.pk }}">
+          <label for="e{{ e.pk }}"><strong>{{ e.beleg.kontakt.name|default:e.beleg.kontakt_name }}</strong></label></span>
+        <strong>{{ e.beleg.brutto|euro }}</strong>
+      </div>
+      <div class="zeile neben"><span>Angebot {{ e.beleg.nummer }} vom {{ e.beleg.belegdatum|datum }}</span><span class="marke-status warnung">gültig bis {{ e.gueltig_bis|datum }}</span></div>
+      <div class="knopfreihe">
+        <a class="knopf zweitrangig" href="{% url 'dunning:angebot_vorschau' e.pk %}">Vorschau</a>
+        <button type="submit" class="zweitrangig" form="angebot-verwerfen{{ e.pk }}">Nicht nachfassen</button>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  <div class="knopfreihe"><button type="submit">Markierte Erinnerungen freigeben</button></div>
+</form>
+{% for e in erinnerungen %}<form method="post" action="{% url 'dunning:angebot_verwerfen' e.pk %}" id="angebot-verwerfen{{ e.pk }}">{% csrf_token %}</form>{% endfor %}
+{% endif %}
+{% if erinnerungen_fehler %}
+<h2>Angebots-Erinnerung fehlgeschlagen</h2>
+<ul class="liste">{% for e in erinnerungen_fehler %}<li><div class="zeile"><strong>{{ e.beleg.kontakt_name }}</strong><span>Angebot {{ e.beleg.nummer }}</span></div><div class="meldung fehler">{{ e.fehler }}</div>
+  <form method="post" action="{% url 'dunning:angebot_verwerfen' e.pk %}" class="knopfreihe">{% csrf_token %}<button type="submit" class="zweitrangig">Ausblenden</button></form></li>{% endfor %}</ul>
+{% endif %}
+
 {% if post %}
 <h2>Postversand vorbereitet</h2>
 <ul class="liste">

@@ -7,7 +7,7 @@ from jobs.queue import enqueue
 from jobs.registry import job, zeitplan
 from jobs.worker import JobAbbruch
 
-from . import sammelmail
+from . import angebote, sammelmail
 from .models import Mahnplan
 from .versand import versand_job
 from .vorschlaege import vorschlagslauf
@@ -31,9 +31,11 @@ def _vorschlaege(j: Job) -> None:
     if j.firma is None:
         raise JobAbbruch("Firma fehlt")
     vorschlagslauf(j.firma)
+    angebote.vorschlaege_erzeugen(j.firma)  # ADR-009: Erinnerungen an Angebote kurz vor Ablauf
 
 
 job("dunning.versenden")(versand_job)
+job("dunning.angebot_erinnern")(angebote.versand_job)
 
 
 @job("dunning.sammelmails_pruefen")

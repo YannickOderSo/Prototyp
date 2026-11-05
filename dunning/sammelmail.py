@@ -67,6 +67,9 @@ def inhalt(firma: Firma, jetzt: datetime | None = None) -> tuple[str, str, int]:
             summe = sum((v.gesamt for v in liste), Decimal("0.00"))
             zeilen.append(f"- {label}: {liste.count()} (zusammen {euro(summe)})")
             anzahl += liste.count()
+    from .models import Angebotserinnerung
+
+    erinnerungen = Angebotserinnerung.objects.fuer(firma).filter(status=Angebotserinnerung.Status.VORGESCHLAGEN).count()
     klaerung = len(klaerung_noetig(firma, timezone.localdate(jetzt)))
     link = settings.BASIS_URL + reverse("dunning:freigabe")
     if anzahl:
@@ -77,6 +80,11 @@ def inhalt(firma: Firma, jetzt: datetime | None = None) -> tuple[str, str, int]:
     else:
         betreff = "Diese Woche keine Mahnungen zur Freigabe"
         text = "Guten Morgen,\n\ndiese Woche liegen keine Erinnerungen oder Mahnungen zur Freigabe vor.\n"
+    if erinnerungen:
+        text += (
+            f"\nAngebote nachfassen: {erinnerungen} Erinnerung{'en' if erinnerungen != 1 else ''} an Kunden "
+            "zu bald ablaufenden Angeboten warten auf Freigabe.\n"
+        )
     if klaerung:
         text += f"\nBei {klaerung} überfälligen Posten fehlt der Kundentyp; diese werden nicht gemahnt.\n"
     text += (

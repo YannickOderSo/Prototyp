@@ -78,6 +78,7 @@ def test_mahnplan_aendern_wird_protokolliert(client_inhaber, firma):
         "text_1": "",
         "betreff_2": "",
         "text_2": "",
+        "angebot_erinnerung_tage": 7,  # M7-05, Pflichtfeld
     }
     antwort = client_inhaber.post(reverse("dunning:mahnplan"), daten)
     assert antwort.status_code == 302

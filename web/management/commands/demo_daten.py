@@ -200,6 +200,9 @@ class Command(BaseCommand):
             freigegeben_am=jetzt - timedelta(days=20),
         )
         vorschlagslauf(firma, heute)
+        from dunning.angebote import vorschlaege_erzeugen
+
+        vorschlaege_erzeugen(firma, heute)  # Erinnerung zum bald ablaufenden Angebot der Praxis (ADR-009)
         # Eine Erfassung (Sprachmemo) wartet in der Prüfansicht; Preise kommen aus den Artikeln
         erfassung = Erfassung.objects.create(
             firma=firma,

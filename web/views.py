@@ -68,7 +68,12 @@ def reiter_daten(firma: Firma, ansicht: str, heute: date) -> dict[str, object]:
             "ohne_faelligkeit": offen.filter(faellig_am__isnull=True).count(),
         }
     if ansicht == "angebote":
+        from dunning.models import Angebotserinnerung
+
         return {
+            "erinnerungen_offen": Angebotserinnerung.objects.fuer(firma)
+            .filter(status=Angebotserinnerung.Status.VORGESCHLAGEN)
+            .count(),
             "ak": angebote.kennzahlen(firma, heute - timedelta(days=90), heute, heute),
             "offene_angebote": angebote.offene(firma, heute)[:8],
             "bald": angebote.bald_ablaufend(firma, heute),

@@ -48,6 +48,11 @@ class Mahnplan(FirmaModel):
     text_1 = models.TextField(blank=True)
     betreff_2 = models.CharField(max_length=200, blank=True)
     text_2 = models.TextField(blank=True)
+    # ADR-009: Erinnerung an Angebote kurz vor Ablauf, nur nach Freigabe
+    angebot_erinnerung_aktiv = models.BooleanField("Angebote vor Ablauf nachfassen (nach Ihrer Freigabe)", default=True)
+    angebot_erinnerung_tage = models.PositiveSmallIntegerField("Erinnerung so viele Tage vor Ablauf", default=7)
+    betreff_angebot = models.CharField(max_length=200, blank=True)
+    text_angebot = models.TextField(blank=True)
     geaendert = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -69,6 +74,8 @@ class Mahnplan(FirmaModel):
             fehler["abstand_tage"] = f"Der Mindestabstand beträgt {MINDESTABSTAND_TAGE} Tage."
         if self.tage_erinnerung < 1:
             fehler["tage_erinnerung"] = "Erinnerungen frühestens einen Tag nach Fälligkeit."
+        if not 1 <= self.angebot_erinnerung_tage <= 30:
+            fehler["angebot_erinnerung_tage"] = "Bitte zwischen 1 und 30 Tagen wählen."
         if fehler:
             raise ValidationError(fehler)
 
@@ -200,3 +207,37 @@ class Sammelmail(FirmaModel):
 
     def __str__(self) -> str:
         return f"Sammelmail {self.woche}"
+
+
+class Angebotserinnerung(FirmaModel):
+    """Erinnerung an ein Angebot kurz vor Ablauf, an den Endkunden, nur nach Freigabe (ADR-009)."""
+
+    class Status(models.TextChoices):
+        VORGESCHLAGEN = "vorgeschlagen", "zur Freigabe"
+        FREIGEGEBEN = "freigegeben", "freigegeben, Versand läuft"
+        VERSENDET = "versendet", "versendet"
+        VERWORFEN = "verworfen", "verworfen"
+        FEHLER = "fehler", "Fehler"
+
+    beleg = models.ForeignKey("ledger.Beleg", on_delete=models.CASCADE, related_name="angebotserinnerungen")
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.VORGESCHLAGEN)
+    erstellt_am = models.DateTimeField(default=timezone.now)
+    gueltig_bis = models.DateField(null=True, blank=True, help_text="Ablaufdatum beim Vorschlag")
+    freigegeben_von = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    freigegeben_am = models.DateTimeField(null=True, blank=True)
+    versendet_am = models.DateTimeField(null=True, blank=True)
+    empfaenger = models.EmailField(blank=True)
+    message_id = models.CharField(max_length=300, blank=True)
+    verworfen_grund = models.CharField(max_length=300, blank=True)
+    fehler = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Angebotserinnerung"
+        verbose_name_plural = "Angebotserinnerungen"
+        constraints = [models.UniqueConstraint(fields=["beleg"], name="angebotserinnerung_je_angebot")]
+        indexes = [models.Index(fields=["firma", "status"], name="angebotserinnerung_status_idx")]
+
+    def __str__(self) -> str:
+        return f"Erinnerung zu {self.beleg}"

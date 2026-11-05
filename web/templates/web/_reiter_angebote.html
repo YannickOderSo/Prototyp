@@ -5,6 +5,7 @@
   <div class="kennzahl gut"><div class="label">Angenommen (90 Tage)</div><div class="wert">{{ ak.angenommen_volumen|euro }}</div><div class="label">{{ ak.angenommen }} von {{ ak.verschickt }} Angeboten</div></div>
   <div class="kennzahl"><div class="label">Annahmequote</div><div class="wert">{% if ak.quote is None %}–{% else %}{{ ak.quote }} %{% endif %}</div><div class="label">{{ ak.abgelehnt }} abgelehnt · {{ ak.abgelaufen }} abgelaufen</div></div>
 </section>
+{% if erinnerungen_offen and request.darf_freigeben %}<p class="meldung warnung">{{ erinnerungen_offen }} Erinnerung{{ erinnerungen_offen|pluralize:"en" }} an Kunden wart{{ erinnerungen_offen|pluralize:"et,en" }} auf Ihre Freigabe. <a class="knopf" href="{% url 'dunning:freigabe' %}#angebote">Jetzt ansehen</a></p>{% endif %}
 <section class="karte" aria-labelledby="a-offen">
   <h2 id="a-offen">Offene Angebote nach Ablauf</h2>
   {% include "web/_angebote_liste.html" with liste=offene_angebote %}
