@@ -55,7 +55,9 @@ class Laufergebnis:
 
 
 def vorschlaege_von(beleg: Beleg) -> list[Mahnvorschlag]:
-    return list(beleg.mahnvorschlaege.all())  # type: ignore[attr-defined]  # Rückrelation aus dunning
+    # Rückrelation aus dunning (mit prefetch_related vorgeladen); getattr, weil mypy sie je nach Lauf nicht kennt
+    vorschlaege: list[Mahnvorschlag] = list(getattr(beleg, "mahnvorschlaege").all())  # noqa: B009
+    return vorschlaege
 
 
 def pausiert(beleg: Beleg, heute: date) -> bool:
