@@ -284,3 +284,27 @@ Die großen Punkte stehen als Konzept in [[Konzept-Erweiterungen]]: Abo-Verwaltu
 - Ablaufdatum und Status echter Lexware-Angebote.
 - Das Angebots-PDF (`/v1/quotations/{id}/file`).
 - Prüfen, ob die Belegliste `voucherDateFrom` für Angebote wie dokumentiert filtert.
+
+## Bericht M8 KI-Telefonassistent, Prototyp (5. November 2026)
+
+Wunsch von Lukas (Punkt 10). Yannick hat entschieden: Live-Gespräch mit KI, im Pilot für alle Betriebe einschaltbar. Die Entscheidung steht in [[ADR-010-KI-Telefonassistent]].
+
+**Gebaut (App `telefon`):**
+- Feste Ansage mit Pflichthinweis: digitaler Assistent, Umwandlung in Text, Auflegen möglich, Notruf 112. Die Begrüßung ist je Betrieb anpassbar.
+- Gesprächsführung mit Claude über Bedrock EU und strukturierter Antwort. Sie erfragt Name, Anliegen, Rückrufnummer, Dringlichkeit und die beste Zeit.
+- Der Code prüft jede Antwort und ersetzt Beträge und Terminzusagen. Höchstens 8 Runden.
+- Ausfallbetrieb mit festen Fragen, wenn die KI ausfällt, das Limit erreicht ist oder Zugangsdaten fehlen. Auch wer aufgelegt hat, erzeugt eine Notiz.
+- Rückruf-Notizen mit Dringlichkeit, „erledigt“ samt interner Notiz und Zähler in der Navigation. Die Mail ans Team nennt nur Name, Dringlichkeit und Link.
+- Testanruf im Browser per Text oder Mikrofon. Die Antwort liest eine lokale Stimme des Browsers vor.
+- Telefonie:
+  - Anmeldung durch Asterisk per HTTPS mit Geheimnis; die Firma wird über die angerufene Nummer zugeordnet.
+  - AudioSocket-Dienst `telefon_dienst` mit Sprechpausen-Erkennung, Voxtral je Beitrag und Piper-Sprachausgabe. Audio wird nie gespeichert.
+- Beispielkonfiguration für Asterisk, Betriebshandbuch Abschnitt 11, Löschfristen (90 Tage bzw. 12 Monate), IDOR-Fälle, Demo-Daten.
+
+**Tests:** 25 neue Tests, darunter ein simulierter Anruf über AudioSocket von der Ansage über zwei Runden bis zur Notiz, Auflegen nach der Ansage, eine unbekannte UUID und Piper mit Ersatzprogramm. Der Testanruf wurde im Browser durchgeklickt. Lokal lief er im Ausfallbetrieb, weil hier kein freigeschalteter AWS-Zugang besteht.
+
+**Nicht getestet, vor echten Anrufen nötig:**
+- Kein echter Anruf: Es gibt noch keinen SIP-Trunk und keine Rufnummer, Asterisk ist nicht installiert.
+- Keine echte Piper-Stimme und kein Bedrock-Aufruf mit echtem Modell; die Antwortzeit ist ungemessen.
+- Die Sprechpausen-Erkennung ist nur mit synthetischem Audio getestet. Schwellwerte mit echten Telefonaten einstellen.
+- Rechtliche Prüfung von Ansage und AVV. Die Lizenz der Stimme prüfen.
