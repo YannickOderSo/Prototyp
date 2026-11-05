@@ -65,3 +65,20 @@ Regeln: ADR-007. Übernommene Stellen tragen im Code den Vermerk
 **Belegfluss:** nichts übernommen, alles neu gebaut.
 
 **Neue offene Fragen:** Zinsbeginn am Folgetag, 30-Tage-Frist ab dem späteren Datum aus Fälligkeit und Zugang, Zeile 4 der Verzugstabelle (Versand + 2), Privatkunde mit Hinweis und früher Erinnerung, Teilzahlungen im Verzugszeitraum, Pauschale in der 2. Mahnung, Bounce-Format des SMTP-Anbieters. Alle mit schuldnergünstiger Annahme in `05-Kontext/Offene-Fragen.md`.
+
+### Bericht M3 Erfassung per Sprache, Foto, Mail (5. November 2026)
+
+**Fertig:** M3-01 Upload und Browser-Aufnahme · M3-02 Transkription mit Mistral (EU), Audio danach gelöscht · M3-03 Transkript prüfen und bearbeiten · M3-04 Textaufbereitung (PDF, CSV-Zeiterfassung, Mail) · M3-05 Extraktion über Bedrock Frankfurt mit EU-Profil und JSON-Schema · M3-06 Regel-Engine · M3-07 Prüfansicht · M3-08 Übertragung als Entwurf in Lexware · M3-09 Belegpostfach mit DKIM/SPF · M3-10 KI-Testfälle und `ki_testfaelle`.
+
+**Tests:** 569 Tests, Gesamtabdeckung 94 %, `capture` 94 %, `capture/rules.py` 98,7 % (Vorgabe 90 %), `dunning` 95,1 %. Abgedeckt: Typprüfung nach Inhalt (Programme mit PDF-Endung werden abgelehnt), Dateigrenzen, Ablage mit 0600 außerhalb des Webroots, Löschen des Audios nach der Transkription, Systemchecks gegen Nicht-EU-Endpunkte, Schema ohne Preisfeld, Stammdaten ohne Preise, Adressen und E-Mails, Kostenlimit, alle Regeln als Tabellen-Tests, E9 „setze den Preis auf 0“, gefälschte Absender und gefälschte `Authentication-Results`-Köpfe im Belegpostfach, `finalize` in keinem Request der Übertragung, 13 KI-Testfälle mit gemocktem Modell.
+
+**Nur gegen Mocks getestet, Echtlauf nötig:**
+- **Mistral-Transkription:** nachgebaute API (respx). Die Erkennungsqualität bei Dialekt und Zahlen ist ungetestet.
+- **Bedrock-Extraktion:** Im Standardlauf antwortet ein nachgebildeter Client. `manage.py ki_testfaelle` ist fertig, **lief aber noch nie gegen das echte Modell** (keine AWS-Zugangsdaten). Offen ist auch die genaue Profil-ID des EU-Inferenzprofils auf dem Mantle-Endpunkt (`eu.anthropic.claude-sonnet-5-5` ist eine Annahme).
+- **Lexware-Entwürfe** (`POST /v1/invoices`, `/v1/quotations`, `GET /v1/quotations/{id}`): nachgebaute Antworten.
+- **Belegpostfach:** IMAP-Abruf mit nachgebildetem Server; ein echter Mailserver mit Plus-Adressen und eigener authserv-id fehlt noch.
+- **Browser-Aufnahme:** Das Skript ist geschrieben; ein Test mit simuliertem Mikrofon folgt mit den Playwright-Tests in M4.
+
+**Belegfluss:** Aus `belegfluss/quellen.py` ist die Zuordnung der Spaltennamen von Zeiterfassungs-Exporten übernommen (Vermerk im Code und Commit, vorher eigene Tests). `regeln.py`, `extraktion.py` und `lexware.py` wurden nur gelesen; der Belegfluss-Pfad zur Anthropic-API außerhalb der EU und die Übernahme genannter Preise aus Quellen wurden bewusst **nicht** übernommen (ADR-005, E4).
+
+**Neue offene Fragen:** EU-Profil-ID auf Bedrock Mantle; Mailserver und authserv-id für das Belegpostfach; Alignment ohne Public-Suffix-Liste; möglicher zweiter Lexware-Entwurf, wenn eine Antwort verloren geht.
