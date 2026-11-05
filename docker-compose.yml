@@ -1,0 +1,64 @@
+# Lokale Entwicklung: Postgres, Web, Worker und Mailpit (Test-Mailbox).
+# Produktion: docker-compose.prod.yml (mit Caddy, ohne Mailpit).
+name: cockpit
+
+x-app: &app
+  build: .
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    DATABASE_URL: postgres://cockpit:cockpit@db:5432/cockpit
+    EMAIL_HOST: mailpit
+    EMAIL_PORT: "1025"
+    DJANGO_DEBUG: "true"
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-nur-lokal-kein-geheimnis}
+    COCKPIT_FERNET_KEYS: ${COCKPIT_FERNET_KEYS:-TG9rYWwtbnVyLWZ1ZXItRW50d2lja2x1bmctMTIzNDU=}
+  volumes:
+    - dateien:/data/dateien
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: cockpit
+      POSTGRES_PASSWORD: cockpit
+      POSTGRES_DB: cockpit
+    volumes:
+      - pgdaten:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cockpit"]
+      interval: 5s
+      retries: 10
+
+  web:
+    <<: *app
+    command: ["web"]
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  worker:
+    <<: *app
+    command: ["worker"]
+    environment:
+      DATABASE_URL: postgres://cockpit:cockpit@db:5432/cockpit
+      EMAIL_HOST: mailpit
+      EMAIL_PORT: "1025"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-nur-lokal-kein-geheimnis}
+      COCKPIT_FERNET_KEYS: ${COCKPIT_FERNET_KEYS:-TG9rYWwtbnVyLWZ1ZXItRW50d2lja2x1bmctMTIzNDU=}
+      COCKPIT_MIGRATE_ON_START: "0"
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+
+volumes:
+  pgdaten:
+  dateien:
