@@ -61,6 +61,8 @@ Für jeden Punkt gilt: Daten nur in der EU (ADR-005), nichts mit Außenwirkung o
 
 ## 4. KI-Telefonassistent
 
+**Stand 5. November 2026:** Yannick hat das Live-Gespräch gewählt; Umsetzung als Prototyp in M8, siehe [[ADR-010-KI-Telefonassistent]]. Der folgende Abschnitt bleibt als Hintergrund.
+
 **Ziel (Lukas):** verpasste Anrufe annehmen und die wichtigsten Angaben aufnehmen: Name, Anliegen, Rückrufnummer, Dringlichkeit. **Keine** Terminkalender-Anbindung, nur Notizen für den Rückruf. Upsell für etwa 50 € im Monat.
 
 **Empfehlung, Stufe 1 „intelligente Mailbox“:**

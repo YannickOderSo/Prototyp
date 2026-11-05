@@ -112,6 +112,21 @@ Rückmeldung vom 5. November 2026, Entscheidungen von Yannick am selben Tag. Die
 | I6 SOLL | Hinweis zur E-Rechnung: Lexware erzeugt E-Rechnungen beim Abschließen; Pflichten nach Kundentyp und Datum verständlich erklärt | Hinweis bei Rechnungsentwürfen an Unternehmer und in den Lexware-Einstellungen |
 | I7 – | PDF im Anhang: Erinnerungen tragen die Rechnung, Mahnungen das Mahnungs-PDF aus Lexware, Angebots-Erinnerungen das Angebots-PDF | bereits umgesetzt (D7, M2-05) bzw. mit I4 |
 
+## J. KI-Telefonassistent (Meilenstein 8, Prototyp)
+
+Entscheidung in ADR-010. Live-Gespräch, nur Rückruf-Notizen, kein Kalender. Im Pilot für alle Betriebe einschaltbar.
+
+| ID | Anforderung | Abnahme |
+| --- | --- | --- |
+| J1 MUSS | Feste Ansage mit Pflichthinweis (digitaler Assistent, Umwandlung in Text und Speicherung, Auflegen möglich, Notruf 112); Begrüßung je Betrieb anpassbar | Pflichthinweis lässt sich nicht entfernen (Test) |
+| J2 MUSS | Gesprächsführung erfragt Name, Anliegen, Rückrufnummer (bestätigt die übertragene Nummer), Dringlichkeit, ggf. beste Rückrufzeit; höchstens 8 Runden | Gespräch endet mit fester Verabschiedung und einer Rückruf-Notiz |
+| J3 MUSS | KI nennt keine Preise, sagt keine Termine zu, berät nicht; im Code geprüft | Antwort mit „€“ oder Terminzusage wird ersetzt (Test) |
+| J4 MUSS | Ausfallbetrieb ohne KI mit festen Fragen; aufgelegte Anrufe als „Anruf ohne Nachricht“ | Notiz entsteht auch bei KI-Fehler oder Limit |
+| J5 MUSS | Rückruf-Notizen: Liste mit Dringlichkeit, Detail mit Verlauf, „erledigt“ mit Notiz; Mail an das Team nur mit Name, Dringlichkeit und Link | Protokoll für Anlage und Erledigung |
+| J6 MUSS | Testanruf im Browser (Text und Mikrofon), gleiche Gesprächsführung, Kennzeichen „Test“ | Funktioniert ohne Telefonie |
+| J7 MUSS | Telefonie: Anmeldung des Anrufs durch Asterisk per HTTPS mit Geheimnis; Audio über AudioSocket; Spracherkennung je Beitrag (Voxtral), Sprachausgabe Piper; Zuordnung der Firma über die angerufene Nummer | Simulierter Anruf über AudioSocket im Test ergibt Rückruf-Notiz |
+| J8 MUSS | Löschfristen: Verlauf 90 Tage, Notizen 90 Tage nach Erledigung bzw. 12 Monate | im Löschjob mit Test |
+
 ## G. sevdesk (Meilenstein 5)
 
 | ID | Anforderung | Abnahmekriterium |

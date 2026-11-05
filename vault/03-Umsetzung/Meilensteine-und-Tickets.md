@@ -93,3 +93,14 @@ Rückmeldung von Lukas, Umfang am 5. November 2026 von Yannick entschieden: Die 
 - [x] **M7-05** Angebots-Erinnerung an den Endkunden nach Freigabe (I4, ADR-009).
 - [x] **M7-06** Profil-Menü mit Avataren (I5).
 - [x] **M7-07** Hinweis zur E-Rechnung (I6).
+
+## M8 KI-Telefonassistent (Prototyp, nach M7)
+
+Wunsch von Lukas, Entscheidung von Yannick am 5. November 2026: Live-Gespräch, im Pilot für alle einschaltbar. Echte Anrufe erst nach SIP-Trunk, Asterisk-Installation und rechtlicher Prüfung (ADR-010).
+
+- [x] **M8-01** Spezifikation J1–J8, ADR-010, Tickets.
+- [ ] **M8-02** Modelle und Gesprächsführung mit Pflichtansage, Grenzen, Ausfallbetrieb und Rückruf-Notiz (J1–J4).
+- [ ] **M8-03** Rückruf-Notizen, Einstellungen, Benachrichtigung, Navigation, Löschfristen (J5, J8).
+- [ ] **M8-04** Testanruf im Browser (J6).
+- [ ] **M8-05** Telefonie: Anmeldung durch Asterisk, AudioSocket-Dienst, Spracherkennung und Sprachausgabe, Betriebshandbuch (J7).
+- [ ] **M8-06** Kostenkalkulation Telefonassistent, Vault, Demo, Go-Live-Checkliste.
