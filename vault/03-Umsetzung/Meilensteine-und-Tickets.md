@@ -74,8 +74,8 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 Grundlage: ADR-008, Anforderungen H1–H9. Entschieden am 5. November 2026.
 
 - [ ] **M6-01** Spezifikation, ADR-008, Tickets, Datenmodell (H1–H9).
-- [ ] **M6-02** Excel und CSV einlesen: Tabellenblatt, Kopfzeile, deutsche Zahlen und Daten, Schutz vor übergroßen Dateien (H1).
-- [ ] **M6-03** Spaltenzuordnung mit Vorschlägen und Vorlagen zum Herunterladen (H2).
+- [x] **M6-02** Excel und CSV einlesen: Tabellenblatt, Kopfzeile, deutsche Zahlen und Daten, Schutz vor übergroßen Dateien (H1).
+- [x] **M6-03** Spaltenzuordnung mit Vorschlägen und Vorlagen zum Herunterladen (H2).
 - [ ] **M6-04** Kunden-Import nach Lexware mit Vorschau, Dubletten, Freigabe, Job und Protokoll; Kundentyp nur nach Bestätigung (H3, H4, H9).
 - [ ] **M6-05** Artikel-Import nach Lexware mit Vorschau, Dubletten, Freigabe, Job und Protokoll (H3, H5, H9).
 - [ ] **M6-06** Offene Posten aus Excel nur im Cockpit, vom Lexware-Abgleich ausgenommen, Zahlstatus von Hand (H6, H7).

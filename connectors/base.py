@@ -89,6 +89,9 @@ class ContactDraft:
     land: str = "DE"
     telefon: str = ""
     notiz: str = ""
+    # nur bei Firmen: Ansprechpartner
+    ansprechpartner_vorname: str = ""
+    ansprechpartner_nachname: str = ""
 
 
 @dataclass(frozen=True)

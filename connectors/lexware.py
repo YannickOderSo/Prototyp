@@ -399,6 +399,13 @@ class LexwareConnector:
         daten: dict[str, Any] = {"version": 0, "roles": {"customer": {}}}
         if draft.ist_firma:
             daten["company"] = {"name": draft.name}
+            if draft.ansprechpartner_nachname:
+                ansprechpartner: dict[str, Any] = {"lastName": draft.ansprechpartner_nachname, "primary": True}
+                if draft.ansprechpartner_vorname:
+                    ansprechpartner["firstName"] = draft.ansprechpartner_vorname
+                if draft.email:
+                    ansprechpartner["emailAddress"] = draft.email
+                daten["company"]["contactPersons"] = [ansprechpartner]
         else:
             person: dict[str, Any] = {"lastName": draft.name}
             if draft.vorname:
