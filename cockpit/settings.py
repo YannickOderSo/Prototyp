@@ -179,8 +179,14 @@ MISTRAL_MODELL = env.str("MISTRAL_MODELL", default="voxtral-mini-latest")
 BEDROCK_REGION = env.str("BEDROCK_REGION", default="eu-central-1")
 # EU-Inferenzprofil (Präfix "eu."): Routing nur innerhalb der EU. "global." und "us." blockiert ein Systemcheck.
 BEDROCK_MODELL = env.str("BEDROCK_MODELL", default="eu.anthropic.claude-sonnet-5-5")
-# KI-Telefonassistent (ADR-010): eigenes Modell möglich (schnellere Antworten); leer = BEDROCK_MODELL
-TELEFON_MODELL = env.str("TELEFON_MODELL", default="")
+# KI-Telefonassistent (ADR-010): schnelles Modell, nur EU-Profil (Systemcheck cockpit.E004); leer = BEDROCK_MODELL
+TELEFON_MODELL = env.str("TELEFON_MODELL", default="eu.anthropic.claude-haiku-5-5")
+# Sprachausgabe: "voxtral" (Mistral EU, Standard) oder "piper" (nur mit freigegebener Stimme, Offene-Fragen.md)
+TELEFON_SPRACHAUSGABE = env.str("TELEFON_SPRACHAUSGABE", default="voxtral")
+MISTRAL_TTS_MODELL = env.str("MISTRAL_TTS_MODELL", default="voxtral-mini-tts-3-0")
+MISTRAL_TTS_STIMME = env.str("MISTRAL_TTS_STIMME", default="voice_481")  # „Heidi“, deutsche Voxtral-3-Stimme
+# Eigenes Monatslimit des Telefons je Firma (getrennt vom KI-Limit der Erfassung); darüber Ausfallbetrieb ohne KI
+TELEFON_LIMIT_GESPRAECHE_MONAT = env.int("TELEFON_LIMIT_GESPRAECHE_MONAT", default=400)
 TELEFON_ASTERISK_TOKEN = env.str("TELEFON_ASTERISK_TOKEN", default="")
 TELEFON_AUDIOSOCKET_HOST = env.str("TELEFON_AUDIOSOCKET_HOST", default="127.0.0.1")
 TELEFON_AUDIOSOCKET_PORT = env.int("TELEFON_AUDIOSOCKET_PORT", default=9092)

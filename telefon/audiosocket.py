@@ -4,8 +4,8 @@ Ablauf je Anruf:
 1. Asterisk meldet den Anruf per HTTPS an (`/telefon/asterisk/anruf/`) und bekommt die Gesprächs-UUID.
 2. Asterisk verbindet sich mit diesem Dienst: `AudioSocket(<uuid>,<host>:<port>)`.
 3. Der Dienst spricht die Ansage, erkennt Sprechpausen, lässt jeden Beitrag transkribieren (Voxtral), holt die Antwort
-   der Gesprächsführung und spricht sie (Piper). Während der Assistent spricht, wird eingehendes Audio verworfen
-   (kein Ins-Wort-Fallen im Prototyp).
+   der Gesprächsführung und spricht sie (Voxtral TTS oder Piper). Während der Assistent spricht, wird eingehendes
+   Audio verworfen (kein Ins-Wort-Fallen im Prototyp).
 4. Ende nach der Verabschiedung, nach 4 Minuten oder wenn der Anrufer auflegt. Audio wird nie gespeichert.
 
 Protokoll (AudioSocket): 1 Byte Art, 2 Byte Länge (big-endian), Nutzlast.

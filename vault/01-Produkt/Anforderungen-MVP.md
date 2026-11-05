@@ -124,7 +124,7 @@ Entscheidung in ADR-010. Live-Gespräch, nur Rückruf-Notizen, kein Kalender. Im
 | J4 MUSS | Ausfallbetrieb ohne KI mit festen Fragen; aufgelegte Anrufe als „Anruf ohne Nachricht“ | Notiz entsteht auch bei KI-Fehler oder Limit |
 | J5 MUSS | Rückruf-Notizen: Liste mit Dringlichkeit, Detail mit Verlauf, „erledigt“ mit Notiz; Mail an das Team nur mit Name, Dringlichkeit und Link | Protokoll für Anlage und Erledigung |
 | J6 MUSS | Testanruf im Browser (Text und Mikrofon), gleiche Gesprächsführung, Kennzeichen „Test“ | Funktioniert ohne Telefonie |
-| J7 MUSS | Telefonie: Anmeldung des Anrufs durch Asterisk per HTTPS mit Geheimnis; Audio über AudioSocket; Spracherkennung je Beitrag (Voxtral), Sprachausgabe Piper; Zuordnung der Firma über die angerufene Nummer | Simulierter Anruf über AudioSocket im Test ergibt Rückruf-Notiz |
+| J7 MUSS | Telefonie: Anmeldung des Anrufs durch Asterisk per HTTPS mit Geheimnis; Audio über AudioSocket; Spracherkennung je Beitrag (Voxtral), Sprachausgabe Voxtral TTS (EU; Piper nur mit gewerblich freigegebener Stimme); eigenes Monatslimit je Firma, getrennt vom KI-Limit der Erfassung; Zuordnung der Firma über die angerufene Nummer | Simulierter Anruf über AudioSocket im Test ergibt Rückruf-Notiz |
 | J8 MUSS | Löschfristen: Verlauf 90 Tage, Notizen 90 Tage nach Erledigung bzw. 12 Monate | im Löschjob mit Test |
 
 ## G. sevdesk (Meilenstein 5)

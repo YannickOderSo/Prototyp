@@ -94,7 +94,13 @@ def einstellungen(request: FirmaRequest) -> HttpResponse:
     return render(
         request,
         "telefon/einstellungen.html",
-        {"form": form, "einstellung": einstellung, "ansage": fuehrung.ansage(request.firma)},
+        {
+            "form": form,
+            "einstellung": einstellung,
+            "ansage": fuehrung.ansage(request.firma),
+            "verbrauch": fuehrung.monatsverbrauch(request.firma),
+            "limit": settings.TELEFON_LIMIT_GESPRAECHE_MONAT,
+        },
     )
 
 

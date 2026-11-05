@@ -270,11 +270,13 @@ Vor dem ersten Pilotbetrieb, in dieser Reihenfolge. Alles hier ist bisher nur mi
    - Er hört auf `TELEFON_AUDIOSOCKET_HOST:PORT`, Standard `127.0.0.1:9092`, also nur lokal.
    - Ohne `TELEFON_ASTERISK_TOKEN` startet er nicht.
    - Er läuft als eigener Prozess neben web und worker, z. B. als weiterer Compose-Dienst mit demselben Image und dem Befehl `python manage.py telefon_dienst`.
-4. **Piper** (Sprachausgabe) im Image bzw. auf dem Server:
-   - `PIPER_BEFEHL` ist der Pfad zum Programm.
-   - `PIPER_MODELL` ist der Pfad zur deutschen Stimme (`.onnx`). Die `.onnx.json` muss daneben liegen, denn sie enthält die Abtastrate.
-   - Die Lizenz der Stimme vor dem Einsatz prüfen.
-5. Optional `TELEFON_MODELL` für ein schnelleres Modell, nur ein EU-Inferenzprofil. Sonst gilt `BEDROCK_MODELL`.
+4. **Sprachausgabe:** Standard ist Mistral Voxtral TTS (`TELEFON_SPRACHAUSGABE=voxtral`). Sie nutzt denselben `MISTRAL_API_KEY` wie die Spracherkennung, dazu `MISTRAL_TTS_MODELL` (`voxtral-mini-tts-3-0`) und `MISTRAL_TTS_STIMME` (`voice_481`, „Heidi“).
+   - Piper nur mit einer gewerblich freigegebenen Stimme: `TELEFON_SPRACHAUSGABE=piper`, `PIPER_BEFEHL` und `PIPER_MODELL` (`.onnx`, die `.onnx.json` daneben). „thorsten“ ist nicht freigegeben (Offene-Fragen.md).
+   - Für einen Einzelstart geht auch `python manage.py telefon_dienst --stimme piper`.
+5. `TELEFON_MODELL` steht auf `eu.anthropic.claude-haiku-5-5` (schnell, günstig, Mitdenken aus). Nur EU-Profile, sonst meldet der Systemcheck `cockpit.E004`.
+6. `TELEFON_LIMIT_GESPRAECHE_MONAT` (Standard 400) begrenzt die Gespräche je Firma und Monat; darüber Ausfallbetrieb. Die Nutzung sieht der Inhaber unter Einstellungen → KI-Telefonassistent.
+
+**Abos und Kosten (Stand 5. November 2026, Details in [[Kostenkalkulation-Telefonassistent]]):** easybell Business 10 (4,95 €/Monat) mit 100er-Rufnummernblock (49,95 € einmalig), Hetzner AX41 (59 €/Monat), Mistral und Bedrock nach Verbrauch (zusammen ca. 1,4 ct je Anruf). Budget-Alarm in AWS und Ausgabenlimit bei Mistral einrichten.
 
 **Neuen Betrieb freischalten**
 1. Eine Rufnummer aus dem Trunk zuteilen. In der Admin-Shell: `Telefonassistent.objects.update_or_create(firma=…, defaults={"rufnummer": "+49…"})`. Die Nummer muss eindeutig sein.
@@ -285,12 +287,13 @@ Vor dem ersten Pilotbetrieb, in dieser Reihenfolge. Alles hier ist bisher nur mi
 - *Anrufer hört eine Fehleransage:* Die Anmeldung bei Belegfluss ist gescheitert.
   - Prüfen, ob das Token im Dialplan und in der App gleich ist.
   - Prüfen, ob die Nummer zugeteilt und der Assistent eingeschaltet ist. Antwort 404 bedeutet „unbekannt oder aus“.
-- *Assistent schweigt:* `telefon_dienst` läuft nicht, oder Piper bzw. die Stimme fehlt. Siehe Logs.
-- *Assistent stellt nur feste Fragen:* Das ist der Ausfallbetrieb, weil Bedrock nicht erreichbar oder das KI-Limit erreicht ist. Das Protokoll zeigt `telefon.ausfallbetrieb`. Die Notizen entstehen trotzdem.
+- *Assistent schweigt oder legt sofort auf:* `telefon_dienst` läuft nicht, oder die Sprachausgabe scheitert (Schlüssel, Stimme; Log `SprachausgabeFehler`). Es entsteht dann eine Notiz „Anruf ohne Nachricht“.
+- *Assistent stellt nur feste Fragen:* Das ist der Ausfallbetrieb, weil Bedrock nicht erreichbar oder das Telefon-Limit der Firma erreicht ist. Das Protokoll zeigt `telefon.ausfallbetrieb`. Die Notizen entstehen trotzdem.
 - *Antworten zu langsam (über 4 s):* `TELEFON_MODELL` auf ein schnelleres EU-Profil setzen und die Serverlast prüfen.
 
 **Vor dem ersten echten Anruf (Prüfliste)**
 - Rechtliche Prüfung der Ansage: § 201 StGB, Informationspflichten nach Art. 13 DSGVO. Dazu die AVV mit Telefonie-Anbieter, Mistral und AWS.
-- Lizenz der Piper-Stimme für den gewerblichen Einsatz.
+- Nur bei Piper: Lizenz der Stimme für den gewerblichen Einsatz.
+- Testanrufe aus mehreren Netzen: Kommen gewählte Nummer und Nummer des Anrufers bei der Umleitung an?
 - Lasttest mit mehreren gleichzeitigen Gesprächen.
 - Notrufhinweis in der Ansage, das ist der Pflichtteil. Belegfluss vermittelt keine Notrufe.

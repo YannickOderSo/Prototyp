@@ -11,6 +11,11 @@
   <div class="knopfreihe"><button type="submit">Speichern</button></div>
 </form>
 <section class="karte">
+  <h2>Nutzung in diesem Monat</h2>
+  <p><strong>{{ verbrauch.gespraeche }}</strong> Gespräche, zusammen <strong>{{ verbrauch.minuten }}</strong> Minuten (einschließlich Testanrufen).</p>
+  <p class="hilfe">Ab {{ limit }} Gesprächen im Monat fragt der Assistent nur noch mit festen Sätzen nach Name, Anliegen und Rückrufnummer. Die Rückruf-Notizen entstehen weiter.</p>
+</section>
+<section class="karte">
   <h2>So meldet sich der Assistent</h2>
   <div class="mailtext">{{ ansage }}</div>
   <p class="hilfe">Der Hinweis auf den digitalen Assistenten, die Umwandlung in Text und die 112 gehört immer dazu und lässt sich nicht entfernen.</p>

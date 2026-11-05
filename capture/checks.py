@@ -24,6 +24,14 @@ def eu_endpunkte(app_configs: Any = None, **kwargs: Any) -> list[Error]:
                 id="cockpit.E002",
             )
         )
+    telefon = str(getattr(settings, "TELEFON_MODELL", "") or "")
+    if telefon and not telefon.startswith("eu."):
+        fehler.append(
+            Error(
+                f"TELEFON_MODELL muss ein EU-Inferenzprofil sein (Präfix 'eu.'), nicht {telefon!r}.",
+                id="cockpit.E004",
+            )
+        )
     host = urlparse(str(getattr(settings, "MISTRAL_BASIS_URL", ""))).hostname or ""
     if host not in EU_HOSTS_MISTRAL:
         fehler.append(Error(f"MISTRAL_BASIS_URL muss auf die EU-API zeigen, nicht {host!r}.", id="cockpit.E003"))

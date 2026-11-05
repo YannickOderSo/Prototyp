@@ -308,3 +308,10 @@ Wunsch von Lukas (Punkt 10). Yannick hat entschieden: Live-Gespräch mit KI, im 
 - Keine echte Piper-Stimme und kein Bedrock-Aufruf mit echtem Modell; die Antwortzeit ist ungemessen.
 - Die Sprechpausen-Erkennung ist nur mit synthetischem Audio getestet. Schwellwerte mit echten Telefonaten einstellen.
 - Rechtliche Prüfung von Ansage und AVV. Die Lizenz der Stimme prüfen.
+
+### Nachtrag M8-06: Kostenkalkulation und Anpassungen (5. November 2026)
+- Kostenkalkulation als Excel mit Formeln und PDF mit Rechenwegen (an Yannick geschickt), Zusammenfassung in [[Kostenkalkulation-Telefonassistent]]. Ein Anruf kostet rund 1,4 ct, ein Betrieb mit 60 Anrufen rund 0,82 € im Monat; fest sind 63,95 € im Monat (Server und SIP-Trunk).
+- Sprachausgabe jetzt über Mistral Voxtral TTS (EU) statt Piper-„thorsten“ (Lizenz ungeklärt). Feste Sätze werden im Speicher gehalten.
+- Telefon nutzt Claude Haiku 5.5 (EU-Profil) ohne Mitdenken; neuer Systemcheck `cockpit.E004` für `TELEFON_MODELL`.
+- **Fehler behoben:** Jede Gesprächsrunde zählte gegen das KI-Limit der Erfassung (300 Vorgänge). Schon 60 Anrufe im Monat hätten die Belegerfassung blockiert. Jetzt eigenes Limit (400 Gespräche) und Token-Zähler je Gespräch; Anzeige in den Einstellungen.
+- 9 neue Tests (Voxtral-Anfrage und WAV-Formate, Zwischenspeicher nur für feste Sätze, Fehlerfälle, Haiku ohne Mitdenken, getrenntes Limit, Systemcheck). Voxtral TTS und Haiku 5.5 sind nur gegen nachgebildete Dienste getestet, nicht gegen die echten.

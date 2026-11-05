@@ -103,4 +103,4 @@ Wunsch von Lukas, Entscheidung von Yannick am 5. November 2026: Live-Gespräch, 
 - [x] **M8-03** Rückruf-Notizen, Einstellungen, Benachrichtigung, Navigation, Löschfristen (J5, J8).
 - [x] **M8-04** Testanruf im Browser (J6).
 - [x] **M8-05** Telefonie: Anmeldung durch Asterisk, AudioSocket-Dienst, Spracherkennung und Sprachausgabe, Betriebshandbuch (J7).
-- [ ] **M8-06** Kostenkalkulation Telefonassistent, Vault, Demo, Go-Live-Checkliste.
+- [x] **M8-06** Kostenkalkulation Telefonassistent ([[Kostenkalkulation-Telefonassistent]]), Sprachausgabe Voxtral statt Piper-„thorsten“, eigenes Telefon-Limit, Vault.

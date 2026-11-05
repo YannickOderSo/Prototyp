@@ -69,6 +69,8 @@ class Gespraech(FirmaModel):
     verlauf = models.JSONField(default=list, blank=True, help_text="[{rolle, text}] – Text, nie Audio")
     erfasst = models.JSONField(default=dict, blank=True)
     ausfallbetrieb = models.BooleanField(default=False, help_text="Ohne KI mit festen Fragen geführt")
+    ki_eingabe = models.PositiveIntegerField(default=0, help_text="KI-Eingabe-Token dieses Gesprächs")
+    ki_ausgabe = models.PositiveIntegerField(default=0, help_text="KI-Ausgabe-Token dieses Gesprächs")
     erstellt_von = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )

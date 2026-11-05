@@ -13,7 +13,7 @@ Rückmeldung von Lukas (Punkt 10): Verpasste Anrufe soll eine KI annehmen. Sie s
    - Asterisk meldet jeden Anruf per HTTPS bei Belegfluss an. Dabei übergibt es die gewählte Nummer und die Nummer des Anrufers.
    - Dann streamt Asterisk das Audio über AudioSocket an den Belegfluss-Dienst: 16 Bit, 8 kHz, 20-ms-Pakete.
    - Twilio, Vonage, Vapi, Retell und ähnliche Dienste scheiden aus (ADR-005).
-2. **Spracherkennung** mit Mistral Voxtral (EU) je Gesprächsbeitrag. **Dialog** mit Claude über Bedrock eu-central-1 (EU-Profil). **Sprachausgabe** mit Piper, selbst gehostet auf dem eigenen Server. Kein Audio verlässt die EU, und Audio wird nicht gespeichert.
+2. **Spracherkennung** mit Mistral Voxtral (EU) je Gesprächsbeitrag. **Dialog** mit Claude über Bedrock eu-central-1 (EU-Profil). **Sprachausgabe** mit Mistral Voxtral TTS (EU), siehe Ergänzung unten. Kein Audio verlässt die EU, und Audio wird nicht gespeichert.
 3. **Feste Ansage vor jedem Gespräch, nicht von der KI formuliert.**
    - Die Ansage nennt den Betrieb und sagt, dass hier ein digitaler Assistent spricht.
    - Sie sagt, dass das Gespräch automatisch in Text umgewandelt und gespeichert wird, und dass man auflegen kann.
@@ -43,5 +43,12 @@ Rückmeldung von Lukas (Punkt 10): Verpasste Anrufe soll eine KI annehmen. Sie s
 - **Vor dem ersten echten Anruf** sind nötig:
   - die rechtliche Prüfung (Ansage, § 201 StGB, DSGVO-Informationen, AVV mit Telefonie-Anbieter, Mistral und AWS),
   - ein SIP-Trunk mit Rufnummer,
-  - die Installation von Asterisk und Piper mit deutscher Stimme,
+  - die Installation von Asterisk und des Dienstes `telefon_dienst`,
   - ein Test mit echten Anrufen.
+
+## Ergänzung 5. November 2026 (M8-06, Kostenkalkulation)
+1. **Sprachausgabe: Voxtral TTS statt Piper als Standard.** Die naheliegende deutsche Piper-Stimme „thorsten“ beruht auf einem Datensatz, der nur für Forschung lizenziert ist. Konservativ nutzen wir sie nicht. Standard ist Mistral Voxtral TTS 3 (EU, Stimme „Heidi“, 13 $ je 1 Mio. Zeichen, ca. 0,6 ct je Anruf). Piper bleibt wählbar (`TELEFON_SPRACHAUSGABE=piper`), aber nur mit einer Stimme, deren gewerbliche Nutzung geklärt ist. Feste Sätze (Ansage, Verabschiedung) hält der Dienst im Speicher; Antworten der KI nie.
+   - Folge: Die Antworten des Assistenten (Text) gehen an Mistral in der EU. Das ist derselbe Anbieter und dieselbe Datenhaltung wie bei der Spracherkennung (ADR-005).
+2. **Modell: Claude Haiku 5.5 über das EU-Profil** (`TELEFON_MODELL=eu.anthropic.claude-haiku-5-5`), mit abgeschaltetem Mitdenken für kurze Antwortzeiten. Ein Systemcheck erlaubt nur `eu.`-Profile.
+3. **Eigenes Limit.** Das Telefon zählt nicht mehr gegen das KI-Limit der Erfassung, sonst hätten 60 Anrufe im Monat die Belegerfassung blockiert. Es gilt `TELEFON_LIMIT_GESPRAECHE_MONAT` (Standard 400); darüber Ausfallbetrieb ohne KI. Die Token stehen je Gespräch.
+4. **Telefonie-Anbieter:** easybell SIP-Trunk Business 10 mit Rufnummernblock im Ortsnetz unseres Sitzes (BNetzA-Verfügung 25/2006), Server Hetzner AX41 in Falkenstein. Begründung und Zahlen: [[Kostenkalkulation-Telefonassistent]].

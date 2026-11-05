@@ -123,15 +123,30 @@ def test_ausfallbetrieb_ohne_ki(firma, ki):
     assert g.ausfallbetrieb and Protokolleintrag.objects.filter(ereignis="telefon.ausfallbetrieb").exists()
 
 
-def test_kostenlimit_fuehrt_in_den_ausfallbetrieb(firma, ki, settings):
-    from capture.models import KiVerbrauch
-
-    settings.KI_LIMIT_VORGAENGE_MONAT = 1
-    KiVerbrauch.objects.create(firma=firma, monat=timezone.localdate().strftime("%Y-%m"), vorgaenge=1)
+def test_eigenes_telefonlimit_fuehrt_in_den_ausfallbetrieb(firma, ki, settings):
+    settings.TELEFON_LIMIT_GESPRAECHE_MONAT = 1
+    Gespraech.objects.create(firma=firma)  # erstes Gespräch des Monats
     client = ki(_ki_antwort("sollte nie kommen"))
     g, _ = fuehrung.starten(firma, anrufer_nummer="0301234567")
     assert "Nummer, von der Sie anrufen" in fuehrung.antworten(g, "Heizung ist aus").text
     assert client.messages.aufrufe == []
+
+
+def test_telefon_belastet_das_ki_limit_der_erfassung_nicht(firma, ki, settings):
+    """Viele Anrufe dürfen die Belegerfassung nie blockieren: eigener Zähler am Gespräch statt KiVerbrauch."""
+    from capture.extraktion import kostenlimit_pruefen
+    from capture.models import KiVerbrauch
+
+    settings.KI_LIMIT_VORGAENGE_MONAT = 1
+    ki(_ki_antwort("Worum geht es?", name="Weber"))
+    g, _ = fuehrung.starten(firma)
+    fuehrung.antworten(g, "Hier Weber.")
+    fuehrung.antworten(g, "Heizung.")
+    g.refresh_from_db()
+    assert (g.ki_eingabe, g.ki_ausgabe, g.ausfallbetrieb) == (1800, 160, False)
+    assert not KiVerbrauch.objects.filter(firma=firma).exists()
+    kostenlimit_pruefen(firma)  # Erfassung weiter frei
+    assert fuehrung.monatsverbrauch(firma)["gespraeche"] == 1
 
 
 def test_aufgelegt(firma):
@@ -170,7 +185,7 @@ def test_einstellungen_nur_inhaber(client_freigeber):
 
 def test_einstellungen_speichern(client_inhaber, firma):
     seite = client_inhaber.get(reverse("telefon:einstellungen")).content.decode()
-    assert fuehrung.PFLICHTHINWEIS in seite
+    assert fuehrung.PFLICHTHINWEIS in seite and "Ab 400 Gesprächen im Monat" in seite
     client_inhaber.post(
         reverse("telefon:einstellungen"), {"aktiv": "on", "begruessung": "Moin!", "benachrichtigen": "on"}
     )
@@ -204,3 +219,15 @@ def test_unerwarteter_ki_fehler_fuehrt_in_den_ausfallbetrieb(firma, monkeypatch)
     monkeypatch.setattr(capture.extraktion, "client_fabrik", kaputt)
     g, _ = fuehrung.starten(firma)
     assert "Unter welcher Nummer" in fuehrung.antworten(g, "Hier Meier, Dachrinne").text
+
+
+def test_haiku_ohne_mitdenken_fuer_kurze_antwortzeiten(firma, ki, settings):
+    client = ki(_ki_antwort("Danke. Worum geht es?", name="Weber"))
+    settings.TELEFON_MODELL = "eu.anthropic.claude-haiku-5-5"
+    g, _ = fuehrung.starten(firma)
+    fuehrung.antworten(g, "Hier Weber.")
+    aufruf = client.messages.aufrufe[0]
+    assert aufruf["model"] == "eu.anthropic.claude-haiku-5-5" and aufruf["thinking"] == {"type": "disabled"}
+    settings.TELEFON_MODELL = "eu.anthropic.claude-sonnet-5-5"
+    fuehrung.antworten(g, "Wasserfleck.")
+    assert "thinking" not in client.messages.aufrufe[1]

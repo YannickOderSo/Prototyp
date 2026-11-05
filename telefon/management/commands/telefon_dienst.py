@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from telefon.audiosocket import dienst
-from telefon.sprache import Piper, Sprachausgabe, Stille
+from telefon.sprache import Sprachausgabe, Stille, sprachausgabe
 
 
 class Command(BaseCommand):
@@ -16,6 +16,12 @@ class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument("--host", default=settings.TELEFON_AUDIOSOCKET_HOST)
         parser.add_argument("--port", type=int, default=settings.TELEFON_AUDIOSOCKET_PORT)
+        parser.add_argument(
+            "--stimme",
+            choices=["voxtral", "piper"],
+            default=settings.TELEFON_SPRACHAUSGABE,
+            help="Sprachausgabe: voxtral (Mistral EU, Standard) oder piper (selbst gehostet)",
+        )
         parser.add_argument("--stumm", action="store_true", help="Ohne Sprachausgabe (nur für Trockenläufe)")
 
     def handle(self, *args: Any, **optionen: Any) -> None:
@@ -26,7 +32,7 @@ class Command(BaseCommand):
             tts = Stille()
         else:
             try:
-                tts = Piper()
+                tts = sprachausgabe(optionen["stimme"])
             except ValueError as fehler:
                 raise CommandError(str(fehler)) from fehler
 

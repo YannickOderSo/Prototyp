@@ -180,28 +180,53 @@ class _KiAusfall(Exception):
     pass
 
 
+def monatsverbrauch(firma: Firma) -> dict[str, int]:
+    """Gespräche (Anrufe und Testanrufe) und Minuten im laufenden Monat, für Limit und Anzeige."""
+    beginn = timezone.localtime().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    gespraeche = Gespraech.objects.fuer(firma).filter(begonnen__gte=beginn)
+    sekunden = sum(
+        (g.beendet - g.begonnen).total_seconds() for g in gespraeche.exclude(beendet=None).only("begonnen", "beendet")
+    )
+    return {"gespraeche": gespraeche.count(), "minuten": int(sekunden + 59) // 60}
+
+
+def _limit_pruefen(g: Gespraech) -> None:
+    """Eigenes Monatslimit des Telefons (TELEFON_LIMIT_GESPRAECHE_MONAT).
+
+    Bewusst getrennt vom KI-Limit der Erfassung: Viele Anrufe dürfen die Belegerfassung nie blockieren. Über dem Limit
+    nimmt der Ausfallbetrieb weiter Notizen auf, nur ohne KI.
+    """
+    beginn = timezone.localtime().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    if Gespraech.objects.fuer(g.firma).filter(begonnen__gte=beginn).count() > settings.TELEFON_LIMIT_GESPRAECHE_MONAT:
+        raise _KiAusfall("Kostenlimit")
+
+
 def _ki(g: Gespraech) -> dict[str, Any]:
-    """Ein KI-Aufruf über Bedrock EU (gleicher Client, gleiches Kostenlimit wie die Erfassung)."""
+    """Ein KI-Aufruf über Bedrock EU (gleicher Client wie die Erfassung, aber eigenes Limit und eigener Zähler)."""
     import anthropic
 
     from capture import extraktion
 
-    try:
-        extraktion.kostenlimit_pruefen(g.firma)
-    except extraktion.KostenlimitErreicht as fehler:
-        raise _KiAusfall("Kostenlimit") from fehler
+    _limit_pruefen(g)
     nummer_regel = (
         f"Die übertragene Nummer ist {g.anrufer_nummer}. Frage, ob der Rückruf unter dieser Nummer passt."
         if g.anrufer_nummer
         else "Die Nummer wurde nicht übertragen. Frage nach einer Rückrufnummer."
     )
+    modell = getattr(settings, "TELEFON_MODELL", "") or settings.BEDROCK_MODELL
+    zusatz: dict[str, Any] = {}
+    if "haiku-5-5" in modell:
+        # Am Telefon zählt jede Sekunde: Haiku 5.5 denkt sonst standardmäßig mit (adaptiv). Abschalten ist bei
+        # Standard-Effort erlaubt; Denk-Token würden als Ausgabe berechnet (Kostenkalkulation Telefonassistent).
+        zusatz["thinking"] = {"type": "disabled"}
     try:
         antwort = extraktion.client_fabrik().messages.create(
-            model=getattr(settings, "TELEFON_MODELL", "") or settings.BEDROCK_MODELL,
+            model=modell,
             max_tokens=800,
             system=SYSTEM.format(firma=g.firma.name, nummer_regel=nummer_regel),
             messages=_nachrichten(g),
             output_config={"format": {"type": "json_schema", "schema": SCHEMA}},
+            **zusatz,
         )
     except anthropic.APIError as fehler:
         raise _KiAusfall(type(fehler).__name__) from fehler
@@ -209,9 +234,8 @@ def _ki(g: Gespraech) -> dict[str, Any]:
         log.exception("Telefonassistent: KI-Aufruf fehlgeschlagen")
         raise _KiAusfall(type(fehler).__name__) from fehler
     nutzung = getattr(antwort, "usage", None)
-    extraktion.verbrauch_buchen(
-        g.firma, int(getattr(nutzung, "input_tokens", 0) or 0), int(getattr(nutzung, "output_tokens", 0) or 0)
-    )
+    g.ki_eingabe += int(getattr(nutzung, "input_tokens", 0) or 0)
+    g.ki_ausgabe += int(getattr(nutzung, "output_tokens", 0) or 0)
     if antwort.stop_reason in ("refusal", "max_tokens"):
         raise _KiAusfall(antwort.stop_reason)
     text = next((b.text for b in antwort.content if getattr(b, "type", "") == "text"), "")
@@ -269,7 +293,7 @@ def antworten(g: Gespraech, text: str) -> Antwort:
         abschliessen(g, Gespraech.Status.BEENDET)
         return Antwort(schluss, beendet=True)
     g.verlauf = [*g.verlauf, {"rolle": "assistent", "text": antwort.text}]
-    g.save(update_fields=["verlauf", "erfasst", "runden", "ausfallbetrieb"])
+    g.save(update_fields=["verlauf", "erfasst", "runden", "ausfallbetrieb", "ki_eingabe", "ki_ausgabe"])
     return antwort
 
 
@@ -292,7 +316,18 @@ def abschliessen(g: Gespraech, status: str) -> Rueckruf | None:
     with transaction.atomic():
         g.status = status
         g.beendet = timezone.now()
-        g.save(update_fields=["verlauf", "erfasst", "runden", "ausfallbetrieb", "status", "beendet"])
+        g.save(
+            update_fields=[
+                "verlauf",
+                "erfasst",
+                "runden",
+                "ausfallbetrieb",
+                "ki_eingabe",
+                "ki_ausgabe",
+                "status",
+                "beendet",
+            ]
+        )
         e = g.erfasst
         beitraege = [x["text"] for x in g.verlauf if x["rolle"] == "anrufer"]
         anliegen = e.get("anliegen") or (" / ".join(beitraege)[:1000] if beitraege else "")
