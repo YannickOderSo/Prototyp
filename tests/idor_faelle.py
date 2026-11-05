@@ -42,6 +42,7 @@ def _erfassung(firma, nutzer=None, **extra):
 
 FAELLE: dict[str, Fabrik] = {
     "capture:detail": _erfassung,
+    "capture:neuversuch": _erfassung,
     "dunning:vorschau": _vorschlag,
     "dunning:verwerfen": _vorschlag,
     "dunning:neuversuch": _vorschlag,

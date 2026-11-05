@@ -50,3 +50,18 @@ def hochladen(request: FirmaRequest) -> HttpResponse:
 def detail(request: FirmaRequest, pk: int) -> HttpResponse:
     erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
     return render(request, "capture/detail.html", {"e": erfassung})
+
+
+@require_POST
+@firma_erforderlich
+def neuversuch(request: FirmaRequest, pk: int) -> HttpResponse:
+    erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
+    if erfassung.status == Erfassung.Status.FEHLER:
+        from .services import aufbereitung_einplanen
+
+        erfassung.status = Erfassung.Status.WARTET
+        erfassung.fehler = ""
+        erfassung.save(update_fields=["status", "fehler"])
+        aufbereitung_einplanen(erfassung)
+        messages.info(request, "Neuer Versuch gestartet.")
+    return redirect("capture:detail", pk=erfassung.pk)

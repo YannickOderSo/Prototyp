@@ -146,3 +146,14 @@ def alle_jobs_ausfuehren(worker, max_runden=50):
         if not worker.einen_ausfuehren():
             return
     raise AssertionError("Job-Schleife endet nicht")
+
+
+@pytest.fixture
+def mistral(settings):
+    """Nachgebaute Mistral-Transkriptions-API (EU)."""
+    import respx
+
+    settings.MISTRAL_API_KEY = "test-mistral"
+    with respx.mock(assert_all_called=False) as router:
+        router.route(url__startswith="http://127.0.0.1:8025").pass_through()
+        yield router.post("https://api.mistral.ai/v1/audio/transcriptions")

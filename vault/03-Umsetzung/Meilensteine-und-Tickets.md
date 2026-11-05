@@ -42,7 +42,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 ## M3 Erfassung per Sprache, Foto, Mail (ca. 10 PT)
 
 - [x] **M3-01** `capture`: Modelle, Upload und Browser-Aufnahme (E1), Dateilimits, Speicherung außerhalb des Webroots.
-- [ ] **M3-02** Transkription mit Mistral (E3 Vorbereitung), Audio danach löschen (E8).
+- [x] **M3-02** Transkription mit Mistral (E3 Vorbereitung), Audio danach löschen (E8).
 - [ ] **M3-03** Transkript-Vorschau und Bearbeiten (E3).
 - [ ] **M3-04** Textaufbereitung: PDF-Text, CSV-Zeiterfassung (Eigenbau; `belegfluss/quellen.py` als Orientierung, Übernahme nur nach ADR-007), Mail-Parsing.
 - [ ] **M3-05** Extraktion über Bedrock Frankfurt mit JSON-Schema, Bild-Input für Fotos, Stammdaten-Reduktion, Kostenlimit (E4, E9).

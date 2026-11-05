@@ -9,4 +9,5 @@ urlpatterns = [
     path("neu/", views.neu, name="neu"),
     path("hochladen/", views.hochladen, name="hochladen"),
     path("<int:pk>/", views.detail, name="detail"),
+    path("<int:pk>/neuversuch/", views.neuversuch, name="neuversuch"),
 ]

@@ -21,6 +21,7 @@ def aufbereitung_einplanen(erfassung: Erfassung) -> Job:
         {"erfassung_id": erfassung.pk},
         firma=erfassung.firma,
         eindeutig=f"aufbereiten:{erfassung.pk}",
+        max_versuche=3,  # KI-Pipeline: nach 3 Versuchen Fehler anzeigen
     )
 
 

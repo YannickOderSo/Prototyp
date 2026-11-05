@@ -172,7 +172,8 @@ MISTRAL_BASIS_URL = env.str("MISTRAL_BASIS_URL", default="https://api.mistral.ai
 MISTRAL_API_KEY = env.str("MISTRAL_API_KEY", default="")
 MISTRAL_MODELL = env.str("MISTRAL_MODELL", default="voxtral-mini-latest")
 BEDROCK_REGION = env.str("BEDROCK_REGION", default="eu-central-1")
-BEDROCK_MODELL = env.str("BEDROCK_MODELL", default="eu.anthropic.claude-sonnet-4-5-20250929-v1:0")
+# EU-Inferenzprofil (Präfix "eu."): Routing nur innerhalb der EU. "global." und "us." blockiert ein Systemcheck.
+BEDROCK_MODELL = env.str("BEDROCK_MODELL", default="eu.anthropic.claude-sonnet-5-5")
 
 # Fehlererfassung (GlitchTip selbst gehostet oder Sentry mit EU-Datenhaltung)
 SENTRY_DSN = env.str("SENTRY_DSN", default="")
