@@ -24,6 +24,8 @@ Ein Beleg bekommt einen Vorschlag nur, wenn **alle** Bedingungen gelten:
 5. Die vorige Stufe wurde versendet (Stufe 1 setzt versendete Stufe 0 voraus, außer Stufe 0 ist in der Firma deaktiviert).
 6. Kontakt hat eine E-Mail-Adresse; sonst Vorschlag mit Hinweis "Postversand nötig" und ohne Versandknopf.
 
+Umsetzung (M2-03, `dunning/vorschlaege.py`): täglich 5 Uhr ein Job je Firma mit aktiver Verbindung und eingeschalteter Automatik. Ohne Fälligkeit zählt das Belegdatum für die Schwellen (Hinweis im Vorschlag, keine Zinsen und keine Pauschale). Es wird immer nur die nächste Stufe vorgeschlagen. Noch nicht freigegebene Vorschläge werden täglich neu berechnet; ist der Beleg nicht mehr offen, werden sie verworfen; bei Pause oder fehlendem Kundentyp werden sie zurückgezogen (gelöscht und protokolliert), damit nach der Pause neu vorgeschlagen werden kann. Ein zweiter Lauf am selben Tag erzeugt keine Duplikate (Eindeutigkeit auf Beleg und Stufe). Überfällige Posten ohne Kundentyp oder ohne Kontakt erscheinen als „Klärung nötig“.
+
 ## Verzugsbeginn (§ 286 BGB)
 
 Implementiere als reine Funktion `verzugsbeginn(beleg, kontakt, versaende) -> date | None` mit Tests für jede Zeile:
