@@ -36,6 +36,7 @@ Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich �
 ## Protokoll
 
 - **Protokolleintrag**: firma, nutzer (nullable), zeit, ereignis, objekt_typ, objekt_id, daten (JSON). Nur INSERT. In Postgres per Trigger UPDATE und DELETE verbieten.
+  Umgesetzt (M0-05): Trigger `audit_protokoll_schutz` verbietet UPDATE immer und DELETE für Einträge, die jünger als 8 Jahre sind (Löschfrist). Zusätzlich verweigern Modell und QuerySet `save()` auf bestehenden Einträgen, `update()` und `delete()`. Firma und Nutzer sind mit `PROTECT` verknüpft, weil ein `SET NULL` ein UPDATE wäre. TRUNCATE ist nicht per Trigger gesperrt (Testläufe leeren Tabellen damit); der Datenbanknutzer der App bekommt in Produktion kein TRUNCATE-Recht (Betriebshandbuch).
 
 ## Jobs
 
