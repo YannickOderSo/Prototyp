@@ -113,6 +113,11 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
+# Uploads: je Datei bis 25 MB, je Anfrage bis 50 MB (E1); große Dateien gehen in temporäre Dateien
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+DATA_UPLOAD_MAX_NUMBER_FILES = 10
+
 # Uploads liegen außerhalb des Webroots und werden nie direkt ausgeliefert
 DATEIABLAGE = Path(env.str("COCKPIT_DATEIABLAGE", default=str(BASE_DIR / "var" / "dateien")))
 

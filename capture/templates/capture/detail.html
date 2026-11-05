@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titel %}Erfassung{% endblock %}
+{% block inhalt %}
+<h1>{{ e.get_kanal_display }} vom {{ e.erstellt|date:"d.m.Y H:i" }}</h1>
+<p><span class="marke-status">{{ e.get_status_display }}</span></p>
+{% if e.status == "wartet" %}<p class="meldung" hx-get="{% url 'capture:detail' e.pk %}" hx-trigger="every 3s" hx-select="#inhalt" hx-target="#inhalt" hx-swap="outerHTML">Wird aufbereitet. Diese Seite aktualisiert sich selbst.</p>{% endif %}
+{% if e.fehler %}<p class="meldung fehler">{{ e.fehler }}</p>{% endif %}
+{% if e.notiz %}<section class="karte"><h2>Notiz</h2><p>{{ e.notiz|linebreaksbr }}</p></section>{% endif %}
+{% endblock %}

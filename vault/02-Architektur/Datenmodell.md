@@ -34,8 +34,9 @@ Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich �
 
 ## Erfassen
 
-- **Erfassung**: firma, erstellt_von, kanal (`aufnahme` | `upload` | `mail`), status (`wartet` | `transkribiert` | `extrahiert` | `pruefung` | `freigegeben` | `uebertragen` | `verworfen` | `fehler`), transkript, transkript_bearbeitet, ki_ergebnis (JSON), entwurf (JSON nach Regeln), blocker[], hinweise[], ziel_extern_id, fehler
+- **Erfassung**: firma, erstellt_von, kanal (`aufnahme` | `upload` | `mail`), notiz, absender, quelltext, freigegeben_von/am, ziel_art, ziel_url, loeschen_ab (12 Monate) (ergänzt in M3-01), status (`wartet` | `transkribiert` | `extrahiert` | `pruefung` | `freigegeben` | `uebertragen` | `verworfen` | `fehler`), transkript, transkript_bearbeitet, ki_ergebnis (JSON), entwurf (JSON nach Regeln), blocker[], hinweise[], ziel_extern_id, fehler
 - **Datei**: erfassung, name, mime, groesse, inhalt (Objektspeicher oder BinaryField mit Limit), loeschen_ab
+  Umgesetzt (M3-01): Inhalt als Datei unter `COCKPIT_DATEIABLAGE/<firma_id>/<zufällige ID>` (außerhalb des Webroots, Rechte 0600, im Container das Volume `/data/dateien`), dazu art, sha256 und geloescht_am. Der Typ wird nach den ersten Bytes bestimmt, nicht nach der Endung; Programme, Archive und HTML werden abgelehnt. Grenzen: je Datei 25 MB, je Erfassung 10 Dateien und 50 MB. Nach dem Löschen bleibt der Datensatz (Name, Größe, Hash) als Nachweis.
 
 ## Protokoll
 

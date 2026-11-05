@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titel %}Neue Erfassung{% endblock %}
+{% block inhalt %}
+<h1>Neue Erfassung</h1>
+<section class="karte" id="aufnahme" data-max-sekunden="{{ max_sekunden }}" data-ziel="{% url 'capture:hochladen' %}">
+  <h2>Sprachmemo aufnehmen</h2>
+  <p class="meldung warnung">Bitte nur selbst diktieren. Keine Kundengespräche aufnehmen.</p>
+  <p class="hilfe">Bis zu 5 Minuten. Nennen Sie Kunde, Leistungen, Mengen und Zeitraum, zum Beispiel: „Rechnung für Bau AG, 12 Stunden Malerarbeiten vom 2. bis 4. November, 3 Eimer Farbe.“</p>
+  <div class="knopfreihe">
+    <button type="button" id="aufnahme-start">Aufnahme starten</button>
+    <button type="button" id="aufnahme-stopp" class="zweitrangig" disabled>Stopp und hochladen</button>
+  </div>
+  <p id="aufnahme-status" class="leise" role="status" aria-live="polite"></p>
+</section>
+<form method="post" action="{% url 'capture:hochladen' %}" enctype="multipart/form-data" class="karte">
+  {% csrf_token %}
+  <h2>Dateien oder Notiz</h2>
+  <div class="feld"><label for="dateien">Fotos, PDF, CSV-Stundenliste, Mail (.eml) oder Audio</label>
+    <input type="file" id="dateien" name="dateien" multiple accept="audio/*,image/jpeg,image/png,image/heic,application/pdf,.csv,.txt,.eml">
+    <div class="hilfe">Höchstens 10 Dateien, je 25 MB.</div></div>
+  <div class="feld"><label for="notiz">Notiz</label><textarea id="notiz" name="notiz" rows="4" placeholder="z. B. Angebot für Erika Musterfrau: Wohnzimmer streichen, ca. 40 m²"></textarea></div>
+  <div class="knopfreihe"><button type="submit">Hochladen</button></div>
+</form>
+<script src="{% static 'capture/aufnahme.js' %}" defer></script>
+{% endblock %}

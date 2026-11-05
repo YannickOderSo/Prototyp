@@ -33,7 +33,15 @@ def _vorschlag(firma, nutzer=None, **extra):
     return {"pk": v.pk}
 
 
+def _erfassung(firma, nutzer=None, **extra):
+    from capture.models import Erfassung
+
+    e = Erfassung.objects.create(firma=firma, kanal="upload", notiz="IDOR", **extra)
+    return {"pk": e.pk}
+
+
 FAELLE: dict[str, Fabrik] = {
+    "capture:detail": _erfassung,
     "dunning:vorschau": _vorschlag,
     "dunning:verwerfen": _vorschlag,
     "dunning:neuversuch": _vorschlag,
