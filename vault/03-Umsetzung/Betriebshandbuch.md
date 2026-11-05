@@ -178,7 +178,7 @@ Ausgerollt wird nur per Git-Tag aus der CI, nie vom Laptop.
   5. Webhooks: Lexware stellt erneut zu. Fehlen Ereignisse, holt der Nachtabgleich die Änderungen nach (`updatedDateFrom` minus 1 Tag).
 
 **Mails kommen nicht an**
-- Bounces erreichen den Zustell-Webhook `/hooks/zustellung/<ZUSTELLUNG_WEBHOOK_TOKEN>/`. Der Vorschlag zeigt dann „Zustellung fehlgeschlagen“ und die Firma wird informiert.
+- Bounces erreichen den Zustell-Webhook `/hooks/zustellung/<ZUSTELLUNG_WEBHOOK_TOKEN>/`. Der Zustellfehler steht dann mit Grund auf der Seite „Mahnungen“ der Firma und im Protokoll (`mahnung.zustellfehler`); eine eigene Benachrichtigung gibt es nicht.
 - SMTP-Zugang der Plattform prüfen. Firmen mit eigenem SMTP sehen ihren Zugang unter Einstellungen → E-Mail-Versand und können dort eine Testmail senden.
 
 **KI oder Transkription gestört (Bedrock, Mistral)**
