@@ -315,3 +315,5 @@ Wunsch von Lukas (Punkt 10). Yannick hat entschieden: Live-Gespräch mit KI, im 
 - Telefon nutzt Claude Haiku 5.5 (EU-Profil) ohne Mitdenken; neuer Systemcheck `cockpit.E004` für `TELEFON_MODELL`.
 - **Fehler behoben:** Jede Gesprächsrunde zählte gegen das KI-Limit der Erfassung (300 Vorgänge). Schon 60 Anrufe im Monat hätten die Belegerfassung blockiert. Jetzt eigenes Limit (400 Gespräche) und Token-Zähler je Gespräch; Anzeige in den Einstellungen.
 - 9 neue Tests (Voxtral-Anfrage und WAV-Formate, Zwischenspeicher nur für feste Sätze, Fehlerfälle, Haiku ohne Mitdenken, getrenntes Limit, Systemcheck). Voxtral TTS und Haiku 5.5 sind nur gegen nachgebildete Dienste getestet, nicht gegen die echten.
+- Darstellung: Die Rückrufnummer brach auf dem Handy mitten in der Zahl um (Kachel zu schmal). Jetzt etwas kleiner und ohne Umbruch (beim Pitch-Video aufgefallen).
+- Pitch-Video „Beispielablauf KI-Telefonassistent“ (1:54 Min.) aus echten App-Aufnahmen und einem nachgestellten Beispielgespräch mit synthetischen Stimmen; an Yannick geschickt, nicht im Repository.

@@ -6,7 +6,7 @@
 <h1>{{ r.name|default:"Unbekannter Anrufer" }}</h1>
 <p class="leise">{% if r.gespraech %}{{ r.gespraech.get_kanal_display }}{% else %}Anruf{% endif %} vom {{ r.erstellt|date:"d.m.Y" }} um {{ r.erstellt|date:"H:i" }} Uhr{% if r.test %} · <span class="marke-status">Test</span>{% endif %} · <span class="marke-status{% if r.status == 'erledigt' %} gut{% endif %}">{{ r.get_status_display }}</span></p>
 <section class="kennzahlen">
-  <div class="kennzahl"><div class="label">Rückrufnummer</div><div class="wert">{% if r.rueckrufnummer %}<a href="tel:{{ r.rueckrufnummer }}">{{ r.rueckrufnummer }}</a>{% else %}–{% endif %}</div></div>
+  <div class="kennzahl"><div class="label">Rückrufnummer</div><div class="wert nummer">{% if r.rueckrufnummer %}<a href="tel:{{ r.rueckrufnummer }}">{{ r.rueckrufnummer }}</a>{% else %}–{% endif %}</div></div>
   <div class="kennzahl{% if r.dringlichkeit == 'dringend' %} schlecht{% endif %}"><div class="label">Dringlichkeit</div><div class="wert">{{ r.get_dringlichkeit_display }}</div></div>
   <div class="kennzahl"><div class="label">Beste Zeit</div><div class="wert">{{ r.beste_zeit|default:"–" }}</div></div>
   <div class="kennzahl"><div class="label">Kunde in Lexware</div><div class="wert">{% if r.kontakt %}<a href="{% url 'ledger:kunde' r.kontakt.pk %}">{{ r.kontakt.name }}</a>{% else %}–{% endif %}</div></div>
