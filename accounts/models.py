@@ -143,3 +143,20 @@ class Zustimmung(models.Model):
 
     def __str__(self) -> str:
         return f"{self.nutzer} → {self.dokument} {self.version}"
+
+
+class ZweiFaktor(models.Model):
+    """TOTP-Zweitfaktor (A2). Geheimnis verschlüsselt, Wiederherstellungscodes nur als Hash."""
+
+    nutzer = models.OneToOneField(Nutzer, on_delete=models.CASCADE, related_name="zwei_faktor")
+    geheimnis_verschluesselt = models.TextField()
+    letzter_schritt = models.BigIntegerField(null=True, blank=True)
+    wiederherstellungscodes_hash = models.JSONField(default=list, blank=True)
+    eingerichtet_am = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f"2FA {self.nutzer}"
+
+    @property
+    def aktiv(self) -> bool:
+        return self.eingerichtet_am is not None

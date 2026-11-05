@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titel %}Zweiter Faktor{% endblock %}
+{% block inhalt %}
+<h1>Zweiter Faktor</h1>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Anmelden</button></div>
+  <p class="hilfe">Handy verloren? Geben Sie einen Ihrer Wiederherstellungscodes ein.</p>
+</form>
+{% endblock %}

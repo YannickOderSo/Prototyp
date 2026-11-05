@@ -7,7 +7,7 @@ Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich �
 - **Firma**: name, strasse, plz, ort, email_absender, reply_to, mahn_signatur, zeitzone, aktiv, erstellt
 - **Nutzer** (Django User, E-Mail als Login)
 - **Mitgliedschaft**: nutzer, firma, rolle (`inhaber` | `freigeber` | `mitarbeiter`). Ein Nutzer kann mehreren Firmen angehören.
-- **ZweiFaktor**: nutzer, geheimnis_verschluesselt, letzter_schritt, wiederherstellungscodes_hash[]
+- **ZweiFaktor**: nutzer, geheimnis_verschluesselt, letzter_schritt, wiederherstellungscodes_hash[], eingerichtet_am (M1-02: eigene RFC-6238-Implementierung, SHA-1, 6 Stellen, ±1 Schritt Toleranz, jeder Schritt nur einmal gültig; 10 Wiederherstellungscodes als SHA-256; `login()` erst nach dem zweiten Faktor)
 - **Einladung**: code_hash, verwendet_am, erstellt_von (umgesetzt mit gueltig_bis, notiz, verwendet_von; Codes erzeugt das Team mit `manage.py einladung_erstellen`, gespeichert nur als SHA-256)
 - **TeamEinladung** (ergänzt in M1-01): firma, email, rolle, token_hash, erstellt_von, gueltig_bis (7 Tage), angenommen_am. So lädt der Inhaber Freigeber und Mitarbeiter ein.
 - **Zustimmung** (ergänzt in M1-01, F5): nutzer, dokument, version, zeit

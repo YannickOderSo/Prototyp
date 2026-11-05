@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titel %}Sicherheit{% endblock %}
+{% block inhalt %}
+<h1>Sicherheit</h1>
+<div class="karte">
+  <p>Die Zwei-Faktor-Anmeldung ist aktiv. Verbleibende Wiederherstellungscodes: <strong>{{ rest }}</strong>.</p>
+</div>
+<h2>Neue Wiederherstellungscodes erzeugen</h2>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Neue Codes erzeugen</button></div>
+  <p class="hilfe">Die bisherigen Codes werden dabei ungültig.</p>
+</form>
+{% endblock %}

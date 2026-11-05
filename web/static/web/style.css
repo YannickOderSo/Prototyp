@@ -194,3 +194,6 @@ pre, code { white-space: pre-wrap; overflow-wrap: anywhere; }
   .kennzahlen { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   h1 { font-size: 1.6rem; }
 }
+
+.qr svg { width: 180px; height: 180px; background: #fff; padding: 8px; border-radius: 8px; }
+.codes { columns: 2; padding-left: 1rem; }

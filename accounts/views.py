@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 
 from audit.services import protokolliere
 
-from .anmeldung import FIRMA, anmeldung_abschliessen, vorlogin_setzen
+from .anmeldung import FIRMA, vorlogin_setzen
 from .forms import AnmeldeForm, NeuesKontoForm, RegistrierungsForm, TeamEinladungsForm
 from .models import Mitgliedschaft, Nutzer, TeamEinladung, Zustimmung
 from .rechte import nur_inhaber
@@ -23,6 +23,7 @@ from .services import (
     team_einladung_finden,
 )
 from .typen import FirmaRequest
+from .zweifaktor import aktiver_zweiter_faktor
 
 
 def _sicheres_ziel(request: HttpRequest, ziel: str | None) -> str:
@@ -40,9 +41,10 @@ def nach_passwort(request: HttpRequest, nutzer: Nutzer, ziel: str | None = None)
 
 
 def _weiter_zum_zweiten_faktor(request: HttpRequest, nutzer: Nutzer) -> HttpResponseRedirect:
-    # Ab M1-02 übernimmt hier die Zwei-Faktor-Anmeldung.
-    anmeldung_abschliessen(request, nutzer)
-    return redirect(_sicheres_ziel(request, request.session.pop("anmeldung_ziel", None)))
+    """Ohne zweiten Faktor gibt es keinen Zugriff (A2): erst einrichten, sonst abfragen."""
+    if aktiver_zweiter_faktor(nutzer) is None:
+        return redirect("accounts:zweiter_faktor_einrichten")
+    return redirect("accounts:zweiter_faktor")
 
 
 @login_not_required

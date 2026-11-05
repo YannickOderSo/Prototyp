@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titel %}Zwei-Faktor-Anmeldung einrichten{% endblock %}
+{% block inhalt %}
+<h1>Zwei-Faktor-Anmeldung einrichten</h1>
+<div class="karte">
+  <p>Die Zwei-Faktor-Anmeldung ist Pflicht. Scannen Sie den Code mit einer Authenticator-App (z. B. Google Authenticator, Microsoft Authenticator, FreeOTP) und geben Sie den angezeigten sechsstelligen Code ein.</p>
+  <div class="qr">{{ qr }}</div>
+  <p class="hilfe">Kein Scan möglich? Schlüssel manuell eingeben: <code>{{ schluessel }}</code></p>
+</div>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Bestätigen</button></div>
+</form>
+{% endblock %}

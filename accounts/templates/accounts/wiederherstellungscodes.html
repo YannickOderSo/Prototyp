@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titel %}Wiederherstellungscodes{% endblock %}
+{% block inhalt %}
+<h1>Wiederherstellungscodes</h1>
+<div class="karte">
+  <p><strong>Bitte jetzt notieren oder ausdrucken.</strong> Die Codes werden nur dieses eine Mal angezeigt. Jeder Code funktioniert genau einmal, falls Sie keinen Zugriff auf Ihre Authenticator-App haben.</p>
+  <ul class="codes">{% for code in codes %}<li><code>{{ code }}</code></li>{% endfor %}</ul>
+  <div class="knopfreihe"><a class="knopf" href="{% url 'web:start' %}">Ich habe die Codes gesichert</a></div>
+</div>
+{% endblock %}

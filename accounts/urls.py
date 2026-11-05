@@ -2,7 +2,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_not_required
 from django.urls import path, reverse_lazy
 
-from . import views
+from . import views, views_zweifaktor
 
 app_name = "accounts"
 
@@ -32,6 +32,10 @@ urlpatterns = [
     path("anmelden/", views.anmelden, name="login"),
     path("abmelden/", views.abmelden, name="logout"),
     path("registrieren/", views.registrierung, name="registrieren"),
+    path("zwei-faktor/einrichten/", views_zweifaktor.einrichten, name="zweiter_faktor_einrichten"),
+    path("zwei-faktor/", views_zweifaktor.pruefen, name="zweiter_faktor"),
+    path("zwei-faktor/codes/", views_zweifaktor.wiederherstellungscodes, name="wiederherstellungscodes"),
+    path("sicherheit/", views_zweifaktor.sicherheit, name="sicherheit"),
     path("firma-wechseln/", views.firma_wechseln, name="firma_wechseln"),
     path("team/", views.team, name="team"),
     path("einladung/<str:token>/", views.team_annehmen, name="team_annehmen"),
