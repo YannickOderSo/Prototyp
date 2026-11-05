@@ -131,6 +131,8 @@ def _bezahlt_am_nachladen(firma: Firma, connector: AccountingConnector, beleg: B
 def beleg_abgleichen(verbindung: Verbindung, connector: AccountingConnector, extern_id: str) -> Beleg | None:
     """Einzelnen Beleg nachladen (Webhook oder fehlend in der Offen-Liste). Nie dem Webhook-Payload vertrauen."""
     firma = verbindung.firma
+    if Beleg.objects.fuer(firma).filter(extern_id=extern_id, quelle=Beleg.Quelle.IMPORT).exists():
+        return None  # ADR-008: nie über Lexware nachladen
     posten = connector.get_receivable(extern_id)
     if posten is None:
         # Gelöscht oder nicht mehr vorhanden: im Spiegel nicht mehr als offen führen
@@ -153,6 +155,7 @@ def _offene_liste_abgleichen(verbindung: Verbindung, connector: AccountingConnec
     verschwunden = (
         Beleg.objects.fuer(firma)
         .filter(status__in=Beleg.OFFENE_STATUS, art__in=[Beleg.Art.RECHNUNG, Beleg.Art.ABSCHLAG])
+        .exclude(quelle=Beleg.Quelle.IMPORT)  # ADR-008: importierte Posten kennt Lexware nicht
         .exclude(extern_id__in=ergebnis.offene_ids)
         .values_list("extern_id", flat=True)
     )

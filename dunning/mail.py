@@ -62,10 +62,23 @@ def zinsberechnung_text(vorschlag: Mahnvorschlag) -> str:
     return zinstext(_zinsergebnis(vorschlag)) if vorschlag.zinsen > 0 else ""
 
 
+ANHANG_SATZ = " Die Rechnung finden Sie zur Sicherheit noch einmal im Anhang."
+
+
 def anhang_name(vorschlag: Mahnvorschlag) -> str:
-    art = "Rechnung" if vorschlag.stufe == 0 else ("Mahnung" if vorschlag.stufe == 1 else "2_Mahnung")
+    if vorschlag.beleg.importiert and vorschlag.stufe == 0:
+        art = "Zahlungserinnerung"  # nur für den Postversand; per Mail geht die Erinnerung ohne Anhang
+    else:
+        art = "Rechnung" if vorschlag.stufe == 0 else ("Mahnung" if vorschlag.stufe == 1 else "2_Mahnung")
     nummer = "".join(ch for ch in vorschlag.beleg.nummer if ch.isalnum() or ch in "-_") or str(vorschlag.beleg_id)
     return f"{art}_{nummer}.pdf"
+
+
+def _text(vorschlag: Mahnvorschlag, text: str) -> str:
+    if vorschlag.beleg.importiert and vorschlag.stufe == 0:
+        # Importierte Posten: Die ursprüngliche Rechnung liegt der App nicht vor, also kein Verweis auf einen Anhang
+        text = text.replace(ANHANG_SATZ, "")
+    return text.strip() + "\n"
 
 
 def inhalt(vorschlag: Mahnvorschlag, versandtag: date | None = None) -> MailInhalt:
@@ -112,6 +125,6 @@ def inhalt(vorschlag: Mahnvorschlag, versandtag: date | None = None) -> MailInha
         reply_to=firma.reply_to,
         bcc=firma.reply_to if plan.bcc_an_firma and firma.reply_to else "",
         betreff=ersetzen(betreff_vorlage, werte).replace("\n", " ").strip(),
-        text=ersetzen(text_vorlage, werte).strip() + "\n",
+        text=_text(vorschlag, ersetzen(text_vorlage, werte)),
         anhang_name=anhang_name(vorschlag),
     )

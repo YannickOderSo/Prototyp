@@ -35,6 +35,12 @@ from .services import basiszinstabelle, mahnplan_fuer
 HOECHSTE_STUFE = 2
 
 
+HINWEIS_IMPORT = (
+    "Posten aus dem Excel-Import: Der Zahlstatus wird im Cockpit gepflegt, nicht in Lexware. "
+    "Bitte vor der Freigabe prüfen, ob inzwischen bezahlt wurde."
+)
+
+
 @dataclass
 class Kandidat:
     beleg: Beleg
@@ -167,6 +173,8 @@ def berechnen(firma: Firma, heute: date) -> Laufergebnis:
         hinweise = list(b.hinweise)
         if versandart == "post":
             hinweise.append("Postversand nötig: Für diesen Kunden ist in Lexware keine E-Mail-Adresse hinterlegt.")
+        if beleg.importiert:
+            hinweise.append(HINWEIS_IMPORT)
         bezug = beleg.faellig_am or beleg.belegdatum
         assert bezug is not None
         ergebnis.kandidaten.append(Kandidat(beleg, stufe, b, (heute - bezug).days, versandart, hinweise))
@@ -212,6 +220,8 @@ def neu_berechnen(vorschlag: Mahnvorschlag, heute: date) -> None:
     hinweise = list(b.hinweise)
     if versandart == "post":
         hinweise.append("Postversand nötig: Für diesen Kunden ist in Lexware keine E-Mail-Adresse hinterlegt.")
+    if beleg.importiert:
+        hinweise.append(HINWEIS_IMPORT)
     k = Kandidat(beleg, vorschlag.stufe, b, (heute - bezug).days if bezug else 0, versandart, hinweise)
     for feld, wert in _werte(k, heute).items():
         setattr(vorschlag, feld, wert)
@@ -244,6 +254,9 @@ def vorschlagslauf(firma: Firma, heute: date | None = None) -> Laufergebnis:
     """Speichert die heutigen Vorschläge. Idempotent je Beleg und Stufe."""
     heute = heute or timezone.localdate()
     ergebnis = Laufergebnis()
+    from datenimport.services import importierte_status_aktualisieren
+
+    importierte_status_aktualisieren(firma)
     _aufraeumen(firma, heute, ergebnis)
     berechnet = berechnen(firma, heute)
     ergebnis.klaerung = berechnet.klaerung

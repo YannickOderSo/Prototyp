@@ -26,6 +26,7 @@ from jobs.models import Job
 from jobs.worker import JobAbbruch
 from ledger.models import Beleg
 
+from . import mahnschreiben
 from .mail import inhalt, zinsberechnung_text
 from .mailversand import Zustellfehler, senden
 from .models import Mahnvorschlag, Versand
@@ -67,7 +68,8 @@ def _frische_check(vorschlag: Mahnvorschlag, zahlung_offen: Decimal, bezahlt: bo
         vorschlag.freigegeben_von = None
         vorschlag.freigegeben_am = None
         vorschlag.hinweise = [
-            f"Der offene Betrag hat sich in Lexware geändert ({alt} → {zahlung_offen}). Bitte erneut freigeben.",
+            f"Der offene Betrag hat sich {'im Cockpit' if beleg.importiert else 'in Lexware'} geändert "
+            f"({alt} → {zahlung_offen}). Bitte erneut freigeben.",
             *vorschlag.hinweise,
         ]
         vorschlag.save()
@@ -81,8 +83,21 @@ def _frische_check(vorschlag: Mahnvorschlag, zahlung_offen: Decimal, bezahlt: bo
     return True
 
 
-def _pdf_holen(vorschlag: Mahnvorschlag) -> bytes:
+def _pdf_importiert(vorschlag: Mahnvorschlag) -> bytes | None:
+    """ADR-008: Zahlstatus aus dem Cockpit statt aus Lexware; Mahnschreiben erzeugt die App."""
     beleg = vorschlag.beleg
+    beleg.refresh_from_db()
+    if not _frische_check(vorschlag, beleg.offen, beleg.status == Beleg.Status.BEZAHLT or beleg.offen <= 0):
+        raise _KeinVersand
+    if vorschlag.stufe == 0:
+        return None  # Erinnerung per Mail ohne Anhang; für den Postversand erzeugt versenden() den Brief
+    return mahnschreiben.pdf(vorschlag)
+
+
+def _pdf_holen(vorschlag: Mahnvorschlag) -> bytes | None:
+    beleg = vorschlag.beleg
+    if beleg.importiert:
+        return _pdf_importiert(vorschlag)
     verbindung = aktive_verbindung(vorschlag.firma)
     if verbindung is None:
         raise VersandAbgebrochen("Keine aktive Verbindung zu Lexware.")
@@ -135,6 +150,8 @@ def versenden(vorschlag: Mahnvorschlag) -> None:
         return
     mail = inhalt(vorschlag)
     if vorschlag.versandart == "post" or not mail.empfaenger:
+        if pdf is None:
+            pdf = mahnschreiben.pdf(vorschlag)
         vorschlag.pdf = pdf
         vorschlag.pdf_name = mail.anhang_name
         vorschlag.status = Mahnvorschlag.Status.POST_BEREIT
