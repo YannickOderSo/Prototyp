@@ -3,7 +3,7 @@
 {% block titel %}Cockpit{% endblock %}
 {% block inhalt %}
 <h1>Cockpit</h1>
-{% if request.firma %}<p>Ihre offenen Forderungen auf einen Blick, Stand {% now "j. F Y" %}.</p>{% endif %}
+{% if request.firma %}<p>Rechnungen, Angebote und Mahnungen auf einen Blick, Stand {% now "j. F Y" %}.</p>{% endif %}
 {% if not request.firma %}
 <div class="karte"><p>Ihr Konto gehört noch zu keiner Firma. Bitte lassen Sie sich vom Inhaber einladen.</p></div>
 {% else %}
@@ -19,6 +19,14 @@
 <div class="meldung">Der Erstimport aus Lexware läuft. Die Zahlen erscheinen in wenigen Minuten.</div>
 {% endif %}
 
+<nav class="reiter" aria-label="Bereiche im Cockpit">
+  {% for schluessel, titel in reiter %}<a href="?ansicht={{ schluessel }}"{% if schluessel == ansicht %} aria-current="page"{% endif %}>{{ titel }}</a>{% endfor %}
+</nav>
+
+{% if ansicht == "rechnungen" %}{% include "web/_reiter_rechnungen.html" %}
+{% elif ansicht == "angebote" %}{% include "web/_reiter_angebote.html" %}
+{% elif ansicht == "mahnungen" %}{% include "web/_reiter_mahnungen.html" %}
+{% else %}
 <section class="kennzahlen" aria-label="Kennzahlen">
   <div class="kennzahl"><div class="label">Offen gesamt</div><div class="wert" data-kennzahl="summe_offen">{{ c.kennzahlen.summe_offen|euro }}</div><div class="label">{{ c.kennzahlen.anzahl_offen }} Posten</div></div>
   <div class="kennzahl schlecht"><div class="label">Überfällig</div><div class="wert" data-kennzahl="summe_ueberfaellig">{{ c.kennzahlen.summe_ueberfaellig|euro }}</div><div class="label"><span data-kennzahl="anzahl_ueberfaellig">{{ c.kennzahlen.anzahl_ueberfaellig }}</span> Posten</div></div>
@@ -86,5 +94,6 @@
   </ul>
 </section>
 </div>
+{% endif %}{# Ende Überblick #}
 {% endif %}
 {% endblock %}

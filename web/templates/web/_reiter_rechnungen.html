@@ -1,0 +1,28 @@
+{% load cockpit %}
+<section class="kennzahlen" aria-label="Kennzahlen Rechnungen">
+  <div class="kennzahl"><div class="label">Offen gesamt</div><div class="wert">{{ c.kennzahlen.summe_offen|euro }}</div><div class="label">{{ c.kennzahlen.anzahl_offen }} Rechnungen</div></div>
+  <div class="kennzahl schlecht"><div class="label">Überfällig</div><div class="wert">{{ c.kennzahlen.summe_ueberfaellig|euro }}</div><div class="label">{{ c.kennzahlen.anzahl_ueberfaellig }} Rechnungen</div></div>
+  <div class="kennzahl"><div class="label">Noch nicht fällig</div><div class="wert">{{ c.kennzahlen.summe_nicht_faellig|euro }}</div>{% if ohne_faelligkeit %}<div class="label">{{ ohne_faelligkeit }} ohne Fälligkeit</div>{% endif %}</div>
+  <div class="kennzahl gut"><div class="label">Bezahlt im {% now "F" %}</div><div class="wert">{{ bezahlt_monat|euro }}</div><div class="label">{{ bezahlt_monat_anzahl }} Rechnungen</div></div>
+</section>
+<div class="raster zwei">
+  <section class="karte" aria-labelledby="r-ueberfaellig">
+    <h2 id="r-ueberfaellig">Am längsten überfällig</h2>
+    <ul class="liste">
+      {% for b in c.dringend %}
+      <li><div class="zeile"><strong><a href="{% url 'ledger:beleg' b.pk %}">{{ b.kontakt_name|default:"(ohne Kunde)" }}</a></strong><strong>{{ b.offen|euro }}</strong></div>
+        <div class="zeile neben"><span>{{ b.nummer }}</span><span class="marke-status schlecht">{{ b.faellig_am|tage_seit:heute }} Tage überfällig</span></div></li>
+      {% empty %}<li class="neben">Nichts überfällig.</li>{% endfor %}
+    </ul>
+  </section>
+  <section class="karte" aria-labelledby="r-naechste">
+    <h2 id="r-naechste">Als Nächstes fällig</h2>
+    <ul class="liste">
+      {% for b in naechste %}
+      <li><div class="zeile"><strong><a href="{% url 'ledger:beleg' b.pk %}">{{ b.kontakt_name|default:"(ohne Kunde)" }}</a></strong><strong>{{ b.offen|euro }}</strong></div>
+        <div class="zeile neben"><span>{{ b.nummer }}</span><span>fällig {{ b.faellig_am|datum }}</span></div></li>
+      {% empty %}<li class="neben">Keine offenen Rechnungen mit künftiger Fälligkeit.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+<p class="knopfreihe"><a class="knopf zweitrangig" href="{% url 'ledger:posten' %}">Alle offenen Rechnungen</a><a class="knopf zweitrangig" href="{% url 'capture:neu' %}">Neue Rechnung erstellen</a></p>

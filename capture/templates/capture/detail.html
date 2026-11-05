@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block titel %}Erfassung{% endblock %}
+{% block titel %}Entwurf{% endblock %}
 {% block inhalt %}
 <h1>{{ e.get_kanal_display }} vom {{ e.erstellt|date:"d.m.Y H:i" }}</h1>
 <p><span class="marke-status">{{ e.get_status_display }}</span>{% if e.absender %} <span class="leise">von {{ e.absender }}</span>{% endif %}</p>

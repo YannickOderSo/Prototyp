@@ -69,7 +69,15 @@ def test_navigation_mit_icons_und_handy_leiste(client_inhaber):
     """Desktop: Seitenleiste mit allen Punkten; Handy: höchstens vier Hauptziele und „Mehr“ (Material: 3 bis 5)."""
     html = client_inhaber.get(reverse("web:start")).content.decode()
     seitenleiste = html.split('<aside class="seitenleiste">')[1].split("</aside>")[0]
-    for titel in ("Cockpit", "Offene Posten", "Kunden", "Mahnungen", "Erfassen", "Berichte", "Einstellungen"):
+    for titel in (
+        "Cockpit",
+        "Angebote &amp; Rechnungen",
+        "Offene Posten",
+        "Kunden",
+        "Mahnungen",
+        "Berichte",
+        "Einstellungen",
+    ):
         assert f'<span class="nav-titel">{titel}</span>' in seitenleiste
     assert seitenleiste.count('<svg class="icon') >= 7 and 'aria-hidden="true"' in seitenleiste
     unterleiste = html.split('<nav class="unterleiste"')[1].split("</nav>")[0]
@@ -127,3 +135,58 @@ def test_logo_dateien_vorhanden():
         "apple-touch-icon.png",
     ):
         assert (ordner / datei).stat().st_size > 0, datei
+
+
+def test_cockpit_reiter(client_inhaber, firma):
+    """I2: Reiter Überblick, Rechnungen, Angebote, Mahnungen; Mahnungen nur für Freigabeberechtigte."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from ledger.models import Beleg
+
+    heute = timezone.localdate()
+    Beleg.objects.create(
+        firma=firma,
+        extern_id="q1",
+        art="angebot",
+        nummer="AN-1",
+        status="offen",
+        brutto=500,
+        belegdatum=heute - timedelta(days=10),
+        gueltig_bis=heute + timedelta(days=3),
+        kontakt_name="Bau AG",
+    )
+    Beleg.objects.create(
+        firma=firma,
+        extern_id="q2",
+        art="angebot",
+        nummer="AN-2",
+        status="angenommen",
+        brutto=800,
+        belegdatum=heute - timedelta(days=20),
+        kontakt_name="Huber",
+    )
+    html = client_inhaber.get(reverse("web:start")).content.decode()
+    assert 'href="?ansicht=angebote"' in html and 'href="?ansicht=mahnungen"' in html
+    angebote = client_inhaber.get(reverse("web:start") + "?ansicht=angebote").content.decode()
+    assert "läuft in 3 Tagen ab" in angebote and "AN-1" in angebote
+    assert "1 von 2 Angeboten" in angebote and "100 %" in angebote
+    assert "Am längsten überfällig" in client_inhaber.get(reverse("web:start") + "?ansicht=rechnungen").content.decode()
+    assert (
+        "Wartet auf Ihre Freigabe" in client_inhaber.get(reverse("web:start") + "?ansicht=mahnungen").content.decode()
+    )
+
+
+def test_cockpit_reiter_mahnungen_nur_fuer_freigabeberechtigte(client_mitarbeiter):
+    mitarbeiter = client_mitarbeiter.get(reverse("web:start") + "?ansicht=mahnungen").content.decode()
+    assert "?ansicht=mahnungen" not in mitarbeiter and "Wartet auf Ihre Freigabe" not in mitarbeiter
+
+
+def test_angebote_und_rechnungen_seite(client_inhaber, firma):
+    from ledger.models import Beleg
+
+    Beleg.objects.create(firma=firma, extern_id="q1", art="angebot", nummer="AN-9", status="offen", brutto=500)
+    html = client_inhaber.get(reverse("capture:liste")).content.decode()
+    assert "<h1>Angebote &amp; Rechnungen</h1>" in html and "AN-9" in html
+    assert "Angebot oder Rechnung erstellen" in html

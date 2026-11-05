@@ -1,0 +1,7 @@
+{% load cockpit %}<ul class="liste">
+  {% for a in liste %}
+  <li><div class="zeile"><strong>{{ a.beleg.kontakt_name|default:"(ohne Kunde)" }}</strong><strong>{{ a.beleg.brutto|euro }}</strong></div>
+    <div class="zeile neben"><span>{{ a.beleg.nummer }} vom {{ a.beleg.belegdatum|datum }}</span>
+      <span>{% if a.zustand == "abgelaufen" %}<span class="marke-status">abgelaufen</span>{% elif a.zustand == "laeuft_ab" %}<span class="marke-status warnung">{% if a.tage == 0 %}läuft heute ab{% elif a.tage == 1 %}läuft morgen ab{% else %}läuft in {{ a.tage }} Tagen ab{% endif %}</span>{% elif a.beleg.gueltig_bis %}gültig bis {{ a.beleg.gueltig_bis|datum }}{% else %}ohne Ablaufdatum{% endif %}</span></div></li>
+  {% empty %}<li class="neben">Keine offenen Angebote.</li>{% endfor %}
+</ul>

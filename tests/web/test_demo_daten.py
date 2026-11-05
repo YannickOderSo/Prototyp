@@ -20,7 +20,8 @@ def test_nur_mit_debug(settings):
 def test_demo_daten(settings, client, mailoutbox):
     settings.DEBUG = True
     call_command("demo_daten")
-    assert Beleg.objects.filter(status__in=Beleg.OFFENE_STATUS).count() == 9
+    assert Beleg.objects.filter(status__in=Beleg.OFFENE_STATUS).exclude(art="angebot").count() == 9
+    assert Beleg.objects.filter(art="angebot").count() == 6
     stufen = set(Mahnvorschlag.objects.filter(status="vorgeschlagen").values_list("stufe", flat=True))
     assert stufen == {0, 1}
     rechnung = Erfassung.objects.get(transkript__contains="Sockelleiste")

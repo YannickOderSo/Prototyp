@@ -1,0 +1,18 @@
+{% load cockpit %}
+<section class="kennzahlen" aria-label="Kennzahlen Mahnungen">
+  <div class="kennzahl{% if zur_freigabe %} schlecht{% endif %}"><div class="label">Zur Freigabe</div><div class="wert">{{ zur_freigabe }}</div><div class="label">Vorschläge warten</div></div>
+  <div class="kennzahl"><div class="label">Im Versand</div><div class="wert">{{ im_versand }}</div><div class="label">freigegeben oder Post</div></div>
+  <div class="kennzahl"><div class="label">Versendet im {% now "F" %}</div><div class="wert">{{ versendet_monat }}</div><div class="label">Erinnerungen und Mahnungen</div></div>
+  <div class="kennzahl"><div class="label">Offen in Mahnung</div><div class="wert">{{ in_mahnung|euro }}</div><div class="label">{{ in_mahnung_anzahl }} Rechnungen</div></div>
+</section>
+<section class="karte" aria-labelledby="m-vorschlaege">
+  <h2 id="m-vorschlaege">Wartet auf Ihre Freigabe</h2>
+  <ul class="liste">
+    {% for v in naechste_vorschlaege %}
+    <li><div class="zeile"><strong>{{ v.beleg.kontakt.name|default:v.beleg.kontakt_name }}</strong><strong>{{ v.gesamt|euro }}</strong></div>
+      <div class="zeile neben"><span>{{ v.get_stufe_display }} · {{ v.beleg.nummer }}</span><span>{{ v.faellig_seit_tagen }} Tage überfällig</span></div></li>
+    {% empty %}<li class="neben">Zurzeit liegen keine Vorschläge vor.</li>{% endfor %}
+  </ul>
+</section>
+{% if c.ohne_kundentyp %}<p class="meldung warnung">Bei {{ c.ohne_kundentyp }} Kunde{{ c.ohne_kundentyp|pluralize:"n" }} fehlt der Kundentyp; dort wird nicht gemahnt. <a href="{% url 'ledger:kundentyp' %}">Kundentyp festlegen</a></p>{% endif %}
+<p class="knopfreihe"><a class="knopf" href="{% url 'dunning:freigabe' %}">Mahnungen freigeben</a>{% if request.mitgliedschaft.ist_inhaber %}<a class="knopf zweitrangig" href="{% url 'dunning:mahnplan' %}">Mahnplan</a>{% endif %}</p>

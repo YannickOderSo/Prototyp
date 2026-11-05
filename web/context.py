@@ -12,10 +12,10 @@ from .rechtstexte import RECHTSTEXTE
 # (URL-Name, Titel, Kurztitel fürs Handy, Icon, nur für Rollen, die freigeben dürfen)
 NAVIGATION = [
     ("web:start", "Cockpit", "Cockpit", "layout-dashboard", False),
+    ("capture:liste", "Angebote & Rechnungen", "Belege", "file-pen-line", False),
     ("ledger:posten", "Offene Posten", "Posten", "receipt-text", False),
     ("ledger:kunden", "Kunden", "Kunden", "users", False),
     ("dunning:freigabe", "Mahnungen", "Mahnungen", "send", True),
-    ("capture:liste", "Erfassen", "Erfassen", "mic", False),
     ("reports:uebersicht", "Berichte", "Berichte", "chart-column", True),
     ("web:einstellungen", "Einstellungen", "Einstellungen", "settings", False),
 ]

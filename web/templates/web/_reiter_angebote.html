@@ -1,0 +1,12 @@
+{% load cockpit %}
+<section class="kennzahlen" aria-label="Kennzahlen Angebote">
+  <div class="kennzahl"><div class="label">Offene Angebote</div><div class="wert">{{ offene_angebote|length }}</div><div class="label">{{ ak.offen_volumen|euro }} aus 90 Tagen</div></div>
+  <div class="kennzahl{% if bald %} schlecht{% endif %}"><div class="label">Laufen in 7 Tagen ab</div><div class="wert">{{ bald }}</div><div class="label">jetzt nachfassen</div></div>
+  <div class="kennzahl gut"><div class="label">Angenommen (90 Tage)</div><div class="wert">{{ ak.angenommen_volumen|euro }}</div><div class="label">{{ ak.angenommen }} von {{ ak.verschickt }} Angeboten</div></div>
+  <div class="kennzahl"><div class="label">Annahmequote</div><div class="wert">{% if ak.quote is None %}–{% else %}{{ ak.quote }} %{% endif %}</div><div class="label">{{ ak.abgelehnt }} abgelehnt · {{ ak.abgelaufen }} abgelaufen</div></div>
+</section>
+<section class="karte" aria-labelledby="a-offen">
+  <h2 id="a-offen">Offene Angebote nach Ablauf</h2>
+  {% include "web/_angebote_liste.html" with liste=offene_angebote %}
+</section>
+<p class="knopfreihe"><a class="knopf zweitrangig" href="{% url 'capture:liste' %}">Angebote &amp; Rechnungen</a><a class="knopf zweitrangig" href="{% url 'capture:neu' %}">Neues Angebot erstellen</a></p>

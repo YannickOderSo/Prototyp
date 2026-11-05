@@ -15,8 +15,25 @@ from .services import anlegen
 
 @firma_erforderlich
 def liste(request: FirmaRequest) -> HttpResponse:
+    """„Angebote & Rechnungen“ (I1): neu erstellen, Entwürfe in Arbeit, offene Angebote, Weg zu den Rechnungen."""
+    from django.utils import timezone
+
+    from ledger import angebote
+    from ledger.services import offene_belege
+
+    heute = timezone.localdate()
     erfassungen = Erfassung.objects.fuer(request.firma).order_by("-erstellt")[:50]
-    return render(request, "capture/liste.html", {"erfassungen": erfassungen})
+    offen = offene_belege(request.firma)
+    return render(
+        request,
+        "capture/liste.html",
+        {
+            "erfassungen": erfassungen,
+            "offene_angebote": angebote.offene(request.firma, heute, abgelaufene=True)[:30],
+            "offene_rechnungen": offen.count(),
+            "ueberfaellige_rechnungen": offen.filter(faellig_am__lt=heute).count(),
+        },
+    )
 
 
 @firma_erforderlich
@@ -79,12 +96,12 @@ def verwerfen(request: FirmaRequest, pk: int) -> HttpResponse:
 
     erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
     if erfassung.status in (Erfassung.Status.UEBERTRAGEN, Erfassung.Status.FREIGEGEBEN):
-        messages.error(request, "Bereits freigegebene Erfassungen können hier nicht verworfen werden.")
+        messages.error(request, "Bereits freigegebene Entwürfe können hier nicht verworfen werden.")
     else:
         erfassung.status = Erfassung.Status.VERWORFEN
         erfassung.save(update_fields=["status"])
         protokolliere(request.firma, "erfassung.verworfen", nutzer=request.user, objekt=erfassung)
-        messages.info(request, "Erfassung verworfen.")
+        messages.info(request, "Entwurf verworfen.")
     return redirect("capture:liste")
 
 

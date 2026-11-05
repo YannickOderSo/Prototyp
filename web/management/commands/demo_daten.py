@@ -57,6 +57,16 @@ RECHNUNGEN = [
     ("RE2026-124", "k-erika", "476.00", "476.00", -20),
 ]
 
+# Nummer, Kunde, Brutto, Status, Angebotsdatum vor X Tagen, gültig bis in Y Tagen (negativ = abgelaufen)
+ANGEBOTE = [
+    ("AN2026-036", "k-weber", "1190.00", "offen", 2, 28),
+    ("AN2026-034", "k-huber", "4165.00", "offen", 5, 23),
+    ("AN2026-031", "k-praxis", "2856.00", "offen", 25, 3),
+    ("AN2026-027", "k-bau", "9520.00", "angenommen", 30, None),
+    ("AN2026-022", "k-erika", "1428.00", "abgelehnt", 45, None),
+    ("AN2026-019", "k-kita", "2380.00", "offen", 50, -20),
+]
+
 ARTIKEL = [
     ("art-maler-stunde", "Malerarbeiten Facharbeiter", "Stunde", "58.00", "19", "SERVICE"),
     ("art-helfer-stunde", "Helfer", "Stunde", "42.00", "19", "SERVICE"),
@@ -143,6 +153,20 @@ class Command(BaseCommand):
                 brutto=D(brutto),
                 offen=D(offen),
                 status=Beleg.Status.UEBERFAELLIG if tage > 0 else Beleg.Status.OFFEN,
+            )
+        for nummer, kunde, brutto, status, vor, gueltig in ANGEBOTE:
+            Beleg.objects.create(
+                firma=firma,
+                extern_id=f"demo-{nummer}",
+                art=Beleg.Art.ANGEBOT,
+                nummer=nummer,
+                kontakt=kunden[kunde],
+                kontakt_name=kunden[kunde].name,
+                belegdatum=heute - timedelta(days=vor),
+                gueltig_bis=heute + timedelta(days=gueltig) if gueltig is not None else None,
+                brutto=D(brutto),
+                offen=D("0.00"),
+                status=status,
             )
         # Bezahlte Rechnungen der letzten Monate: Zahlungsdauer je Kunde und Prognose
         for i, (kunde, tage_bis_zahlung) in enumerate(

@@ -473,6 +473,25 @@ hr { border: 0; border-top: 1px solid var(--rand); margin: 20px 0; }
   font-family: inherit; font-size: 0.9375rem; line-height: 1.6; white-space: pre-wrap;
 }
 
+/* Reiter (z. B. im Cockpit): Links statt JavaScript, auf dem Handy waagerecht scrollbar */
+.reiter {
+  display: flex; gap: 4px; margin: 0 0 20px; padding: 4px; overflow-x: auto; scrollbar-width: none;
+  background: var(--grau-100); border-radius: var(--radius); width: fit-content; max-width: 100%;
+}
+.reiter::-webkit-scrollbar { display: none; }
+.reiter a {
+  flex: none; padding: 8px 14px; border-radius: var(--radius-s); color: var(--grau-600); text-decoration: none;
+  font-weight: 550; font-size: 0.9375rem; white-space: nowrap;
+}
+.reiter a:hover { color: var(--grau-900); background: rgba(255, 255, 255, 0.6); }
+.reiter a[aria-current="page"] { background: var(--flaeche); color: var(--grau-900); box-shadow: var(--schatten); }
+
+/* Großer Einstieg „Neu erstellen“ */
+.einstieg { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.einstieg h2 { margin: 0 0 4px; }
+.einstieg p { margin: 0; color: var(--text-2); }
+.einstieg .knopf .icon { width: 18px; height: 18px; }
+
 /* Cockpit: zwei Spalten ab Tablet */
 .raster { display: grid; gap: 0 var(--abstand); }
 

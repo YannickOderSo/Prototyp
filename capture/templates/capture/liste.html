@@ -1,14 +1,34 @@
 {% extends "base.html" %}
-{% block titel %}Erfassen{% endblock %}
+{% load cockpit %}
+{% block titel %}Angebote & Rechnungen{% endblock %}
 {% block inhalt %}
-<h1>Erfassen</h1>
-<p><a class="knopf" href="{% url 'capture:neu' %}">Neue Erfassung</a></p>
-<p class="hilfe">Aus Sprachmemo, Foto, PDF, Stundenliste oder Mail entsteht ein Angebots- oder Rechnungsentwurf in Lexware. Preise und Steuersätze kommen immer aus Ihren Lexware-Artikeln.</p>
-<ul class="liste">
-  {% for e in erfassungen %}
-  <li><div class="zeile"><a href="{% url 'capture:detail' e.pk %}"><strong>{{ e.get_kanal_display }} vom {{ e.erstellt|date:"d.m.Y H:i" }}</strong></a>
-    <span class="marke-status{% if e.status == 'fehler' %} schlecht{% elif e.status == 'uebertragen' %} gut{% elif e.status == 'pruefung' or e.status == 'transkribiert' %} warnung{% endif %}">{{ e.get_status_display }}</span></div>
-    {% if e.entwurf.kunde_name %}<div class="neben">{{ e.entwurf.kunde_name }}</div>{% endif %}</li>
-  {% empty %}<li>Noch keine Erfassungen.</li>{% endfor %}
-</ul>
+<h1>Angebote &amp; Rechnungen</h1>
+<p>Neue Angebote und Rechnungen per Sprache, Foto oder Mail vorbereiten. Fertig gestellt und versendet werden sie in Lexware.</p>
+<section class="karte einstieg" aria-labelledby="neu">
+  <div><h2 id="neu">Neu erstellen</h2><p>Sprachmemo, Foto, PDF, Stundenliste oder Notiz: Belegfluss bereitet einen Entwurf vor. Preise und Steuersätze kommen immer aus Ihren Lexware-Artikeln.</p></div>
+  <a class="knopf" href="{% url 'capture:neu' %}">{% icon "plus" %}Angebot oder Rechnung erstellen</a>
+</section>
+
+<div class="raster zwei">
+<section aria-labelledby="entwuerfe">
+  <h2 id="entwuerfe">Entwürfe in Arbeit</h2>
+  <ul class="liste">
+    {% for e in erfassungen %}
+    <li><div class="zeile"><a href="{% url 'capture:detail' e.pk %}"><strong>{% if e.entwurf.belegart == "angebot" %}Angebot{% elif e.entwurf.belegart == "rechnung" %}Rechnung{% else %}Entwurf{% endif %}{% if e.entwurf.kunde_name %} für {{ e.entwurf.kunde_name }}{% endif %}</strong></a>
+      <span class="marke-status{% if e.status == 'fehler' %} schlecht{% elif e.status == 'uebertragen' %} gut{% elif e.status == 'pruefung' or e.status == 'transkribiert' %} warnung{% endif %}">{{ e.get_status_display }}</span></div>
+      <div class="neben">{{ e.get_kanal_display }} vom {{ e.erstellt|date:"d.m.Y H:i" }}</div></li>
+    {% empty %}<li class="neben">Noch keine Entwürfe. Starten Sie mit „Angebot oder Rechnung erstellen“.</li>{% endfor %}
+  </ul>
+</section>
+<section aria-labelledby="angebote">
+  <h2 id="angebote">Offene Angebote</h2>
+  {% include "web/_angebote_liste.html" with liste=offene_angebote %}
+  <h2 id="rechnungen">Rechnungen</h2>
+  <ul class="liste">
+    <li><div class="zeile"><a href="{% url 'ledger:posten' %}"><strong>Offene Rechnungen</strong></a><strong>{{ offene_rechnungen }}</strong></div>
+      <div class="neben">{% if ueberfaellige_rechnungen %}davon {{ ueberfaellige_rechnungen }} überfällig{% else %}nichts überfällig{% endif %}</div></li>
+    {% if request.darf_freigeben %}<li><div class="zeile"><a href="{% url 'dunning:freigabe' %}"><strong>Mahnungen freigeben</strong></a><span class="neben">Erinnerungen und Mahnungen</span></div></li>{% endif %}
+  </ul>
+</section>
+</div>
 {% endblock %}
