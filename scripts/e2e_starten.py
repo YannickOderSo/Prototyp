@@ -1,4 +1,4 @@
-"""Startet die Playwright-Tests. Ohne vorhandene E2E-Tests (vor M4) endet der Lauf erfolgreich mit Hinweis."""
+"""Startet die Playwright-Tests (tests/e2e, Marker e2e). Ohne gesammelte Tests endet der Lauf mit Hinweis."""
 
 import subprocess
 import sys
