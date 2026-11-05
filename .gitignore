@@ -12,3 +12,7 @@ var/
 .ruff_cache/
 test-results/
 node_modules/
+geheim/
+.env.*
+!.env.example
+!.env.prod.example

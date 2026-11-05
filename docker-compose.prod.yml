@@ -1,0 +1,128 @@
+# Produktion auf einem Server in Deutschland (Hetzner Nürnberg/Falkenstein), siehe vault/03-Umsetzung/Betriebshandbuch.md.
+# Start:  docker compose -f docker-compose.prod.yml up -d
+# Nur Caddy (80/443) ist von außen erreichbar; Postgres hat keinen öffentlichen Port.
+# Alle Werte kommen aus .env (Vorlage: .env.prod.example). Fehlt ein Pflichtwert, bricht compose ab.
+name: cockpit
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-app: &app
+  image: ${COCKPIT_IMAGE:?COCKPIT_IMAGE fehlt (Image aus der CI, per Tag gebaut)}
+  restart: unless-stopped
+  env_file:
+    - path: ${COCKPIT_ENV_DATEI:-.env}
+      required: true
+  volumes:
+    - dateien:/data/dateien
+  logging: *logging
+  depends_on:
+    db:
+      condition: service_healthy
+
+x-app-umgebung: &app-umgebung
+  DJANGO_DEBUG: "false"
+  COCKPIT_HINTER_PROXY: "true"
+  # Web und Worker arbeiten als App-Rolle (ohne TRUNCATE, ohne UPDATE auf das Protokoll)
+  DATABASE_URL: postgres://${COCKPIT_DB_APP_ROLLE:?}:${COCKPIT_DB_APP_PASSWORT:?}@db:5432/${POSTGRES_DB:-cockpit}
+  COCKPIT_DB_APP_ROLLE: ${COCKPIT_DB_APP_ROLLE:?}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cockpit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:-cockpit}
+      COCKPIT_DB_APP_ROLLE: ${COCKPIT_DB_APP_ROLLE:?}
+      COCKPIT_DB_APP_PASSWORT: ${COCKPIT_DB_APP_PASSWORT:?}
+    volumes:
+      - pgdaten:/var/lib/postgresql/data
+      - ./docker/db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      retries: 10
+    logging: *logging
+
+  web:
+    <<: *app
+    command: ["web"]
+    environment:
+      <<: *app-umgebung
+      # Nur für Migrationen und das Setzen der Rechte: Eigentümer der Tabellen
+      MIGRATIONS_DATABASE_URL: postgres://${POSTGRES_USER:-cockpit}:${POSTGRES_PASSWORD:?}@db:5432/${POSTGRES_DB:-cockpit}
+    healthcheck:
+      test: ["CMD", "python", "/app/docker/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s
+      retries: 3
+
+  worker:
+    <<: *app
+    command: ["worker"]
+    environment:
+      <<: *app-umgebung
+      COCKPIT_MIGRATE_ON_START: "0"
+    depends_on:
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "manage.py", "worker_lebt"]
+      interval: 60s
+      timeout: 30s
+      start_period: 90s
+      retries: 3
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      COCKPIT_DOMAIN: ${COCKPIT_DOMAIN:?}
+      COCKPIT_ACME_EMAIL: ${COCKPIT_ACME_EMAIL:?}
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_daten:/data
+      - caddy_konfig:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    logging: *logging
+
+  # Sicherung und Restore-Probe, nur bei Bedarf gestartet (Systemd-Timer auf dem Host, siehe Betriebshandbuch):
+  #   docker compose -f docker-compose.prod.yml run --rm backup sicherung.sh
+  #   docker compose -f docker-compose.prod.yml run --rm backup restore_probe.sh
+  backup:
+    build: ./docker/backup
+    image: cockpit-backup:lokal
+    profiles: ["backup"]
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-cockpit}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+      PGDATABASE: ${POSTGRES_DB:-cockpit}
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?}
+      RESTIC_PASSWORD_FILE: /run/geheim/restic-passwort
+      BACKUP_PING_URL: ${BACKUP_PING_URL:-}
+    volumes:
+      - ${COCKPIT_GEHEIM:-./geheim}/restic-passwort:/run/geheim/restic-passwort:ro
+      - ${COCKPIT_GEHEIM:-./geheim}/ssh:/root/.ssh:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    logging: *logging
+
+volumes:
+  pgdaten:
+  dateien:
+  caddy_daten:
+  caddy_konfig:

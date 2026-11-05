@@ -1,0 +1,12 @@
+# Nur für den Smoke-Test des Produktions-Stacks (scripts/prod_smoke.sh, CI): lokales restic-Repository
+# statt Storage Box, Caddy mit interner Zertifizierungsstelle für "localhost", keine festen Host-Ports.
+services:
+  backup:
+    volumes:
+      - restic_repo:/repo
+  caddy:
+    ports: !override
+      - "127.0.0.1::443"
+
+volumes:
+  restic_repo:

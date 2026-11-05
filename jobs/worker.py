@@ -134,10 +134,12 @@ class Worker:
         else:
             felder.update(status=Job.Status.WARTET, naechster_versuch=timezone.now() + backoff(versuche))
         Job.objects.filter(pk=job.pk).update(**felder)
-        log.warning(
-            "Job fehlgeschlagen",
-            extra={"job_id": job.pk, "typ": job.typ, "firma_id": job.firma_id, "versuch": versuche},
-        )
+        daten = {"job_id": job.pk, "typ": job.typ, "firma_id": job.firma_id, "versuch": versuche}
+        if felder.get("status") == Job.Status.FEHLER:
+            # Stufe ERROR: landet in der Fehlererfassung
+            log.error("Job endgültig fehlgeschlagen", exc_info=fehler, extra=daten)
+        else:
+            log.warning("Job fehlgeschlagen, neuer Versuch folgt", extra=daten)
 
     def einen_ausfuehren(self) -> bool:
         job = self.abholen()

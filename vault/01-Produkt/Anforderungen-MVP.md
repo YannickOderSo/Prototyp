@@ -76,6 +76,8 @@ Jede Anforderung hat eine ID. Tickets und Tests referenzieren diese IDs. "MUSS" 
 | F5 MUSS | Rechtstexte als Seiten: Impressum, Datenschutz, AGB, AVV (Inhalte liefert das Team, App stellt Platzhalter bereit) | Links im Footer; Registrierung verlangt Zustimmung zu existierenden Dokumenten |
 | F6 SOLL | Onboarding-Assistent: Lexware verbinden → Kundentypen setzen → Mahnplan wählen → Probelauf ansehen | Neuer Pilot in unter 15 Minuten startklar |
 
+Umsetzung F4 (M4-05): `/healthz` meldet einen ausgefallenen Worker mit HTTP 503, spätestens 5 Minuten nach dem letzten Lebenszeichen; strukturierte JSON-Logs ohne Inhalte; Fehlererfassung nur mit EU-Datenhaltung. Den externen Uptime-Check richtet das Team im Echtlauf ein.
+
 Umsetzung F6 (M4-03): Seite „Einrichtung“ (`/einrichtung/`, nur Inhaber) mit vier Schritten und Status. Schritt 2 führt zur Liste „Kundentyp festlegen“; der Lexware-Hinweis Firma/Person wird nicht automatisch übernommen (Mahnlogik-und-Recht.md). Schritt 3 bietet drei Vorlagen (Freundlich, Standard, Konsequent), jede hält den Mindestabstand von 7 Tagen; Speichern unter Einstellungen zählt ebenfalls. Schritt 4 zeigt den Probelauf mit derselben Berechnung wie der Vorschlagslauf, ohne etwas zu speichern oder zu senden. Ob ein Pilot in unter 15 Minuten startklar ist, wird erst im Pilot gemessen.
 
 Umsetzung F1 (M4-01): Abschnitt der Sammelfreigabe-Mail und Seite „Berichte“. „Eingegangen“ ist der Bruttobetrag der in den letzten 7 Tagen vollständig bezahlten Rechnungen laut Lexware; Teilzahlungen auf weiterhin offene Rechnungen zählen dort nicht mit (offene Frage).

@@ -103,3 +103,9 @@ jobs:
         run: docker build -t cockpit:ci .
       - name: Läuft ohne Root
         run: test "$(docker run --rm --entrypoint id cockpit:ci -u)" != "0"
+      - name: Backup-Image bauen (restic >= 0.17, GNU date)
+        run: |
+          docker build -t cockpit-backup:lokal docker/backup
+          docker run --rm cockpit-backup:lokal sh -c 'restic backup --help | grep -q stdin-from-command && date --version >/dev/null'
+      - name: Produktions-Stack Smoke-Test (Caddy, App-Rolle, Health, Sicherung, Restore-Probe)
+        run: scripts/prod_smoke.sh cockpit:ci

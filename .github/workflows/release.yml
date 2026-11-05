@@ -1,0 +1,52 @@
+name: Release
+
+# Deploy nur per Git-Tag aus der CI, nie vom Laptop (Sicherheit-Datenschutz-Betrieb.md).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    name: Image bauen und veröffentlichen
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.name.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+      - name: Anmelden bei GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Bauen, prüfen, veröffentlichen
+        run: |
+          docker build --build-arg BUILDKIT_INLINE_CACHE=1 -t "${{ steps.name.outputs.image }}" .
+          scripts/prod_smoke.sh "${{ steps.name.outputs.image }}"
+          docker push "${{ steps.name.outputs.image }}"
+
+  deploy:
+    name: Auf den Server ausrollen
+    needs: image
+    runs-on: ubuntu-latest
+    environment: produktion
+    # Ohne hinterlegte Zugangsdaten wird nur das Image veröffentlicht
+    if: ${{ vars.DEPLOY_HOST != '' }}
+    steps:
+      - name: SSH-Schlüssel einrichten
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ vars.DEPLOY_HOST_KEY }}" > ~/.ssh/known_hosts
+      - name: Ausrollen
+        env:
+          IMAGE: ${{ needs.image.outputs.image }}
+        run: |
+          ssh "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}" \
+            "cd /srv/cockpit && git fetch --tags --quiet && git checkout --quiet '${{ github.ref_name }}' \
+             && sed -i 's#^COCKPIT_IMAGE=.*#COCKPIT_IMAGE=${IMAGE}#' .env \
+             && docker compose -f docker-compose.prod.yml pull web worker \
+             && docker compose -f docker-compose.prod.yml up -d --wait"

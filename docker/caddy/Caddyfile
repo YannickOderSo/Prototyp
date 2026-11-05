@@ -1,0 +1,27 @@
+# Reverse Proxy mit automatischem HTTPS (Let's Encrypt). Nur Caddy ist von außen erreichbar.
+{
+	email {$COCKPIT_ACME_EMAIL}
+}
+
+{$COCKPIT_DOMAIN} {
+	encode zstd gzip
+
+	# Uploads: höchstens 10 Dateien mit zusammen 50 MB plus Formularfelder
+	request_body {
+		max_size 60MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		-Server
+	}
+
+	reverse_proxy web:8000
+
+	log {
+		output stdout
+		format json
+	}
+}

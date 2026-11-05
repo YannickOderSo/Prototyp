@@ -1,6 +1,9 @@
 from django.urls import include, path
 
+from web.gesundheit import healthz
+
 urlpatterns = [
+    path("healthz", healthz, name="healthz"),
     path("konto/", include("accounts.urls")),
     path("einstellungen/verbindung/", include("connectors.urls")),
     path("hooks/", include("connectors.hooks_urls")),
