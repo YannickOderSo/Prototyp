@@ -1,0 +1,10 @@
+{"id": "an-0007", "voucherStatus": "accepted", "voucherNumber": "AN-2026-7", "voucherDate": "2026-10-01T00:00:00.000+02:00",
+ "expirationDate": "2026-10-31T00:00:00.000+01:00", "address": {"contactId": "kon-unternehmer", "name": "Bau AG"},
+ "lineItems": [
+   {"id": "art-maler-stunde", "type": "service", "name": "Malerarbeiten Facharbeiter", "quantity": 20, "unitName": "Stunde",
+    "unitPrice": {"currency": "EUR", "netAmount": 58.00, "taxRatePercentage": 19}},
+   {"id": "art-farbe", "type": "material", "name": "Dispersionsfarbe weiß 10 l", "quantity": 4, "unitName": "Eimer",
+    "unitPrice": {"currency": "EUR", "netAmount": 49.90, "taxRatePercentage": 19}},
+   {"type": "text", "name": "Ausführung im Oktober"}
+ ],
+ "totalPrice": {"currency": "EUR", "totalGrossAmount": 1655.23}, "taxConditions": {"taxType": "net"}}

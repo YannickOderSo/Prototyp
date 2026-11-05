@@ -37,8 +37,10 @@ def standard_routen(router: respx.Router) -> respx.Router:
     def voucherlist(request: httpx.Request) -> httpx.Response:
         status = request.url.params.get("voucherStatus")
         seite = request.url.params.get("page", "0")
-        assert request.url.params.get("voucherType") == "invoice,downpaymentinvoice"
         assert request.url.params.get("size") == "250"
+        if request.url.params.get("voucherType") == "quotation":
+            return httpx.Response(200, json=lade("voucherlist_quotation_0.json"))
+        assert request.url.params.get("voucherType") == "invoice,downpaymentinvoice"
         if status == "open":
             return httpx.Response(200, json=lade(f"voucherlist_open_{seite}.json"))
         if status == "overdue":
@@ -54,4 +56,5 @@ def standard_routen(router: respx.Router) -> respx.Router:
     router.get(f"{BASIS}/v1/payments/inv-0002").respond(200, json=lade("payment_open.json"))
     router.get(f"{BASIS}/v1/payments/inv-0900").respond(200, json=lade("payment_paid.json"))
     router.get(f"{BASIS}/v1/invoices/inv-0001").respond(200, json=lade("invoice_0001.json"))
+    router.get(f"{BASIS}/v1/quotations/an-0007").respond(200, json=lade("quotation_0007.json"))
     return router

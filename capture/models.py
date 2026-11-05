@@ -50,7 +50,10 @@ class Erfassung(FirmaModel):
     transkript_bearbeitet = models.BooleanField(default=False)
     quelltext = models.TextField(blank=True, help_text="Aufbereitete Quellen zur Anzeige (ohne Bilder)")
     quellen = models.JSONField(default=list, blank=True, help_text="Aufbereitete Quellen: art, name, herkunft, text")
-    ki_ergebnis = models.JSONField(default=dict, blank=True)
+    ki_ergebnis = models.JSONField(default=dict, blank=True, help_text="Antwort der KI, unverändert")
+    eingabe = models.JSONField(
+        default=dict, blank=True, help_text="Eingabe der Regeln: KI-Ergebnis plus Änderungen des Nutzers"
+    )
     entwurf = models.JSONField(default=dict, blank=True)
     blocker = models.JSONField(default=list, blank=True)
     hinweise = models.JSONField(default=list, blank=True)

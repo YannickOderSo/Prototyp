@@ -151,7 +151,7 @@ def _offene_liste_abgleichen(verbindung: Verbindung, connector: AccountingConnec
     # Im Spiegel offen, in Lexware nicht mehr in der Offen-Liste: einzeln nachladen
     verschwunden = (
         Beleg.objects.fuer(firma)
-        .filter(status__in=Beleg.OFFENE_STATUS)
+        .filter(status__in=Beleg.OFFENE_STATUS, art__in=[Beleg.Art.RECHNUNG, Beleg.Art.ABSCHLAG])
         .exclude(extern_id__in=ergebnis.offene_ids)
         .values_list("extern_id", flat=True)
     )
@@ -160,11 +160,25 @@ def _offene_liste_abgleichen(verbindung: Verbindung, connector: AccountingConnec
         ergebnis.nachgeladen += 1
 
 
+def angebote_abgleichen(verbindung: Verbindung, connector: AccountingConnector) -> int:
+    """Offene und angenommene Angebote spiegeln (für den Abgleich mit Rechnungsentwürfen, E10)."""
+    firma = verbindung.firma
+    gesehen = set()
+    for angebot in connector.list_open_quotations():
+        beleg_speichern(firma, angebot, connector)
+        gesehen.add(angebot.extern_id)
+    Beleg.objects.fuer(firma).filter(art=Beleg.Art.ANGEBOT, status=Beleg.Status.OFFEN).exclude(
+        extern_id__in=gesehen
+    ).update(status=Beleg.Status.STORNIERT)
+    return len(gesehen)
+
+
 def erstimport(verbindung: Verbindung, connector: AccountingConnector) -> Ergebnis:
     firma = verbindung.firma
     ergebnis = Ergebnis()
     ergebnis.kontakte = kontakte_abgleichen(firma, connector.list_contacts())
     ergebnis.artikel = artikel_abgleichen(firma, connector.list_articles())
+    angebote_abgleichen(verbindung, connector)
     with transaction.atomic():
         _offene_liste_abgleichen(verbindung, connector, ergebnis)
         jetzt = timezone.now()
@@ -198,5 +212,6 @@ def nachtabgleich(verbindung: Verbindung, connector: AccountingConnector) -> Erg
         _bezahlt_am_nachladen(firma, connector, beleg)
         ergebnis.belege += 1
     _offene_liste_abgleichen(verbindung, connector, ergebnis)
+    angebote_abgleichen(verbindung, connector)
     Verbindung.objects.filter(pk=verbindung.pk).update(letzter_abgleich=timezone.now(), fehler="")
     return ergebnis

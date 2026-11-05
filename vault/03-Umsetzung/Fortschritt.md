@@ -18,6 +18,7 @@ Regeln: ADR-007. Übernommene Stellen tragen im Code den Vermerk
 | Lexware-Connector | neu gebaut, Belegfluss gelesen | `belegfluss/lexware.py` zeigte Datumsformat und `shippingConditions` (service/serviceperiod); eigener Connector mit Protokoll, Token-Bucket, Fehlerklassen, Mahnungen, Webhooks und Decimal statt float |
 | Mahnautomatik (Recht, Vorschläge, Versand) | neu gebaut | Belegfluss hat kein Mahnwesen mit Verzugsrecht; `rechnen.py` im Portal wurde nicht übernommen, weil es zum eigenen Rechnungsprogramm gehört (ADR-001) |
 | CSV-Zeiterfassung (`capture/aufbereitung.py`) | **teilweise übernommen** | Aus `belegfluss/quellen.py` nur die Zuordnung der Spaltennamen gängiger Exporte (Clockify, Toggl, Harvest), mit Vermerk im Code. Begründung nach ADR-007: klar abgegrenzt, Fachwissen über Exportformate, passt ohne Umbau, vorher eigene Tests (`tests/capture/test_aufbereitung.py`). Parser (Dezimalkomma, hh:mm:ss, fehlerhafte Zeilen), Summen und Zeitraum sind neu gebaut |
+| Regel-Engine Erfassung (`capture/rules.py`) | neu gebaut, Belegfluss gelesen | `belegfluss/regeln.py` arbeitet mit einer Preisliste aus einer Konfigurationsdatei und übernimmt genannte Preise aus Quellen; beides widerspricht E4/E5 und passt nicht zum Spiegel. Gelesen für die Idee „Mehraufwand gegenüber Angebot“ und den Abgleich mit der Zeiterfassung; Code neu |
 | Layout und CSS | neu gebaut | Eigene mobile Oberfläche; Landingpages und Styles aus Belegfluss werden nicht übernommen |
 
 ## Berichte

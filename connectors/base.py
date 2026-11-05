@@ -15,7 +15,7 @@ from typing import Literal, Protocol
 
 CENT = Decimal("0.01")
 
-BelegArt = Literal["rechnung", "abschlag"]
+BelegArt = Literal["rechnung", "abschlag", "angebot"]
 BelegStatus = Literal["entwurf", "offen", "ueberfaellig", "bezahlt", "storniert"]
 
 
@@ -181,6 +181,10 @@ class AccountingConnector(Protocol):
     def create_dunning_draft(self, invoice_id: str, fees: DunningFees) -> ExternalRef | None: ...
 
     def get_pdf(self, ref: ExternalRef) -> bytes: ...
+
+    def list_open_quotations(self) -> Iterable[Receivable]: ...
+
+    def get_quotation_positions(self, quotation_id: str) -> list[tuple[str, Decimal]]: ...
 
     def register_webhooks(self, callback_url: str) -> list[str]: ...
 

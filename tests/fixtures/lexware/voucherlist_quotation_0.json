@@ -1,0 +1,10 @@
+{
+  "content": [
+    {"id": "an-0007", "voucherType": "quotation", "voucherStatus": "accepted", "voucherNumber": "AN-2026-7",
+     "voucherDate": "2026-10-01T00:00:00.000+02:00", "createdDate": "2026-10-01T08:00:00.000+02:00",
+     "updatedDate": "2026-10-03T08:00:00.000+02:00", "dueDate": null,
+     "contactId": "kon-unternehmer", "contactName": "Bau AG", "totalAmount": 1655.23, "openAmount": null,
+     "currency": "EUR", "archived": false}
+  ],
+  "first": true, "last": true, "totalPages": 1, "totalElements": 1, "numberOfElements": 1, "size": 250, "number": 0
+}

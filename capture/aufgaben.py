@@ -4,6 +4,7 @@ from jobs.models import Job
 from jobs.registry import job
 from jobs.worker import JobAbbruch
 
+from .entwurf import regeln_anwenden
 from .extraktion import ExtraktionFehler, extrahieren
 from .models import Erfassung
 from .pipeline import aufbereiten, fehlgeschlagen
@@ -34,12 +35,12 @@ def _aufbereiten(j: Job) -> None:
 
 
 def entwurf_bilden(erfassung: Erfassung, ergebnis: dict[str, object], hinweise: list[str]) -> None:
-    """Speichert das KI-Ergebnis. Die Regeln (M3-06) bilden daraus den prüfbaren Entwurf."""
+    """Speichert das KI-Ergebnis unverändert und bildet mit den Regeln den prüfbaren Entwurf."""
     erfassung.ki_ergebnis = ergebnis
-    erfassung.hinweise = hinweise
-    erfassung.entwurf = {}
+    erfassung.eingabe = {}
     erfassung.status = Erfassung.Status.PRUEFUNG
-    erfassung.save(update_fields=["ki_ergebnis", "hinweise", "entwurf", "status"])
+    erfassung.save(update_fields=["ki_ergebnis", "eingabe", "status"])
+    regeln_anwenden(erfassung, hinweise)
 
 
 @job("capture.extrahieren")

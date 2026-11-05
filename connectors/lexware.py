@@ -78,7 +78,7 @@ _STATUS = {
     "paidoff": "bezahlt",
     "voided": "storniert",
 }
-_ART = {"invoice": "rechnung", "downpaymentinvoice": "abschlag"}
+_ART = {"invoice": "rechnung", "downpaymentinvoice": "abschlag", "quotation": "angebot"}
 _PFAD = {
     "invoice": "invoices",
     "downpaymentinvoice": "down-payment-invoices",
@@ -281,6 +281,22 @@ class LexwareConnector:
                 if posten.extern_id not in gesehen:
                     gesehen.add(posten.extern_id)
                     yield posten
+
+    def list_open_quotations(self) -> Iterable[Receivable]:
+        """Offene und angenommene Angebote (für den Abgleich Rechnung gegen Angebot, E10)."""
+        params = {"voucherType": "quotation", "voucherStatus": "open,accepted"}
+        for eintrag in self._seiten("/v1/voucherlist", params):
+            posten = self._receivable({**eintrag, "voucherStatus": "open"})
+            yield Receivable(**{**posten.__dict__, "art": "angebot", "offen": Decimal("0.00")})
+
+    def get_quotation_positions(self, quotation_id: str) -> list[tuple[str, Decimal]]:
+        """Artikel-IDs und Mengen eines Angebots; Positionen ohne Artikel werden übergangen."""
+        angebot = self._json("GET", f"/v1/quotations/{quotation_id}")
+        return [
+            (str(p["id"]), Decimal(str(p.get("quantity") or 0)))
+            for p in angebot.get("lineItems") or []
+            if p.get("id") and p.get("type") in ("service", "material")
+        ]
 
     def list_paid_receivables(self, updated_since: date) -> Iterable[Receivable]:
         yield from self.list_receivables("paid,paidoff", updated_since)
