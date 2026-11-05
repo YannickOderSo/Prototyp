@@ -27,13 +27,13 @@
         <a href="{{ punkt.url }}"{% if punkt.aktiv %} aria-current="page"{% endif %}>{% icon punkt.icon %}<span class="nav-titel">{{ punkt.titel }}</span>{% if punkt.zahl %}<span class="zahl" aria-label="{{ punkt.zahl }} offen">{{ punkt.zahl }}</span>{% endif %}</a>
       {% endfor %}
     </nav>
-    <div class="seitenleiste-fuss">
-      <span class="nutzer" title="{{ request.user.email }}">{{ request.user.email }}</span>
-    </div>
+    <a class="seitenleiste-fuss profil-link" href="{% url 'accounts:profil' %}"{% if request.path == "/konto/profil/" %} aria-current="page"{% endif %}>
+      {% avatar request.user %}<span class="nutzer"><strong>{{ request.user.anzeigename }}</strong><span>{{ request.user.email }}</span></span>{% icon "chevron-right" %}
+    </a>
   </aside>
   <header class="kopf-handy">
     <a class="marke" href="{% url 'web:start' %}" aria-label="Belegfluss, zum Cockpit">{% include "web/_logo_zeichen.html" with id="kopf" %}<span class="marke-name">Beleg<span>fluss</span></span></a>
-    {% if request.firma %}<span class="firmenwahl">{{ request.firma.name }}</span>{% endif %}
+    <a class="profil-knopf" href="{% url 'accounts:profil' %}" aria-label="Profil von {{ request.user.anzeigename }}">{% avatar request.user %}</a>
   </header>
   <nav class="unterleiste" aria-label="Schnellnavigation">
     {% for punkt in navigation_handy %}

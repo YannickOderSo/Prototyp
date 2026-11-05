@@ -13,7 +13,7 @@ from audit.services import protokolliere
 
 from .anmeldung import FIRMA, vorlogin_setzen
 from .drosselung import fehlversuch, gesperrt, zu_viele_versuche
-from .forms import AnmeldeForm, NeuesKontoForm, RegistrierungsForm, TeamEinladungsForm
+from .forms import AnmeldeForm, NeuesKontoForm, ProfilForm, RegistrierungsForm, TeamEinladungsForm
 from .models import Mitgliedschaft, Nutzer, TeamEinladung, Zustimmung
 from .rechte import nur_inhaber
 from .services import (
@@ -176,3 +176,25 @@ class PasswortVergessen(auth_views.PasswordResetView):
             return zu_viele_versuche(request)
         fehlversuch(request, "passwort_reset", email)
         return super().post(request, *args, **kwargs)
+
+
+def profil(request: HttpRequest) -> HttpResponse:
+    """Eigenes Profil: Name und spielerischer Avatar (I5). Für jede Rolle."""
+    nutzer = request.user
+    assert isinstance(nutzer, Nutzer)
+    form = ProfilForm(request.POST or None, instance=nutzer)
+    if request.method == "POST" and form.is_valid():
+        geaendert = list(form.changed_data)
+        form.save()
+        firma = getattr(request, "firma", None)
+        if firma is not None and geaendert:
+            protokolliere(firma, "nutzer.profil_geaendert", nutzer=nutzer, objekt=nutzer, daten={"felder": geaendert})
+        messages.success(request, "Profil gespeichert.")
+        return redirect("accounts:profil")
+    from .models import AVATAR_FARBEN, AVATAR_SYMBOLE
+
+    return render(
+        request,
+        "accounts/profil.html",
+        {"form": form, "symbole": AVATAR_SYMBOLE, "farben": AVATAR_FARBEN, "aktuell": nutzer.avatar},
+    )

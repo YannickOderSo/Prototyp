@@ -21,6 +21,7 @@
 {% else %}
 <p>Verbinden Sie Belegfluss mit Ihrem Lexware-Office-Konto. Belegfluss liest offene Rechnungen, Kontakte und Artikel und legt in Lexware nur Entwürfe an. Rechnungen schließen Sie wie gewohnt in Lexware ab.</p>
 {% endif %}
+{% include "web/_e_rechnung.html" %}
 <form method="post" class="karte" novalidate>
   {% csrf_token %}
   {% include "web/_formular.html" %}

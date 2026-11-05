@@ -22,9 +22,37 @@ class NutzerManager(BaseUserManager["Nutzer"]):
         return self.create_user(email, password, **extra)
 
 
+# I5: spielerische Avatare je Teammitglied (Symbole aus web/icons.py, Farben als CSS-Klassen avatar-farbe-N)
+AVATAR_SYMBOLE = [
+    ("cat", "Katze"),
+    ("dog", "Hund"),
+    ("bird", "Vogel"),
+    ("fish", "Fisch"),
+    ("rabbit", "Hase"),
+    ("squirrel", "Eichhörnchen"),
+    ("turtle", "Schildkröte"),
+    ("snail", "Schnecke"),
+    ("bug", "Käfer"),
+    ("rocket", "Rakete"),
+    ("sun", "Sonne"),
+    ("leaf", "Blatt"),
+    ("flower-2", "Blume"),
+    ("hammer", "Hammer"),
+    ("paintbrush", "Pinsel"),
+    ("wrench", "Schraubenschlüssel"),
+    ("zap", "Blitz"),
+    ("bike", "Fahrrad"),
+    ("coffee", "Kaffee"),
+    ("anchor", "Anker"),
+]
+AVATAR_FARBEN = [(0, "Blau"), (1, "Grün"), (2, "Orange"), (3, "Lila"), (4, "Rosa"), (5, "Türkis")]
+
+
 class Nutzer(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField("E-Mail", unique=True)
     name = models.CharField("Name", max_length=150, blank=True)
+    avatar_symbol = models.CharField("Symbol", max_length=20, choices=AVATAR_SYMBOLE, blank=True)
+    avatar_farbe = models.PositiveSmallIntegerField("Farbe", choices=AVATAR_FARBEN, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     erstellt = models.DateTimeField(default=timezone.now)
@@ -38,6 +66,18 @@ class Nutzer(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "Nutzer"
         verbose_name_plural = "Nutzer"
+
+    @property
+    def avatar(self) -> tuple[str, int]:
+        """Gewähltes Symbol und Farbe; ohne Wahl fest aus der ID abgeleitet (jeder hat sofort ein eigenes)."""
+        nummer = self.pk or 0
+        symbol = self.avatar_symbol or AVATAR_SYMBOLE[(nummer * 7) % len(AVATAR_SYMBOLE)][0]
+        farbe = self.avatar_farbe if self.avatar_farbe is not None else nummer % len(AVATAR_FARBEN)
+        return symbol, farbe
+
+    @property
+    def anzeigename(self) -> str:
+        return self.name or self.email.split("@")[0]
 
     def __str__(self) -> str:
         return self.email

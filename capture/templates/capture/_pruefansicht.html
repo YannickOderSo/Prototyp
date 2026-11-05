@@ -2,6 +2,7 @@
 {% if e.status == "pruefung" or e.status == "freigegeben" or e.status == "uebertragen" %}
 <section aria-labelledby="pruefung">
   <h2 id="pruefung">{% if e.entwurf.belegart == "angebot" %}Angebotsentwurf{% elif e.entwurf.belegart == "rechnung" %}Rechnungsentwurf{% else %}Entwurf{% endif %} prüfen</h2>
+  {% if e_rechnung_hinweis %}{% include "web/_e_rechnung.html" with kurz=1 %}{% endif %}
   {% if e.blocker %}
   <div class="meldung fehler" role="alert"><strong>Noch nicht freigabefähig:</strong>
     <ul>{% for b in e.blocker %}<li>{{ b }}</li>{% endfor %}</ul></div>

@@ -8,7 +8,7 @@ from django.http import QueryDict
 
 from accounts.models import Nutzer
 from audit.services import protokolliere
-from ledger.models import Artikel, Kontakt
+from ledger.models import Artikel, Kontakt, Kundentyp
 
 from .entwurf import regeln_anwenden
 from .models import Erfassung
@@ -77,7 +77,17 @@ def ansicht(erfassung: Erfassung) -> dict[str, Any]:
                 "steuersatz_nutzer": roh.get("steuersatz_nutzer", ""),
             }
         )
+    kunde = (
+        Kontakt.objects.fuer(erfassung.firma).filter(extern_id=erfassung.entwurf.get("kunde_extern_id")).first()
+        if erfassung.entwurf.get("kunde_extern_id")
+        else None
+    )
+    an_unternehmen = kunde is not None and (
+        kunde.kundentyp == Kundentyp.UNTERNEHMER
+        or (kunde.kundentyp != Kundentyp.PRIVAT and kunde.ist_unternehmen_extern)
+    )
     return {
+        "e_rechnung_hinweis": erfassung.entwurf.get("belegart") == "rechnung" and an_unternehmen,
         "positionen": positionen,
         "kunden": Kontakt.objects.fuer(erfassung.firma).filter(archiviert=False).order_by("name"),
         "artikel": Artikel.objects.fuer(erfassung.firma).filter(archiviert=False).order_by("bezeichnung"),

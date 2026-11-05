@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% load cockpit %}
 {% block titel %}Team{% endblock %}
 {% block inhalt %}
 <h1>Team</h1>
 <p class="leise">Inhaber und Freigeber dürfen Mahnungen und Entwürfe freigeben. Mitarbeiter dürfen erfassen und ansehen.</p>
 <ul class="liste">
   {% for m in mitglieder %}
-  <li><div class="zeile"><strong>{{ m.nutzer.name|default:m.nutzer.email }}</strong><span class="marke-status">{{ m.get_rolle_display }}</span></div>
-      <div class="neben">{{ m.nutzer.email }}</div></li>
+  <li class="mit-avatar">{% avatar m.nutzer %}<div><div class="zeile"><strong>{{ m.nutzer.name|default:m.nutzer.email }}</strong><span class="marke-status">{{ m.get_rolle_display }}</span></div>
+      <div class="neben">{{ m.nutzer.email }}</div></div></li>
   {% endfor %}
   {% for e in offen %}
   <li><div class="zeile"><span>{{ e.email }}</span><span class="marke-status warnung">eingeladen, {{ e.get_rolle_display }}</span></div>

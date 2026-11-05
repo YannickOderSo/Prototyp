@@ -72,3 +72,13 @@ class NeuesKontoForm(forms.Form):
             except forms.ValidationError as fehler:
                 self.add_error("passwort", fehler)
         return daten
+
+
+class ProfilForm(forms.ModelForm):
+    """Name und Avatar (I5). E-Mail und Passwort ändern sich über eigene, abgesicherte Wege."""
+
+    class Meta:
+        model = Nutzer
+        fields = ["name", "avatar_symbol", "avatar_farbe"]
+        labels = {"name": "Ihr Name", "avatar_symbol": "Ihr Symbol", "avatar_farbe": "Farbe"}
+        widgets = {"avatar_symbol": forms.RadioSelect, "avatar_farbe": forms.RadioSelect}

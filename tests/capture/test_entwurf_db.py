@@ -156,3 +156,22 @@ def test_angebote_werden_gespiegelt(firma, verbindung, lexware_api, ohne_warten,
     from ledger.services import offene_belege
 
     assert not offene_belege(firma).filter(art="angebot").exists()
+
+
+def test_e_rechnungs_hinweis_nur_bei_rechnung_an_unternehmen(firma, inhaber):
+    """M7-07 (I6): Hinweis zur E-Rechnung im Rechnungsentwurf an Unternehmer, nicht an Privatkunden."""
+    from capture.models import Erfassung
+    from capture.pruefung import ansicht
+    from ledger.models import Kontakt
+
+    Kontakt.objects.create(firma=firma, extern_id="k-u", name="Bau AG", kundentyp="unternehmer")
+    Kontakt.objects.create(firma=firma, extern_id="k-p", name="Erika", kundentyp="privat", ist_unternehmen_extern=True)
+    e = Erfassung.objects.create(firma=firma, kanal="upload", status="pruefung")
+    for belegart, kunde, erwartet in (
+        ("rechnung", "k-u", True),
+        ("angebot", "k-u", False),
+        ("rechnung", "k-p", False),
+        ("rechnung", "", False),
+    ):
+        e.entwurf = {"belegart": belegart, "kunde_extern_id": kunde, "positionen": []}
+        assert ansicht(e)["e_rechnung_hinweis"] is erwartet, (belegart, kunde)

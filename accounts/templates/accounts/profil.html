@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Profil{% endblock %}
+{% block inhalt %}
+<h1>Profil</h1>
+<p>So sieht Ihr Team Sie in Belegfluss.</p>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  <div class="profil-vorschau">{% avatar request.user "gross" %}<div><strong>{{ request.user.anzeigename }}</strong><div class="neben">{{ request.user.email }}</div></div></div>
+  <div class="feld"><label for="id_name">Ihr Name</label>{{ form.name }}{{ form.name.errors }}</div>
+  <fieldset class="avatarwahl">
+    <legend>Ihr Symbol</legend>
+    {% for wert, titel in symbole %}
+    <label class="avatar-option" title="{{ titel }}"><input type="radio" name="avatar_symbol" value="{{ wert }}"{% if wert == aktuell.0 %} checked{% endif %}><span class="avatar avatar-farbe-{{ aktuell.1 }}">{% icon wert %}</span><span class="versteckt-text">{{ titel }}</span></label>
+    {% endfor %}
+  </fieldset>
+  <fieldset class="avatarwahl farben">
+    <legend>Farbe</legend>
+    {% for wert, titel in farben %}
+    <label class="avatar-option" title="{{ titel }}"><input type="radio" name="avatar_farbe" value="{{ wert }}"{% if wert == aktuell.1 %} checked{% endif %}><span class="farbpunkt avatar-farbe-{{ wert }}"></span><span class="versteckt-text">{{ titel }}</span></label>
+    {% endfor %}
+  </fieldset>
+  <div class="knopfreihe"><button type="submit">Profil speichern</button></div>
+</form>
+<section class="karte">
+  <h2>Konto</h2>
+  <ul class="liste">
+    <li><div class="zeile"><a href="{% url 'accounts:sicherheit' %}"><strong>Sicherheit</strong></a><span class="neben">Zwei-Faktor-Anmeldung, Wiederherstellungscodes</span></div></li>
+    {% if request.mitgliedschaft.ist_inhaber %}<li><div class="zeile"><a href="{% url 'accounts:team' %}"><strong>Team</strong></a><span class="neben">Personen einladen, Rollen</span></div></li>
+    <li><div class="zeile"><span><strong>Abo und Zahlung</strong></span><span class="marke-status">kommt bald</span></div><div class="neben">Tarif, Kündigungsfrist und Zahlungsmittel verwalten Sie künftig hier.</div></li>{% endif %}
+  </ul>
+  <form method="post" action="{% url 'accounts:logout' %}" class="knopfreihe">{% csrf_token %}<button type="submit" class="zweitrangig">{% icon "log-out" %}Abmelden</button></form>
+</section>
+{% endblock %}

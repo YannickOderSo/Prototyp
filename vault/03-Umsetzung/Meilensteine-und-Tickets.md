@@ -91,5 +91,5 @@ Rückmeldung von Lukas, Umfang am 5. November 2026 von Yannick entschieden: Die 
 - [x] **M7-03** „Angebote & Rechnungen“ statt „Erfassen“; Cockpit mit Reitern Überblick, Rechnungen, Angebote, Mahnungen (I1, I2).
 - [x] **M7-04** Statistik Woche und Monat inklusive Angebote (I3).
 - [x] **M7-05** Angebots-Erinnerung an den Endkunden nach Freigabe (I4, ADR-009).
-- [ ] **M7-06** Profil-Menü mit Avataren (I5).
-- [ ] **M7-07** Hinweis zur E-Rechnung (I6).
+- [x] **M7-06** Profil-Menü mit Avataren (I5).
+- [x] **M7-07** Hinweis zur E-Rechnung (I6).

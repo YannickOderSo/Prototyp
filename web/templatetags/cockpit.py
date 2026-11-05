@@ -51,3 +51,16 @@ def icon(name: str, klasse: str = "") -> str:
         klasse,
         mark_safe(pfade),  # noqa: S308 – feste Pfade aus web/icons.py, keine Nutzereingabe
     )
+
+
+@register.simple_tag
+def avatar(nutzer: object, groesse: str = "") -> str:
+    """Rundes Avatar-Symbol eines Teammitglieds (I5). Für Screenreader verborgen; der Name steht daneben."""
+    from django.utils.html import format_html
+
+    if nutzer is None or not hasattr(nutzer, "avatar"):
+        return ""
+    symbol, farbe = nutzer.avatar
+    return format_html(
+        '<span class="avatar avatar-farbe-{} {}" aria-hidden="true">{}</span>', farbe, groesse, icon(symbol)
+    )

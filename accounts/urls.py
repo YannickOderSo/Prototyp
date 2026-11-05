@@ -38,6 +38,7 @@ urlpatterns = [
     path("sicherheit/", views_zweifaktor.sicherheit, name="sicherheit"),
     path("firma-wechseln/", views.firma_wechseln, name="firma_wechseln"),
     path("team/", views.team, name="team"),
+    path("profil/", views.profil, name="profil"),
     path("einladung/<str:token>/", views.team_annehmen, name="team_annehmen"),
     path("passwort/vergessen/", _passwort["vergessen"], name="passwort_vergessen"),
     path("passwort/gesendet/", _passwort["gesendet"], name="passwort_gesendet"),

@@ -255,3 +255,32 @@ Der Produktname ist **Belegfluss**. Logo-Entwurf: Ein Kassenbon steht für den �
 - Alle Texte, in denen „das Cockpit“ das Produkt meinte. „Cockpit“ heißt weiter die Übersichtsseite.
 
 **Nicht geändert:** Python-Paket `cockpit` und Django-Projekt. Der Aufwand stünde in keinem Verhältnis, und Migrationen sowie Deploy hängen daran.
+
+## Bericht M7 Rückmeldung Lukas (5. November 2026)
+
+Lukas hat 10 Punkte geschickt. Yannick hat entschieden:
+- die schnellen Punkte bauen,
+- „Erfassen“ heißt „Angebote & Rechnungen“,
+- die Angebots-Erinnerung geht nach Freigabe an den Endkunden.
+
+Die großen Punkte stehen als Konzept in [[Konzept-Erweiterungen]]: Abo-Verwaltung, Team-Chat, KI-Hilfe-Chat, KI-Telefonassistent.
+
+**Fertig:**
+- M7-01 Spezifikation I1–I7, [[ADR-009-Angebots-Erinnerung]], Konzept mit Aufwand, Rechtsfragen und Empfehlung.
+- M7-02 Angebote im Spiegel: Ablaufdatum aus `GET /v1/quotations/{id}` (nur bei Bedarf), Status „angenommen“ und „abgelehnt“, Abgleich der letzten 12 Monate.
+- M7-03 „Angebote & Rechnungen“ mit Einstieg „Angebot oder Rechnung erstellen“, Entwürfen und offenen Angeboten. Das Cockpit hat Reiter: Überblick, Rechnungen, Angebote, Mahnungen.
+- M7-04 Statistik statt Berichte: 7 Tage, dieser Monat, letzter Monat; neu mit Angeboten (verschickt, angenommen, abgelehnt, abgelaufen, Quote), auch in der Montagsmail.
+- M7-05 Angebots-Erinnerung an den Endkunden:
+  - Vorschlag 7 Tage vor Ablauf.
+  - Freigabe mit zweitem Faktor.
+  - Frische-Check in Lexware.
+  - Angebots-PDF im Anhang.
+  - Protokoll, Export und Zähler.
+- M7-06 Profil mit spielerischem Avatar (20 Symbole, 6 Farben), Profil-Link in der Seitenleiste und im Handy-Kopf, Avatare in der Team-Liste. „Abo und Zahlung“ ist als „kommt bald“ angekündigt.
+- M7-07 Aufklappbarer Hinweis zur E-Rechnung im Rechnungsentwurf an Unternehmen und auf der Lexware-Seite. Lexware erzeugt die E-Rechnung (ADR-001).
+- Punkt 7 (PDF im Anhang) war schon umgesetzt: Erinnerungen tragen die Rechnung, Mahnungen das Lexware-PDF. Neu ist das Angebots-PDF bei Angebots-Erinnerungen.
+
+**Nur gegen Mocks getestet, Echtlauf nötig:**
+- Ablaufdatum und Status echter Lexware-Angebote.
+- Das Angebots-PDF (`/v1/quotations/{id}/file`).
+- Prüfen, ob die Belegliste `voucherDateFrom` für Angebote wie dokumentiert filtert.
