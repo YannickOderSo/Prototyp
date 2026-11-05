@@ -1,0 +1,26 @@
+From: Petra Polier <petra.polier@bau-ag.example>
+To: belege@cockpit.example
+Subject: Stunden Neubau Nord
+Date: Mon, 02 Nov 2026 10:00:00 +0100
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0854493121030574533=="
+
+--===============0854493121030574533==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Hallo,
+anbei die Stunden fuer Neubau Nord. Bitte abrechnen.
+Gruss Petra
+
+--===============0854493121030574533==
+Content-Type: text/csv
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="zeiten.csv"
+MIME-Version: 1.0
+
+RGF0dW07S3VuZGU7UHJvamVrdDtEYXVlciAoZGV6aW1hbCkKMjAyNi0xMS0wMjtCYXUgQUc7TmV1
+YmF1IE5vcmQ7NCw1CjIwMjYtMTEtMDM7QmF1IEFHO05ldWJhdSBOb3JkOzMsMjUKMjAyNi0xMS0w
+MztFcmlrYSBNdXN0ZXJmcmF1O1dvaG56aW1tZXI7Mgo=
+
+--===============0854493121030574533==--
