@@ -5,6 +5,7 @@
 <ul class="liste">
   {% if ist_inhaber %}
   <li><a href="{% url 'connectors:lexware' %}"><strong>Lexware Office</strong></a><span class="neben">API-Schlüssel, Abgleich</span></li>
+  <li><a href="{% url 'dunning:mahnplan' %}"><strong>Mahnplan</strong></a><span class="neben">Stufen, Fristen, Zinsen, Texte</span></li>
   <li><a href="{% url 'accounts:team' %}"><strong>Team</strong></a><span class="neben">Inhaber, Freigeber, Mitarbeiter</span></li>
   {% endif %}
   <li><a href="{% url 'accounts:sicherheit' %}"><strong>Sicherheit</strong></a><span class="neben">Zwei-Faktor-Anmeldung, Wiederherstellungscodes</span></li>

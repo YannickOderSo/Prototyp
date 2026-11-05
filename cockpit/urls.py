@@ -5,5 +5,6 @@ urlpatterns = [
     path("einstellungen/verbindung/", include("connectors.urls")),
     path("hooks/", include("connectors.hooks_urls")),
     path("posten/", include("ledger.urls")),
+    path("mahnungen/", include("dunning.urls")),
     path("", include("web.urls")),
 ]

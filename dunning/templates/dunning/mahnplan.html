@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Mahnplan{% endblock %}
+{% block inhalt %}
+<h1>Mahnplan</h1>
+<p>Das Cockpit erzeugt täglich <strong>Vorschläge</strong>. Versendet wird erst nach Ihrer Freigabe.</p>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Mahnplan speichern</button></div>
+</form>
+<section class="karte">
+  <h2>Basiszinssatz (§ 247 BGB)</h2>
+  <p class="hilfe">Verzugszinsen: Basiszins plus 5 Prozentpunkte bei Privatkunden, plus 9 Prozentpunkte bei Unternehmern. Die Tabelle pflegt das Betriebsteam halbjährlich.</p>
+  <ul class="liste">{% for b in basiszinsen %}<li><div class="zeile"><span>ab {{ b.gueltig_ab|datum }}</span><strong>{{ b.satz|zahl }} %</strong></div></li>{% endfor %}</ul>
+</section>
+{% endblock %}
