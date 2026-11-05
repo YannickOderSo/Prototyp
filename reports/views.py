@@ -4,12 +4,17 @@ from django.shortcuts import render
 from accounts.rechte import freigabe_berechtigt, nur_inhaber
 from accounts.typen import FirmaRequest
 
-from .wochenbericht import bericht
+from .wochenbericht import ZEITRAEUME, bericht
 
 
 @freigabe_berechtigt
 def uebersicht(request: FirmaRequest) -> HttpResponse:
-    return render(request, "reports/uebersicht.html", {"b": bericht(request.firma)})
+    art = request.GET.get("zeitraum", "woche")
+    return render(
+        request,
+        "reports/uebersicht.html",
+        {"b": bericht(request.firma, art=art), "zeitraeume": list(ZEITRAEUME.items())},
+    )
 
 
 @nur_inhaber

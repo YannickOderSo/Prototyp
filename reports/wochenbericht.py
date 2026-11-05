@@ -1,7 +1,7 @@
-"""Wöchentlicher Liquiditätsbericht (F1): eingegangen, überfällig, gemahnt, Prognose.
+"""Statistik (F1, I3): eingegangen, überfällig, gemahnt, Angebote, Prognose; je Woche oder Monat.
 
-Wird montags als Abschnitt der Sammelfreigabe-Mail versendet (dunning/sammelmail.py) und ist im Cockpit
-unter „Berichte“ einsehbar.
+Die Wochenstatistik geht montags als Abschnitt der Sammelfreigabe-Mail hinaus (dunning/sammelmail.py). In der App
+steht sie unter „Statistik“, umschaltbar auf die letzten 7 Tage, den laufenden und den letzten Monat.
 
 „Eingegangen“ ist die Summe der Rechnungen, die laut Lexware in den letzten 7 Tagen vollständig bezahlt
 wurden (Bruttobetrag). Teilzahlungen auf weiterhin offene Rechnungen sind darin nicht enthalten.
@@ -19,11 +19,24 @@ from django.utils import timezone
 from accounts.models import Firma
 from dunning.mail import euro
 from dunning.models import Mahnvorschlag
-from ledger import auswertung
+from ledger import angebote, auswertung
 from ledger.models import Beleg
 from ledger.services import als_posten, offene_belege, verzug_je_kontakt
 
 NULL = Decimal("0.00")
+
+
+ZEITRAEUME = {"woche": "Letzte 7 Tage", "monat": "Dieser Monat", "vormonat": "Letzter Monat"}
+
+
+def zeitraum(art: str, heute: date) -> tuple[date, date]:
+    """Erster und letzter Tag (einschließlich). Woche: die 7 Tage vor heute; Monat: 1. bis heute."""
+    if art == "monat":
+        return heute.replace(day=1), heute
+    if art == "vormonat":
+        ende = heute.replace(day=1) - timedelta(days=1)
+        return ende.replace(day=1), ende
+    return heute - timedelta(days=7), heute - timedelta(days=1)
 
 
 @dataclass
@@ -35,14 +48,21 @@ class Wochenbericht:
     kennzahlen: auswertung.Kennzahlen
     gemahnt: list[tuple[str, int, Decimal]]
     prognose: auswertung.Prognose
+    angebote: angebote.Kennzahlen
+    art: str = "woche"
+
+    @property
+    def titel(self) -> str:
+        return {"woche": "Wochenstatistik", "monat": "Monatsstatistik", "vormonat": "Monatsstatistik"}[self.art]
 
 
-def bericht(firma: Firma, heute: date | None = None) -> Wochenbericht:
+def bericht(firma: Firma, heute: date | None = None, art: str = "woche") -> Wochenbericht:
     heute = heute or timezone.localdate()
-    von = heute - timedelta(days=7)
+    art = art if art in ZEITRAEUME else "woche"
+    von, bis = zeitraum(art, heute)
     bezahlt = (
         Beleg.objects.fuer(firma)
-        .filter(status=Beleg.Status.BEZAHLT, bezahlt_am__gte=von, bezahlt_am__lt=heute)
+        .filter(status=Beleg.Status.BEZAHLT, bezahlt_am__gte=von, bezahlt_am__lte=bis)
         .exclude(art=Beleg.Art.ANGEBOT)
     )
     summe = bezahlt.aggregate(s=Sum("brutto"), n=Count("id"))
@@ -55,14 +75,16 @@ def bericht(firma: Firma, heute: date | None = None) -> Wochenbericht:
                 stufe=stufe,
                 status=Mahnvorschlag.Status.VERSENDET,
                 versendet_am__date__gte=von,
-                versendet_am__date__lt=heute,
+                versendet_am__date__lte=bis,
             )
             .aggregate(n=Count("id"), s=Sum("gesamt"))
         )
         gemahnt.append((label, int(versendet["n"] or 0), versendet["s"] or NULL))
     return Wochenbericht(
+        art=art,
+        angebote=angebote.kennzahlen(firma, von, bis, heute),
         von=von,
-        bis=heute - timedelta(days=1),
+        bis=bis,
         eingegangen_summe=summe["s"] or NULL,
         eingegangen_anzahl=int(summe["n"] or 0),
         kennzahlen=auswertung.kennzahlen(posten, heute),
@@ -87,6 +109,13 @@ def als_text(b: Wochenbericht) -> str:
     zeilen.append("Gemahnt in der letzten Woche:")
     for label, anzahl, summe in b.gemahnt:
         zeilen.append(f"  {label}: {anzahl}{f' ({euro(summe)})' if anzahl else ''}")
+    a = b.angebote
+    if a.verschickt:
+        quote = f", Annahmequote {a.quote} %" if a.quote is not None else ""
+        zeilen.append(
+            f"Angebote: {a.verschickt} verschickt ({euro(a.volumen)}), {a.angenommen} angenommen "
+            f"({euro(a.angenommen_volumen)}), {a.abgelehnt} abgelehnt, {a.abgelaufen} abgelaufen{quote}"
+        )
     zeilen.append("Erwarteter Geldeingang:")
     for woche in b.prognose.wochen:
         zeilen.append(f"  {woche.beginn:%d.%m.}–{woche.ende:%d.%m.}: {euro(woche.summe)}")

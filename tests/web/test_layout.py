@@ -75,7 +75,7 @@ def test_navigation_mit_icons_und_handy_leiste(client_inhaber):
         "Offene Posten",
         "Kunden",
         "Mahnungen",
-        "Berichte",
+        "Statistik",
         "Einstellungen",
     ):
         assert f'<span class="nav-titel">{titel}</span>' in seitenleiste
@@ -84,7 +84,7 @@ def test_navigation_mit_icons_und_handy_leiste(client_inhaber):
     haupt = unterleiste.split('<details class="mehr"')[0]
     assert haupt.count("<a href=") == 4
     mehr = unterleiste.split('<div class="mehr-menue">')[1]
-    assert "Berichte" in mehr and "Einstellungen" in mehr and "Kunden" in mehr
+    assert "Statistik" in mehr and "Einstellungen" in mehr and "Kunden" in mehr
 
 
 def test_zaehler_an_der_navigation(client_inhaber, firma):

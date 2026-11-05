@@ -1,15 +1,30 @@
 {% extends "base.html" %}
 {% load cockpit %}
-{% block titel %}Berichte{% endblock %}
+{% block titel %}Statistik{% endblock %}
 {% block inhalt %}
-<h1>Wochenbericht</h1>
-<p class="leise">{{ b.von|date:"d.m." }} bis {{ b.bis|date:"d.m.Y" }}. Diesen Bericht erhalten Inhaber und Freigeber montags mit der Sammelfreigabe.</p>
+<h1>Statistik</h1>
+<p>{{ b.titel }}: {{ b.von|date:"d.m." }} bis {{ b.bis|date:"d.m.Y" }}. Die Wochenstatistik erhalten Inhaber und Freigeber montags mit der Sammelfreigabe.</p>
+<nav class="reiter" aria-label="Zeitraum">
+  {% for schluessel, titel in zeitraeume %}<a href="?zeitraum={{ schluessel }}"{% if schluessel == b.art %} aria-current="page"{% endif %}>{{ titel }}</a>{% endfor %}
+</nav>
+
+<h2>Rechnungen</h2>
 <section class="kennzahlen">
-  <div class="kennzahl"><div class="label">Eingegangen</div><div class="wert">{{ b.eingegangen_summe|euro }}</div><div class="label">{{ b.eingegangen_anzahl }} Rechnungen bezahlt</div></div>
-  <div class="kennzahl schlecht"><div class="label">Überfällig</div><div class="wert">{{ b.kennzahlen.summe_ueberfaellig|euro }}</div><div class="label">{{ b.kennzahlen.anzahl_ueberfaellig }} Posten</div></div>
-  <div class="kennzahl"><div class="label">Offen gesamt</div><div class="wert">{{ b.kennzahlen.summe_offen|euro }}</div></div>
+  <div class="kennzahl gut"><div class="label">Eingegangen</div><div class="wert">{{ b.eingegangen_summe|euro }}</div><div class="label">{{ b.eingegangen_anzahl }} Rechnung{{ b.eingegangen_anzahl|pluralize:"en" }} bezahlt</div></div>
+  <div class="kennzahl schlecht"><div class="label">Überfällig heute</div><div class="wert">{{ b.kennzahlen.summe_ueberfaellig|euro }}</div><div class="label">{{ b.kennzahlen.anzahl_ueberfaellig }} Posten</div></div>
+  <div class="kennzahl"><div class="label">Offen gesamt</div><div class="wert">{{ b.kennzahlen.summe_offen|euro }}</div><div class="label">{{ b.kennzahlen.anzahl_offen }} Posten</div></div>
   <div class="kennzahl"><div class="label">Erwartet in 4 Wochen</div><div class="wert">{{ b.prognose.summe|euro }}</div></div>
 </section>
+
+<h2>Angebote</h2>
+<section class="kennzahlen">
+  <div class="kennzahl"><div class="label">Verschickt</div><div class="wert">{{ b.angebote.verschickt }}</div><div class="label">{{ b.angebote.volumen|euro }}</div></div>
+  <div class="kennzahl gut"><div class="label">Angenommen</div><div class="wert">{{ b.angebote.angenommen }}</div><div class="label">{{ b.angebote.angenommen_volumen|euro }}</div></div>
+  <div class="kennzahl"><div class="label">Abgelehnt oder abgelaufen</div><div class="wert">{{ b.angebote.abgelehnt|add:b.angebote.abgelaufen }}</div><div class="label">{{ b.angebote.abgelehnt }} abgelehnt · {{ b.angebote.abgelaufen }} abgelaufen</div></div>
+  <div class="kennzahl"><div class="label">Annahmequote</div><div class="wert">{% if b.angebote.quote is None %}–{% else %}{{ b.angebote.quote }} %{% endif %}</div><div class="label">{{ b.angebote.offen }} noch offen</div></div>
+</section>
+<p class="hilfe">Gezählt werden Angebote mit Angebotsdatum im Zeitraum. Die Annahmequote bezieht sich auf entschiedene Angebote (angenommen, abgelehnt oder abgelaufen).</p>
+
 <h2>Gemahnt</h2>
 <ul class="liste">{% for label, anzahl, summe in b.gemahnt %}<li><div class="zeile"><span>{{ label }}</span><span>{{ anzahl }}{% if anzahl %} · {{ summe|euro }}{% endif %}</span></div></li>{% endfor %}</ul>
 {% if request.mitgliedschaft.ist_inhaber %}{% url 'reports:export' as export_url %}{% if export_url %}<p><a class="knopf zweitrangig" href="{{ export_url }}">Daten exportieren (CSV)</a></p>{% endif %}{% endif %}

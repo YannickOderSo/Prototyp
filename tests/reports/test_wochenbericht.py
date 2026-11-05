@@ -82,7 +82,41 @@ def test_bericht_steht_in_der_montagsmail(daten, inhaber):
 
 def test_berichtsseite(client_freigeber, daten):
     html = client_freigeber.get(reverse("reports:uebersicht")).content.decode()
-    assert "Wochenbericht" in html
+    assert "<h1>Statistik</h1>" in html and "Wochenstatistik" in html
+    assert 'href="?zeitraum=monat"' in html
+
+
+def test_zeitraeume():
+    from reports.wochenbericht import zeitraum
+
+    assert zeitraum("woche", MONTAG) == (date(2026, 11, 2), date(2026, 11, 8))
+    assert zeitraum("monat", MONTAG) == (date(2026, 11, 1), MONTAG)
+    assert zeitraum("vormonat", MONTAG) == (date(2026, 10, 1), date(2026, 10, 31))
+    assert zeitraum("vormonat", date(2026, 1, 15)) == (date(2025, 12, 1), date(2025, 12, 31))
+
+
+def test_monatsstatistik_mit_angeboten(daten):
+    for nr, status, tag in ((1, "angenommen", 3), (2, "abgelehnt", 4), (3, "offen", 5), (4, "angenommen", 20)):
+        Beleg.objects.create(
+            firma=daten,
+            extern_id=f"q{nr}",
+            art="angebot",
+            nummer=f"AN-{nr}",
+            status=status,
+            brutto=D("1000"),
+            belegdatum=MONTAG - timedelta(days=tag),
+        )
+    b = bericht(daten, MONTAG, art="vormonat")
+    assert b.titel == "Monatsstatistik" and (b.von, b.bis) == (date(2026, 10, 1), date(2026, 10, 31))
+    assert b.angebote.verschickt == 1 and b.angebote.angenommen == 1  # AN-4 vom 20.10.; AN-1 bis AN-3 im November
+    woche = bericht(daten, MONTAG)
+    assert (woche.angebote.verschickt, woche.angebote.angenommen, woche.angebote.abgelehnt) == (3, 1, 1)
+    assert woche.angebote.quote == 50
+    text = als_text(woche)
+    assert (
+        "Angebote: 3 verschickt (3.000,00 €), 1 angenommen (1.000,00 €), 1 abgelehnt, 0 abgelaufen, Annahmequote 50 %"
+        in text
+    )
 
 
 def test_berichtsseite_nicht_fuer_mitarbeiter(client_mitarbeiter):

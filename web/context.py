@@ -16,7 +16,7 @@ NAVIGATION = [
     ("ledger:posten", "Offene Posten", "Posten", "receipt-text", False),
     ("ledger:kunden", "Kunden", "Kunden", "users", False),
     ("dunning:freigabe", "Mahnungen", "Mahnungen", "send", True),
-    ("reports:uebersicht", "Berichte", "Berichte", "chart-column", True),
+    ("reports:uebersicht", "Statistik", "Statistik", "chart-column", True),
     ("web:einstellungen", "Einstellungen", "Einstellungen", "settings", False),
 ]
 # Reihenfolge der Hauptziele in der unteren Leiste; fehlt eines (Rolle), rückt das nächste nach
