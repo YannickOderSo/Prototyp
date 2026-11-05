@@ -1,1 +1,6 @@
-{# Kundentyp und Pausen pflegt M1-10 bzw. M2-08 #}
+{% if request.darf_freigeben %}
+<section class="karte" aria-label="Kundentyp">
+  <h2>Kundentyp</h2>
+  <ul class="liste">{% include "ledger/_kundentyp_zeile.html" with k=kontakt %}</ul>
+</section>
+{% endif %}

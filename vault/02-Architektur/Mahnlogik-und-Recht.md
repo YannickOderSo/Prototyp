@@ -18,7 +18,7 @@ Abstände sind je Firma einstellbar, Mindestabstand zwischen Stufen 7 Tage (hart
 Ein Beleg bekommt einen Vorschlag nur, wenn **alle** Bedingungen gelten:
 
 1. Status im Spiegel `offen` oder `ueberfaellig` und `offen > 0`.
-2. Kontakt hat `kundentyp` gesetzt (sonst "Klärung nötig", Anforderung D3).
+2. Kontakt hat `kundentyp` gesetzt (sonst "Klärung nötig", Anforderung D3). Gepflegt in der Liste „Kundentyp festlegen“ (M1-10) durch Inhaber oder Freigeber, protokolliert; der Lexware-Hinweis Firma/Person wird nur angezeigt, nie übernommen. Belege ohne Kontakt (Sammelkunde) werden nie automatisch gemahnt.
 3. Weder Beleg noch Kontakt pausiert.
 4. Für diese Stufe existiert noch kein Vorschlag (eindeutig auf Beleg und Stufe).
 5. Die vorige Stufe wurde versendet (Stufe 1 setzt versendete Stufe 0 voraus, außer Stufe 0 ist in der Firma deaktiviert).

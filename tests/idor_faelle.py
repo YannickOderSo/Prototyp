@@ -15,6 +15,7 @@ def _kontakt(firma, nutzer=None):
 
 FAELLE: dict[str, Fabrik] = {
     "ledger:kunde": _kontakt,
+    "ledger:kundentyp_setzen": _kontakt,
 }
 
 # URLs mit Parametern, die keine Objekt-IDs einer Firma sind (mit Begründung)

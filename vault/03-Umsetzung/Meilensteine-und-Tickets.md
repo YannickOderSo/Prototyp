@@ -22,7 +22,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 - [x] **M1-07** Erstimport und nächtlicher Abgleich in den Spiegel (B2, B3 Teil Abgleich). Abnahme: Summen stimmen mit Lexware-Testkonto.
 - [x] **M1-08** Webhooks registrieren und empfangen, Signaturprüfung, idempotente Verarbeitung (B3).
 - [x] **M1-09** Cockpit-Startseite: Kennzahlen und Altersstruktur (C1), Liste offener Posten mit Filtern (C2), Kundenansicht (C3), Prognose 4 Wochen (C4), mobil (C5).
-- [ ] **M1-10** Kundentyp pflegen: Liste "Kundentyp fehlt" mit Schnellauswahl Privat/Unternehmer (Voraussetzung für D3).
+- [x] **M1-10** Kundentyp pflegen: Liste "Kundentyp fehlt" mit Schnellauswahl Privat/Unternehmer (Voraussetzung für D3).
 
 **Meilenstein-Abnahme M1:** Mit dem Lexware-Testkonto stimmen Summe offen, Summe überfällig und Anzahl exakt; eine in Lexware als bezahlt markierte Rechnung verschwindet binnen 5 Minuten aus "offen".
 

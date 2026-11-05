@@ -1,16 +1,20 @@
+from django.contrib import messages
 from django.core.paginator import Paginator
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.db.models import QuerySet
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from accounts.mandant import hole_oder_404
-from accounts.rechte import firma_erforderlich
+from accounts.rechte import firma_erforderlich, freigabe_berechtigt
 from accounts.typen import FirmaRequest
+from audit.services import protokolliere
 
 from . import auswertung
 from .forms import PostenFilterForm
-from .models import Beleg, Kontakt
-from .services import offene_belege, posten_filtern, zahlungen
+from .models import Beleg, Kontakt, Kundentyp
+from .services import kontakte_ohne_kundentyp, offene_belege, posten_filtern, zahlungen
 
 SEITENGROESSE = 100
 
@@ -62,3 +66,40 @@ def kunde(request: FirmaRequest, pk: int) -> HttpResponse:
             "anzahl_zahlungen": len(auswertung.relevante_zahlungen(liste, heute)),
         },
     )
+
+
+@firma_erforderlich
+def kundentyp(request: FirmaRequest) -> HttpResponse:
+    """Liste „Kundentyp fehlt“: Ohne Kundentyp wird nicht gemahnt (D3)."""
+    kontakte: QuerySet[Kontakt]
+    if request.GET.get("alle"):
+        kontakte = (
+            Kontakt.objects.fuer(request.firma).filter(kundentyp=Kundentyp.UNBEKANNT, archiviert=False).order_by("name")
+        )
+    else:
+        kontakte = kontakte_ohne_kundentyp(request.firma)
+    return render(request, "ledger/kundentyp.html", {"kontakte": kontakte, "alle": bool(request.GET.get("alle"))})
+
+
+@require_POST
+@freigabe_berechtigt
+def kundentyp_setzen(request: FirmaRequest, pk: int) -> HttpResponse:
+    kontakt = hole_oder_404(Kontakt, request.firma, pk=pk)
+    neu = request.POST.get("kundentyp", "")
+    if neu not in (Kundentyp.PRIVAT, Kundentyp.UNTERNEHMER, Kundentyp.UNBEKANNT):
+        return HttpResponseBadRequest("Ungültiger Kundentyp")
+    alt = kontakt.kundentyp
+    if alt != neu:
+        kontakt.kundentyp = neu
+        kontakt.save(update_fields=["kundentyp"])
+        protokolliere(
+            request.firma,
+            "kontakt.kundentyp_gesetzt",
+            nutzer=request.user,
+            objekt=kontakt,
+            daten={"alt": alt, "neu": neu},
+        )
+    if request.headers.get("HX-Request"):
+        return render(request, "ledger/_kundentyp_zeile.html", {"k": kontakt, "gespeichert": True})
+    messages.success(request, f"Kundentyp für {kontakt.name} gespeichert.")
+    return redirect(request.POST.get("zurueck") or "ledger:kundentyp")

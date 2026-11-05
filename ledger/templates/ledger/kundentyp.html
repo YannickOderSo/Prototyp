@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block titel %}Kundentyp festlegen{% endblock %}
+{% block inhalt %}
+<h1>Kundentyp festlegen</h1>
+<p>Der Kundentyp entscheidet über Verzugszinsen (5 bzw. 9 Prozentpunkte über dem Basiszins) und die 40-€-Pauschale, die es nur bei Unternehmern gibt. <strong>Ohne Kundentyp wird nicht gemahnt.</strong></p>
+<p class="hilfe">Unternehmer ist, wer bei der Bestellung gewerblich oder selbständig beruflich gehandelt hat (§ 14 BGB), also auch Einzelunternehmer und Freiberufler. Im Zweifel „Privatkunde“ wählen.</p>
+<p>{% if alle %}<a href="{% url 'ledger:kundentyp' %}">Nur Kunden mit offenen Posten zeigen</a>{% else %}<a href="?alle=1">Alle Kunden ohne Kundentyp zeigen</a>{% endif %}</p>
+<ul class="liste" id="kundentyp-liste">
+  {% for k in kontakte %}{% include "ledger/_kundentyp_zeile.html" %}{% empty %}
+  <li>Bei allen {% if not alle %}Kunden mit offenen Posten{% else %}Kunden{% endif %} ist der Kundentyp festgelegt.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,12 @@
+<li id="kontakt-{{ k.pk }}">
+  <div class="zeile"><a href="{% url 'ledger:kunde' k.pk %}"><strong>{{ k.name }}</strong></a>
+    {% if gespeichert %}<span class="marke-status gut">{{ k.get_kundentyp_display }} gespeichert</span>{% endif %}</div>
+  <div class="neben">{% if k.kundennummer %}Kundennr. {{ k.kundennummer }} · {% endif %}{% if k.ist_unternehmen_extern is True %}in Lexware als Firma angelegt{% elif k.ist_unternehmen_extern is False %}in Lexware als Person angelegt{% endif %}</div>
+  {% if request.darf_freigeben %}
+  <form method="post" action="{% url 'ledger:kundentyp_setzen' k.pk %}" hx-post="{% url 'ledger:kundentyp_setzen' k.pk %}" hx-target="#kontakt-{{ k.pk }}" hx-swap="outerHTML" class="knopfreihe">
+    {% csrf_token %}
+    <button type="submit" name="kundentyp" value="privat" class="{% if k.kundentyp != 'privat' %}zweitrangig{% endif %}">Privatkunde</button>
+    <button type="submit" name="kundentyp" value="unternehmer" class="{% if k.kundentyp != 'unternehmer' %}zweitrangig{% endif %}">Unternehmer</button>
+  </form>
+  {% endif %}
+</li>
