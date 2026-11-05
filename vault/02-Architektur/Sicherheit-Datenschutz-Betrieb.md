@@ -13,6 +13,7 @@
 - Uploads: MIME-Prüfung per Inhalt, nicht per Endung; nie ausführen; außerhalb des Webroots speichern.
 - Webhooks: Signaturprüfung, Token im Pfad, Payload nur als Hinweis, Daten immer nachladen.
 - Export: CSV-Injection-Schutz (Zellen, die mit `= + - @` beginnen, mit `'` präfixen).
+  Umgesetzt (M4-02, `reports/export.py`): ZIP mit `vorschlaege.csv`, `versaende.csv`, `protokoll.csv`, `erfassungen.csv` (Semikolon, UTF-8 mit BOM); zusätzlich Tab und CR am Zellanfang geschützt. Nur der Inhaber exportiert (Seite „Berichte“), jeder Export wird protokolliert. Für Betroffenenrechte: `manage.py firma_export <firma_id> <datei>`.
 
 ## Datenschutz
 
