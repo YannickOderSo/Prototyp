@@ -18,6 +18,7 @@ Quellen: WhatsApp-Chat vom 4. November 2026, Lukas' Repository `belegfluss` (REA
 | Hosting bei Hetzner in Deutschland, Zwei-Faktor, Rollen | Belegfluss | A2, A3, Betrieb |
 | Start als Dienstleistung mit Einrichtungsgebühr | Wettbewerbsanalyse | Onboarding F6 und Einrichtung durch das Team; Preis außerhalb der App |
 | Microsoft-365-Postfach als Eingang | Belegfluss | KANN; MVP nutzt Weiterleitung an eine eigene Belegadresse |
+| Nutzung seines Codes freigegeben, aber eigener Workflow von Grund auf gewünscht | Gespräch 5. November 2026 | ADR-007 |
 
 ## Wünsche von Yannick
 
@@ -27,7 +28,7 @@ Quellen: WhatsApp-Chat vom 4. November 2026, Lukas' Repository `belegfluss` (REA
 | Optisch mit einem Dashboard der offenen Rechnungen und Forderungen | Chat | Forderungs-Cockpit C1–C6 ist die Startseite und das Kernprodukt |
 | Eventuell mit einem CRM gekoppelt | Chat | Kundenansicht C3 mit Zahlungsverhalten; echtes CRM bewusst nicht im MVP |
 | Audiovisuell schnell Rechnungen verfassen; KI-Agent plant und erstellt Rechnungen | Chat | E1–E9 als Entwurf mit Freigabe; "selbständig versenden" bewusst ausgeschlossen (Haftung § 14c UStG) |
-| Kann komplett anders aufgebaut sein als Belegfluss | Chat | Neues Repository; Belegfluss-Module dürfen portiert werden (ADR-002) |
+| Kann komplett anders aufgebaut sein als Belegfluss | Chat | Neues Repository, Eigenbau von Grund auf; Belegfluss als Orientierung (ADR-007) |
 
 ## Ausdrücklich verworfen und warum
 

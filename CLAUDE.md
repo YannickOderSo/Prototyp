@@ -15,5 +15,6 @@ Harte Regeln, die nie gebrochen werden:
 - Rechnungen, Nummern, E-Rechnung und Archiv bleiben im **Bestandstool** (Lexware Office, später sevdesk). Diese App baut kein eigenes Rechnungsprogramm.
 - Personenbezogene Daten werden nur in der **EU** verarbeitet.
 - Jeder Schritt mit Außenwirkung wird im Protokoll festgehalten.
+- Von Grund auf selbst bauen. Code aus `belegfluss` (Lukas) nur als Orientierung; Übernahme nur nach den Bedingungen in ADR-007, mit Herkunftsvermerk und eigenen Tests.
 
 Wenn eine Spezifikation fehlt oder widersprüchlich ist: in `vault/05-Kontext/Offene-Fragen.md` eintragen, die konservativste Annahme treffen und weiterarbeiten.

@@ -2,7 +2,9 @@
 
 Repository: https://github.com/9ykvwrv2df-lgtm/belegfluss (Lukas, erster Commit 4. November 2026). Drei statische Reviews, Reifegrad 4 bis 6 von 10.
 
-## Übernehmen (Ideen, ggf. Code nach Absprache)
+## Als Orientierung nutzen (Code-Übernahme nur nach ADR-007)
+
+Lukas hat die Nutzung am 5. November 2026 freigegeben. Standard bleibt Eigenbau; die folgenden Stellen lohnen sich zum Nachlesen:
 
 - Trennung KI ordnet zu, Regeln rechnen (`belegfluss/regeln.py`, `belegfluss/extraktion.py`).
 - Prompt-Injection als eigener Testfall; Quellen als Daten Dritter im System-Prompt.
