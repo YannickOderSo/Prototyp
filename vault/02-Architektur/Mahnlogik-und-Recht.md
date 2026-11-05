@@ -19,7 +19,7 @@ Ein Beleg bekommt einen Vorschlag nur, wenn **alle** Bedingungen gelten:
 
 1. Status im Spiegel `offen` oder `ueberfaellig` und `offen > 0`.
 2. Kontakt hat `kundentyp` gesetzt (sonst "Klärung nötig", Anforderung D3). Gepflegt in der Liste „Kundentyp festlegen“ (M1-10) durch Inhaber oder Freigeber, protokolliert; der Lexware-Hinweis Firma/Person wird nur angezeigt, nie übernommen. Belege ohne Kontakt (Sammelkunde) werden nie automatisch gemahnt.
-3. Weder Beleg noch Kontakt pausiert.
+3. Weder Beleg noch Kontakt pausiert. Umgesetzt (M2-08): „Nicht mahnen bis einschließlich …“ in der Belegansicht (`/posten/<id>/`) und der Kundenansicht, nur Inhaber und Freigeber, protokolliert. Offene, nie freigegebene Vorschläge werden beim Pausieren sofort zurückgezogen; versendete bleiben erhalten. Nach Ablauf der Pause schlägt der nächste Lauf wieder vor. In der Belegansicht lässt sich außerdem der Verzugshinweis je Rechnung abweichend von der Firmeneinstellung setzen.
 4. Für diese Stufe existiert noch kein Vorschlag (eindeutig auf Beleg und Stufe).
 5. Die vorige Stufe wurde versendet (Stufe 1 setzt versendete Stufe 0 voraus, außer Stufe 0 ist in der Firma deaktiviert).
 6. Kontakt hat eine E-Mail-Adresse; sonst Vorschlag mit Hinweis "Postversand nötig" und ohne Versandknopf.

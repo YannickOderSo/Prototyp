@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}{{ b.get_art_display }} {{ b.nummer }}{% endblock %}
+{% block inhalt %}
+<h1>{{ b.get_art_display }} {{ b.nummer }}</h1>
+<section class="kennzahlen">
+  <div class="kennzahl"><div class="label">Offen</div><div class="wert">{{ b.offen|euro }}</div><div class="label">von {{ b.brutto|euro }}</div></div>
+  <div class="kennzahl"><div class="label">Fällig</div><div class="wert">{{ b.faellig_am|datum }}</div></div>
+  <div class="kennzahl"><div class="label">Kunde</div><div class="wert">{% if b.kontakt %}<a href="{% url 'ledger:kunde' b.kontakt.pk %}">{{ b.kontakt.name }}</a>{% else %}{{ b.kontakt_name|default:"(ohne Kunde)" }}{% endif %}</div></div>
+  <div class="kennzahl"><div class="label">Mahnstufe</div><div class="wert">{{ b.mahnstufe }}</div></div>
+</section>
+{% if b.mahnpause_bis and b.mahnpause_bis >= heute %}<p class="meldung warnung">Pausiert bis {{ b.mahnpause_bis|datum }}: Es entstehen keine Vorschläge.</p>{% endif %}
+{% if vorschlaege %}
+<h2>Erinnerungen und Mahnungen</h2>
+<ul class="liste">{% for v in vorschlaege %}<li><div class="zeile"><span>{{ v.get_stufe_display }}</span><span class="marke-status">{{ v.get_status_display }}</span></div>
+  <div class="neben">{{ v.gesamt|euro }}{% if v.versendet_am %} · versendet {{ v.versendet_am|date:"d.m.Y" }}{% endif %}{% if v.verworfen_grund %} · {{ v.verworfen_grund }}{% endif %}</div></li>{% endfor %}</ul>
+{% endif %}
+{% if request.darf_freigeben %}
+<h2>Mahnpause für diesen Beleg</h2>
+<form method="post" action="{% url 'ledger:beleg_pause' b.pk %}" class="karte">
+  {% csrf_token %}
+  {% include "web/_formular.html" with form=pause_form %}
+  <div class="knopfreihe"><button type="submit">Speichern</button></div>
+</form>
+<h2>Verzugshinweis</h2>
+<form method="post" action="{% url 'ledger:beleg_verzugshinweis' b.pk %}" class="karte">
+  {% csrf_token %}
+  {% include "web/_formular.html" with form=hinweis_form %}
+  <p class="hilfe">Wichtig bei Privatkunden: Nur mit Hinweis auf der Rechnung beginnt der Verzug 30 Tage nach Fälligkeit, sonst erst mit Zugang der Erinnerung.</p>
+  <div class="knopfreihe"><button type="submit">Speichern</button></div>
+</form>
+{% endif %}
+{% endblock %}

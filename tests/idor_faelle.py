@@ -13,6 +13,13 @@ def _kontakt(firma, nutzer=None):
     return {"pk": k.pk}
 
 
+def _beleg(firma, nutzer=None):
+    from ledger.models import Beleg
+
+    b = Beleg.objects.create(firma=firma, extern_id=f"idor-beleg-{Beleg.objects.count()}", nummer="IDOR", offen=10)
+    return {"pk": b.pk}
+
+
 def _vorschlag(firma, nutzer=None, **extra):
     from dunning.models import Mahnvorschlag
     from ledger.models import Beleg, Kontakt
@@ -34,6 +41,10 @@ FAELLE: dict[str, Fabrik] = {
     "dunning:post_versendet": _vorschlag,
     "ledger:kunde": _kontakt,
     "ledger:kundentyp_setzen": _kontakt,
+    "ledger:kontakt_pause": _kontakt,
+    "ledger:beleg": _beleg,
+    "ledger:beleg_pause": _beleg,
+    "ledger:beleg_verzugshinweis": _beleg,
 }
 
 # URLs mit Parametern, die keine Objekt-IDs einer Firma sind (mit Begründung)

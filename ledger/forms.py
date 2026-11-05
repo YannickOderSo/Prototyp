@@ -27,3 +27,21 @@ class PostenFilterForm(forms.Form):
     betrag_max = forms.DecimalField(label="Betrag bis (€)", required=False, min_value=0, decimal_places=2)
     mahnstufe = forms.ChoiceField(label="Mahnstufe", choices=MAHNSTUFEN, required=False)
     sortierung = forms.ChoiceField(label="Sortierung", choices=SORTIERUNG, required=False)
+
+
+class PauseForm(forms.Form):
+    mahnpause_bis = forms.DateField(
+        label="Nicht mahnen bis einschließlich",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+        help_text="Leer lassen, um die Pause aufzuheben.",
+    )
+    notiz = forms.CharField(label="Notiz (intern)", required=False, max_length=500, widget=forms.TextInput)
+
+
+class VerzugshinweisForm(forms.Form):
+    verzugshinweis = forms.ChoiceField(
+        label="Enthält die Rechnung den Verzugshinweis (§ 286 Abs. 3 BGB)?",
+        choices=[("", "wie Firmeneinstellung"), ("ja", "ja"), ("nein", "nein")],
+        required=False,
+    )

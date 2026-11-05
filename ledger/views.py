@@ -12,8 +12,9 @@ from accounts.typen import FirmaRequest
 from audit.services import protokolliere
 
 from . import auswertung
-from .forms import PostenFilterForm
+from .forms import PauseForm, PostenFilterForm, VerzugshinweisForm
 from .models import Beleg, Kontakt, Kundentyp
+from .pausen import beleg_pausieren, kontakt_pausieren
 from .services import kontakte_ohne_kundentyp, offene_belege, posten_filtern, zahlungen
 
 SEITENGROESSE = 100
@@ -103,3 +104,79 @@ def kundentyp_setzen(request: FirmaRequest, pk: int) -> HttpResponse:
         return render(request, "ledger/_kundentyp_zeile.html", {"k": kontakt, "gespeichert": True})
     messages.success(request, f"Kundentyp für {kontakt.name} gespeichert.")
     return redirect(request.POST.get("zurueck") or "ledger:kundentyp")
+
+
+@firma_erforderlich
+def beleg(request: FirmaRequest, pk: int) -> HttpResponse:
+    beleg = hole_oder_404(Beleg, request.firma, pk=pk)
+    from dunning.models import Mahnvorschlag
+
+    return render(
+        request,
+        "ledger/beleg.html",
+        {
+            "b": beleg,
+            "heute": timezone.localdate(),
+            "vorschlaege": Mahnvorschlag.objects.fuer(request.firma).filter(beleg=beleg).order_by("stufe"),
+            "pause_form": PauseForm(initial={"mahnpause_bis": beleg.mahnpause_bis}),
+            "hinweis_form": VerzugshinweisForm(
+                initial={"verzugshinweis": {None: "", True: "ja", False: "nein"}[beleg.verzugshinweis_enthalten]}
+            ),
+        },
+    )
+
+
+@require_POST
+@freigabe_berechtigt
+def beleg_pause(request: FirmaRequest, pk: int) -> HttpResponse:
+    beleg = hole_oder_404(Beleg, request.firma, pk=pk)
+    form = PauseForm(request.POST)
+    if form.is_valid():
+        zurueck = beleg_pausieren(beleg, form.cleaned_data["mahnpause_bis"], request.user, timezone.localdate())
+        bis = form.cleaned_data["mahnpause_bis"]
+        messages.success(
+            request,
+            (
+                f"{beleg.nummer} wird bis {bis:%d.%m.%Y} nicht gemahnt."
+                if bis
+                else f"Pause für {beleg.nummer} aufgehoben."
+            )
+            + (f" {zurueck} offene Vorschläge zurückgezogen." if zurueck else ""),
+        )
+    return redirect("ledger:beleg", pk=beleg.pk)
+
+
+@require_POST
+@freigabe_berechtigt
+def beleg_verzugshinweis(request: FirmaRequest, pk: int) -> HttpResponse:
+    beleg = hole_oder_404(Beleg, request.firma, pk=pk)
+    form = VerzugshinweisForm(request.POST)
+    if form.is_valid():
+        wert = {"": None, "ja": True, "nein": False}[form.cleaned_data["verzugshinweis"]]
+        beleg.verzugshinweis_enthalten = wert
+        beleg.save(update_fields=["verzugshinweis_enthalten"])
+        protokolliere(
+            request.firma, "beleg.verzugshinweis_gesetzt", nutzer=request.user, objekt=beleg, daten={"wert": wert}
+        )
+        messages.success(request, "Gespeichert.")
+    return redirect("ledger:beleg", pk=beleg.pk)
+
+
+@require_POST
+@freigabe_berechtigt
+def kontakt_pause(request: FirmaRequest, pk: int) -> HttpResponse:
+    kontakt = hole_oder_404(Kontakt, request.firma, pk=pk)
+    form = PauseForm(request.POST)
+    if form.is_valid():
+        bis = form.cleaned_data["mahnpause_bis"]
+        zurueck = kontakt_pausieren(kontakt, bis, form.cleaned_data["notiz"], request.user, timezone.localdate())
+        messages.success(
+            request,
+            (
+                f"{kontakt.name} wird bis {bis:%d.%m.%Y} nicht gemahnt."
+                if bis
+                else f"Pause für {kontakt.name} aufgehoben."
+            )
+            + (f" {zurueck} offene Vorschläge zurückgezogen." if zurueck else ""),
+        )
+    return redirect("ledger:kunde", pk=kontakt.pk)
