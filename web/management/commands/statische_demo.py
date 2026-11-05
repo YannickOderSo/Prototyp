@@ -159,6 +159,13 @@ class Command(BaseCommand):
         for pfad, inhalt in dateien.items():
             (ziel / _datei(pfad)).parent.mkdir(parents=True, exist_ok=True)
             (ziel / _datei(pfad)).write_bytes(inhalt)
+        # Auch Dateien, die erst ein Stylesheet nachlädt (Schriften, Bilder)
+        for name in sorted(statisch):
+            if name.endswith(".css") and (quelle := finders.find(name)):
+                basis = posixpath.dirname(name)
+                for url in re.findall(r'url\("?([^")]+)"?\)', Path(str(quelle)).read_text(encoding="utf-8")):
+                    if not url.startswith(("data:", "http", "/")):
+                        statisch.add(posixpath.normpath(posixpath.join(basis, url)))
         for name in sorted(statisch):
             quelle = finders.find(name)
             if quelle:

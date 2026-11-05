@@ -226,3 +226,21 @@ Wunsch: die Webapp zunächst unter GitHub Pages zeigen. GitHub Pages liefert nur
 - Workflow `.github/workflows/pages.yml`: Postgres-Service, Demo-Daten, statische Seiten, Veröffentlichung mit `actions/deploy-pages`. Keine Secrets.
 - Einmalig nötig im Repository: Pages-Quelle „GitHub Actions“ und `build/mvp` für die Umgebung `github-pages` erlauben (README).
 - Die Demo-Daten enthalten jetzt auch einen Excel-Import alter Rechnungen in der Vorschau.
+
+## Neues Design der Oberfläche (5. November 2026)
+
+Wunsch: die Oberfläche professioneller und schöner. Vorbilder:
+- Mercury: ruhige, vertrauensbildende Finanz-Optik.
+- Stripe: klare Tabellen mit rechtsbündigen Beträgen.
+- Material: untere Navigation auf dem Handy mit 3 bis 5 Zielen.
+
+**Umgesetzt:**
+- Neues Design-System mit Farb-, Abstands- und Schattenvariablen.
+- Schrift Inter, selbst gehostet. Icons von Lucide, inline als SVG.
+- Status als Plaketten mit Punkt, Zahlen in fester Breite.
+- **Desktop:** feste Seitenleiste mit Firmenname und Zählern, z. B. offene Freigaben und Entwürfe zur Prüfung.
+- **Handy:** schlanke Kopfzeile und eine untere Leiste mit vier Hauptzielen plus „Mehr“.
+- Cockpit zweispaltig ab Tablet.
+- Feste Aktionsleiste „Markierte freigeben“ unter langen Freigabelisten.
+- Anmeldeseiten als schmale, zentrierte Karte.
+- Weiterhin keine Inline-Styles und keine fremden Server. Alle Tests und die drei Playwright-Abläufe sind grün, auch auf 390 px ohne horizontales Scrollen.

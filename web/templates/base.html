@@ -1,26 +1,55 @@
-{% load static %}<!doctype html>
+{% load static cockpit %}<!doctype html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
   <meta name="htmx-config" content='{"includeIndicatorStyles": false, "allowEval": false, "allowScriptTags": false}'>
   <title>{% block titel %}Cockpit{% endblock %} · Forderungs-Cockpit</title>
+  <link rel="preload" href="{% static 'web/fonts/inter-latin-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'web/style.css' %}">
   <script src="{% static 'web/htmx-2.0.4.min.js' %}" defer></script>
   <script src="{% static 'web/app.js' %}" defer></script>
 </head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-  <header class="kopf">
-    <a class="marke" href="{% url 'web:start' %}">Forderungs-Cockpit</a>
-    {% if request.firma %}<span class="firmenwahl">{{ request.firma.name }}</span>{% endif %}
-    {% if navigation %}
+<body class="{% if navigation %}mit-navigation{% else %}ohne-navigation{% endif %} {% block koerperklasse %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <a class="sprungmarke" href="#inhalt">Zum Inhalt springen</a>
+  {% if navigation %}
+  <aside class="seitenleiste">
+    <a class="marke" href="{% url 'web:start' %}"><span class="marke-zeichen">{% icon "wallet" %}</span><span class="marke-name">Forderungs-Cockpit</span></a>
+    {% if request.firma %}<div class="firmenwahl" title="Aktive Firma">{% icon "building-2" %}<span>{{ request.firma.name }}</span></div>{% endif %}
     <nav class="navigation" aria-label="Hauptnavigation">
       {% for punkt in navigation %}
-        <a href="{{ punkt.url }}"{% if punkt.aktiv %} aria-current="page"{% endif %}>{{ punkt.titel }}</a>
+        <a href="{{ punkt.url }}"{% if punkt.aktiv %} aria-current="page"{% endif %}>{% icon punkt.icon %}<span class="nav-titel">{{ punkt.titel }}</span>{% if punkt.zahl %}<span class="zahl" aria-label="{{ punkt.zahl }} offen">{{ punkt.zahl }}</span>{% endif %}</a>
       {% endfor %}
     </nav>
-    {% endif %}
+    <div class="seitenleiste-fuss">
+      <span class="nutzer" title="{{ request.user.email }}">{{ request.user.email }}</span>
+    </div>
+  </aside>
+  <header class="kopf-handy">
+    <a class="marke" href="{% url 'web:start' %}"><span class="marke-zeichen">{% icon "wallet" %}</span><span class="marke-name">Cockpit</span></a>
+    {% if request.firma %}<span class="firmenwahl">{{ request.firma.name }}</span>{% endif %}
   </header>
+  <nav class="unterleiste" aria-label="Schnellnavigation">
+    {% for punkt in navigation_handy %}
+      <a href="{{ punkt.url }}"{% if punkt.aktiv %} aria-current="page"{% endif %}>{% icon punkt.icon %}<span>{{ punkt.kurz }}</span>{% if punkt.zahl %}<span class="zahl" aria-label="{{ punkt.zahl }} offen">{{ punkt.zahl }}</span>{% endif %}</a>
+    {% endfor %}
+    {% if navigation_mehr %}
+    <details class="mehr"{% if navigation_mehr_aktiv %} data-aktiv="1"{% endif %}>
+      <summary>{% icon "ellipsis" %}<span>Mehr</span></summary>
+      <div class="mehr-menue">
+        {% for punkt in navigation_mehr %}
+          <a href="{{ punkt.url }}"{% if punkt.aktiv %} aria-current="page"{% endif %}>{% icon punkt.icon %}<span>{{ punkt.titel }}</span></a>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
+  </nav>
+  {% else %}
+  <header class="kopf">
+    <a class="marke" href="{% url 'web:start' %}"><span class="marke-zeichen">{% icon "wallet" %}</span><span class="marke-name">Forderungs-Cockpit</span></a>
+  </header>
+  {% endif %}
   <main id="inhalt">
     {% if messages %}
     <ul class="meldungen" role="status">

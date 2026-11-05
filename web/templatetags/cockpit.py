@@ -31,3 +31,23 @@ def zahl(wert: object) -> str:
     if wert is None:
         return "–"
     return str(wert).replace(".", ",")
+
+
+@register.simple_tag
+def icon(name: str, klasse: str = "") -> str:
+    """Inline-SVG aus web/icons.py, für Screenreader verborgen (die Beschriftung steht daneben)."""
+    from django.utils.html import format_html
+    from django.utils.safestring import mark_safe
+
+    from web.icons import ICONS
+
+    pfade = ICONS.get(name)
+    if pfade is None:
+        return ""
+    return format_html(
+        '<svg class="icon {}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" '
+        'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" '
+        'aria-hidden="true" focusable="false">{}</svg>',
+        klasse,
+        mark_safe(pfade),  # noqa: S308 – feste Pfade aus web/icons.py, keine Nutzereingabe
+    )

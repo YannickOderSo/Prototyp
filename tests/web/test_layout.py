@@ -17,7 +17,7 @@ def test_layout_laedt_htmx_lokal_und_viewport(startseite):
     html = startseite.content.decode()
     assert startseite.status_code == 200
     assert '<html lang="de">' in html
-    assert 'name="viewport" content="width=device-width, initial-scale=1"' in html
+    assert 'name="viewport" content="width=device-width, initial-scale=1' in html
     assert re.search(r'<script src="/static/web/htmx-[\d.]+\.min\.js" defer></script>', html)
     assert "X-CSRFToken" in html
 
@@ -63,3 +63,38 @@ def test_css_ist_mobil_zuerst():
     assert "@media (min-width" in css
     assert "@media (max-width" not in css
     assert "overflow-x: hidden" in css
+
+
+def test_navigation_mit_icons_und_handy_leiste(client_inhaber):
+    """Desktop: Seitenleiste mit allen Punkten; Handy: höchstens vier Hauptziele und „Mehr“ (Material: 3 bis 5)."""
+    html = client_inhaber.get(reverse("web:start")).content.decode()
+    seitenleiste = html.split('<aside class="seitenleiste">')[1].split("</aside>")[0]
+    for titel in ("Cockpit", "Offene Posten", "Kunden", "Mahnungen", "Erfassen", "Berichte", "Einstellungen"):
+        assert f'<span class="nav-titel">{titel}</span>' in seitenleiste
+    assert seitenleiste.count('<svg class="icon') >= 7 and 'aria-hidden="true"' in seitenleiste
+    unterleiste = html.split('<nav class="unterleiste"')[1].split("</nav>")[0]
+    haupt = unterleiste.split('<details class="mehr"')[0]
+    assert haupt.count("<a href=") == 4
+    mehr = unterleiste.split('<div class="mehr-menue">')[1]
+    assert "Berichte" in mehr and "Einstellungen" in mehr and "Kunden" in mehr
+
+
+def test_zaehler_an_der_navigation(client_inhaber, firma):
+    from dunning.models import Mahnvorschlag
+    from ledger.models import Beleg
+
+    beleg = Beleg.objects.create(firma=firma, extern_id="z1", nummer="RE1", offen=10, brutto=10)
+    Mahnvorschlag.objects.create(firma=firma, beleg=beleg, stufe=0)
+    html = client_inhaber.get(reverse("web:start")).content.decode()
+    assert '<span class="zahl" aria-label="1 offen">1</span>' in html
+
+
+def test_schrift_selbst_gehostet():
+    from pathlib import Path
+
+    from django.conf import settings
+
+    css = (Path(settings.BASE_DIR) / "web" / "static" / "web" / "style.css").read_text()
+    assert 'url("fonts/inter-latin-wght-normal.woff2")' in css
+    assert "googleapis" not in css and "@import" not in css
+    assert (Path(settings.BASE_DIR) / "web" / "static" / "web" / "fonts" / "inter-latin-wght-normal.woff2").exists()

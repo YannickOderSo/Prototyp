@@ -172,7 +172,7 @@ def test_kundenansicht(client_inhaber, daten, heute):
 def test_kundenliste_und_navigation(client_inhaber, daten):
     html = client_inhaber.get(reverse("ledger:kunden")).content.decode()
     assert "Bau AG" in html and "Erika Musterfrau" in html and "Fremd GmbH" not in html
-    assert 'aria-current="page">Kunden<' in html
+    assert re.search(r'aria-current="page">[^<]*<svg[^>]*>.*?</svg><span class="nav-titel">Kunden</span>', html)
 
 
 @pytest.mark.django_db

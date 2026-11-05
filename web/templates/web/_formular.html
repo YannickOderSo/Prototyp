@@ -2,7 +2,7 @@
 {% for feld in form %}
   {% if feld.is_hidden %}{{ feld }}{% else %}
   <div class="feld{% if feld.field.widget.input_type == 'checkbox' %} checkbox{% endif %}">
-    {% if feld.field.widget.input_type == 'checkbox' %}{{ feld }} {{ feld.label_tag }}{% else %}{{ feld.label_tag }}{{ feld }}{% endif %}
+    {% if feld.field.widget.input_type == 'checkbox' %}{{ feld }} <label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{% else %}<label for="{{ feld.id_for_label }}">{{ feld.label }}</label>{{ feld }}{% endif %}
     {% if feld.help_text %}<div class="hilfe">{{ feld.help_text|safe }}</div>{% endif %}
     {{ feld.errors }}
   </div>

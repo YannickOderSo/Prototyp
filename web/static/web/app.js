@@ -15,3 +15,14 @@ document.addEventListener("change", function (ereignis) {
     feld.checked = schalter.checked;
   });
 });
+
+// „Mehr“-Menü der unteren Leiste: schließt beim Tippen daneben und mit Escape
+document.addEventListener("click", function (ereignis) {
+  document.querySelectorAll("details.mehr[open]").forEach(function (menue) {
+    if (!menue.contains(ereignis.target)) menue.removeAttribute("open");
+  });
+});
+document.addEventListener("keydown", function (ereignis) {
+  if (ereignis.key !== "Escape") return;
+  document.querySelectorAll("details.mehr[open]").forEach(function (menue) { menue.removeAttribute("open"); });
+});

@@ -3,6 +3,7 @@
 {% block titel %}Cockpit{% endblock %}
 {% block inhalt %}
 <h1>Forderungs-Cockpit</h1>
+{% if request.firma %}<p>Ihre offenen Forderungen auf einen Blick, Stand {% now "j. F Y" %}.</p>{% endif %}
 {% if not request.firma %}
 <div class="karte"><p>Ihr Konto gehört noch zu keiner Firma. Bitte lassen Sie sich vom Inhaber einladen.</p></div>
 {% else %}
@@ -29,6 +30,7 @@
 <p class="meldung warnung">Bei {{ c.ohne_kundentyp }} Kunde{{ c.ohne_kundentyp|pluralize:"n" }} mit offenen Posten fehlt der Kundentyp. Ohne Kundentyp wird nicht gemahnt. {% url 'ledger:kundentyp' as kundentyp_url %}{% if kundentyp_url %}<a href="{{ kundentyp_url }}">Kundentyp festlegen</a>{% endif %}</p>
 {% endif %}
 
+<div class="raster zwei">
 <section class="karte" aria-labelledby="alter">
   <h2 id="alter">Altersstruktur der überfälligen Posten</h2>
   <ul class="liste">
@@ -55,8 +57,11 @@
   </ul>
 </section>
 
+</div>
+
+<div class="raster zwei">
 {% if c.dringend %}
-<section aria-labelledby="dringend">
+<section class="karte" aria-labelledby="dringend">
   <h2 id="dringend">Am längsten überfällig</h2>
   <ul class="liste">
     {% for b in c.dringend %}
@@ -66,7 +71,7 @@
     </li>
     {% endfor %}
   </ul>
-  <p><a href="{% url 'ledger:posten' %}?faelligkeit=ueberfaellig">Alle überfälligen Posten</a></p>
+  <p class="knopfreihe"><a class="knopf zweitrangig" href="{% url 'ledger:posten' %}?faelligkeit=ueberfaellig">Alle überfälligen Posten</a></p>
 </section>
 {% endif %}
 
@@ -80,5 +85,6 @@
     {% endfor %}
   </ul>
 </section>
+</div>
 {% endif %}
 {% endblock %}
