@@ -32,7 +32,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 - [x] **M2-02** Reine Funktionen `verzugsbeginn()`, `verzugszinsen()`, `pauschale()` mit Tabellen-Tests für jede Zeile aus `02-Architektur/Mahnlogik-und-Recht.md` (D4, D5).
 - [x] **M2-03** Täglicher Vorschlagslauf, idempotent, mit allen Vorbedingungen (D2, D3, D8).
 - [x] **M2-04** Freigabe-Ansicht: Liste, Einzel- und Sammelfreigabe, Verwerfen mit Grund, Vorschau der Mail (D6, D10).
-- [ ] **M2-05** Versand-Job: Frische-Check (D9), Lexware-Mahnungsentwurf ab Stufe 1 und PDF (B6), Rechnungs-PDF für Stufe 0, E-Mail mit Anhang, Versand-Datensatz, Protokoll (D7). Fehler sichtbar mit Neuversuch.
+- [x] **M2-05** Versand-Job: Frische-Check (D9), Lexware-Mahnungsentwurf ab Stufe 1 und PDF (B6), Rechnungs-PDF für Stufe 0, E-Mail mit Anhang, Versand-Datensatz, Protokoll (D7). Fehler sichtbar mit Neuversuch.
 - [ ] **M2-06** E-Mail-Versand: Plattform-SMTP (EU-Anbieter) mit Absendername und Reply-To der Firma; optional eigenes SMTP der Firma. Zustellfehler (Bounce) erfassen, soweit der Anbieter das meldet.
 - [ ] **M2-07** Sammelfreigabe-Mail montags 7 Uhr mit Link ins Cockpit (Login nötig).
 - [ ] **M2-08** Pausen für Kunde und Beleg (D8).

@@ -36,7 +36,7 @@ def posten(firma):
         faellig = beleg.pop("faellig_am", HEUTE - timedelta(days=tage))
         return Beleg.objects.create(
             firma=firma,
-            extern_id=f"inv-{n}",
+            extern_id=beleg.pop("extern_id", f"inv-{n}"),
             nummer=f"RE{1000 + n}",
             kontakt=kontakt,
             kontakt_name=kontakt.name if kontakt else "Sammelkunde",

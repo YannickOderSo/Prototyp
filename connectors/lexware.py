@@ -460,7 +460,10 @@ class LexwareConnector:
 
     def create_dunning_draft(self, invoice_id: str, fees: DunningFees) -> ExternalRef | None:
         """Mahnungsentwurf zur Rechnung. Steuerbedingungen und Kontakt müssen der Rechnung entsprechen (Doku)."""
-        rechnung = self._json("GET", f"/v1/invoices/{invoice_id}")
+        try:
+            rechnung = self._json("GET", f"/v1/invoices/{invoice_id}")
+        except NichtGefunden:  # Abschlagsrechnungen lassen sich laut Doku ebenfalls mahnen
+            rechnung = self._json("GET", f"/v1/down-payment-invoices/{invoice_id}")
         adresse = rechnung.get("address") or {}
         if adresse.get("contactId"):
             empfaenger: dict[str, Any] = {"contactId": adresse["contactId"]}

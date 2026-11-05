@@ -8,6 +8,7 @@ from jobs.registry import job, zeitplan
 from jobs.worker import JobAbbruch
 
 from .models import Mahnplan
+from .versand import versand_job
 from .vorschlaege import vorschlagslauf
 
 
@@ -30,5 +31,7 @@ def _vorschlaege(j: Job) -> None:
         raise JobAbbruch("Firma fehlt")
     vorschlagslauf(j.firma)
 
+
+job("dunning.versenden")(versand_job)
 
 zeitplan("mahnvorschlaege", "0 5 * * *", "dunning.vorschlaege_alle")
