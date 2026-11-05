@@ -1,4 +1,5 @@
-"""Health-Endpoint (F4): Datenbank, Worker-Lebenszeichen, Warteschlange, letzter Abgleich je Verbindung.
+"""Health-Endpoint (F4): Datenbank, Worker-Lebenszeichen, Warteschlange, letzter Abgleich je Verbindung,
+Basiszins für das laufende Halbjahr gepflegt.
 
 Öffentlich erreichbar für den externen Uptime-Check, daher nur Status je Prüfung, keine Zahlen und keine IDs.
 Details stehen im Log. HTTP 503, wenn Datenbank oder Worker ausgefallen sind: Ein Worker-Ausfall ist so binnen
@@ -65,6 +66,16 @@ def abgleich(jetzt: datetime) -> tuple[str, dict[str, object]]:
     return (WARNUNG if veraltet or ohne_import or fehler else OK), daten
 
 
+def basiszins(jetzt: datetime) -> tuple[str, dict[str, object]]:
+    """Fehlt der Satz für das laufende Halbjahr, entstehen keine Zinsen: Warnung an den Betrieb."""
+    from dunning.models import Basiszins
+
+    heute = timezone.localdate(jetzt)
+    halbjahr = heute.replace(month=1 if heute.month < 7 else 7, day=1)
+    vorhanden = Basiszins.objects.filter(gueltig_ab=halbjahr).exists()
+    return (OK if vorhanden else WARNUNG), {"halbjahr": halbjahr.isoformat()}
+
+
 @never_cache
 @require_GET
 @login_not_required
@@ -76,6 +87,7 @@ def healthz(request: HttpRequest) -> JsonResponse:
         ergebnisse["worker"] = worker(jetzt)
         ergebnisse["warteschlange"] = warteschlange(jetzt)
         ergebnisse["abgleich"] = abgleich(jetzt)
+        ergebnisse["basiszins"] = basiszins(jetzt)
     except DatabaseError:
         log.exception("Health: Datenbank nicht erreichbar")
         ergebnisse["datenbank"] = (FEHLER, {})

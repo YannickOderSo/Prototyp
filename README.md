@@ -18,6 +18,13 @@ make test                    # Tests (pytest)
 Ohne Docker: Postgres 16 lokal bereitstellen, `DATABASE_URL` setzen, dann
 `uv run python manage.py migrate` und `uv run python manage.py runserver`.
 
+## Produktion
+
+`docker-compose.prod.yml` (Caddy, Web, Worker, Postgres, Sicherung mit restic), Vorlage `.env.prod.example`.
+Aufsetzen, Ausrollen per Tag, Sicherung, Wiederherstellung, Schlüsselrotation und Störungen:
+[`vault/03-Umsetzung/Betriebshandbuch.md`](vault/03-Umsetzung/Betriebshandbuch.md).
+`scripts/prod_smoke.sh <image>` prüft den kompletten Stack lokal und in der CI.
+
 ## Stand
 
 Siehe [`vault/03-Umsetzung/Fortschritt.md`](vault/03-Umsetzung/Fortschritt.md). Nur gegen Mocks

@@ -59,20 +59,33 @@ dc up -d --wait --wait-timeout 240 db web worker caddy
 
 echo "== Health über Caddy (HTTPS, interne CA für localhost)"
 PORT="$(dc port caddy 443 | sed 's/.*://')"
+# Datenbank und Worker müssen "ok" sein; "warnung" (z. B. Basiszins noch nicht gepflegt) ist hier zulässig
+gesund() { grep -q '"datenbank": "ok", "worker": "ok"' <<<"$1" && ! grep -q '"status": "fehler"' <<<"$1"; }
+antwort=""
 for _ in $(seq 1 30); do
-  if antwort="$(curl -sk --resolve "localhost:$PORT:127.0.0.1" "https://localhost:$PORT/healthz")" \
-    && grep -q '"status": "ok"' <<<"$antwort"; then
+  if antwort="$(curl -sk --resolve "localhost:$PORT:127.0.0.1" "https://localhost:$PORT/healthz")" && gesund "$antwort"; then
     break
   fi
   sleep 2
 done
 echo "$antwort"
-grep -q '"status": "ok"' <<<"$antwort"
+gesund "$antwort"
 
 echo "== Anmeldeseite erreichbar, Sicherheitsheader gesetzt"
 kopf="$(curl -sk -o /dev/null -D - --resolve "localhost:$PORT:127.0.0.1" "https://localhost:$PORT/konto/anmelden/")"
 grep -qi "^strict-transport-security:" <<<"$kopf"
 grep -qi "^content-security-policy:" <<<"$kopf"
+
+echo "== Formular-POST hinter Caddy: CSRF und Origin passen (falsches Passwort ergibt 200, nicht 403)"
+KEKSE="$ARBEIT/kekse.txt"
+seite="$(curl -sk -c "$KEKSE" --resolve "localhost:$PORT:127.0.0.1" "https://localhost:$PORT/konto/anmelden/")"
+token="$(grep -o 'name="csrfmiddlewaretoken" value="[^"]*"' <<<"$seite" | head -1 | sed 's/.*value="//; s/"$//')"
+code="$(curl -sk -b "$KEKSE" -o "$ARBEIT/antwort.html" -w '%{http_code}' --resolve "localhost:$PORT:127.0.0.1" \
+  -H "Origin: https://localhost:$PORT" -H "Referer: https://localhost:$PORT/konto/anmelden/" \
+  --data-urlencode "csrfmiddlewaretoken=$token" --data-urlencode "email=niemand@example.org" \
+  --data-urlencode "passwort=falsch-falsch-falsch" "https://localhost:$PORT/konto/anmelden/")"
+rm -f "$KEKSE" "$ARBEIT/antwort.html"
+test "$code" = "200" || { echo "FEHLER: Anmelde-POST ergab HTTP $code" >&2; exit 1; }
 
 echo "== App-Rolle: arbeitet, aber kein TRUNCATE"
 dc exec -T web python manage.py shell -c "from django.db import connection; c = connection.cursor(); c.execute('select current_user'); assert c.fetchone()[0] == 'cockpit_app'"

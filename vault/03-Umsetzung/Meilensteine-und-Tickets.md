@@ -59,7 +59,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 - [x] **M4-03** Onboarding-Assistent (F6).
 - [x] **M4-04** Löschjobs nach Fristen.
 - [x] **M4-05** Produktions-Compose mit Caddy, Backups mit restic, Restore-Probe-Skript, Health-Endpoint, Fehlererfassung (F4).
-- [ ] **M4-06** Betriebshandbuch `vault/03-Umsetzung/Betriebshandbuch.md` schreiben (Deploy, Restore, Basiszins-Pflege, Schlüsselrotation, Störung Lexware).
+- [x] **M4-06** Betriebshandbuch `vault/03-Umsetzung/Betriebshandbuch.md` schreiben (Deploy, Restore, Basiszins-Pflege, Schlüsselrotation, Störung Lexware).
 - [ ] **M4-07** Prüfliste für das Team (nicht Code): Rechtstexte, AVV, Mahntexte und Zinslogik von Anwalt/Steuerberater prüfen lassen, IT-Haftpflicht.
 
 **MVP-Abnahme:** siehe Definition of Done in `00-Start-hier.md`.

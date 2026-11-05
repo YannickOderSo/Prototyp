@@ -14,6 +14,19 @@ from jobs.models import Job, WorkerLebenszeichen
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture(autouse=True)
+def basiszins_aktuell(db):
+    """Unabhängig vom Datum des Testlaufs: Satz für das laufende Halbjahr vorhanden."""
+    from decimal import Decimal
+
+    from dunning.models import Basiszins
+
+    heute = timezone.localdate()
+    Basiszins.objects.get_or_create(
+        gueltig_ab=heute.replace(month=1 if heute.month < 7 else 7, day=1), defaults={"satz": Decimal("1.5")}
+    )
+
+
 def _abfragen(client):
     antwort = client.get("/healthz")
     return antwort.status_code, antwort.json()
@@ -25,7 +38,7 @@ def test_alles_gut(client):
     assert status == 200
     assert daten == {
         "status": "ok",
-        "pruefungen": {"datenbank": "ok", "worker": "ok", "warteschlange": "ok", "abgleich": "ok"},
+        "pruefungen": {"datenbank": "ok", "worker": "ok", "warteschlange": "ok", "abgleich": "ok", "basiszins": "ok"},
     }
 
 
@@ -158,3 +171,33 @@ def test_worker_lebt_kommando():
     assert ende.value.code == 1
     WorkerLebenszeichen.objects.create(name="w1", zuletzt=timezone.now())
     call_command("worker_lebt")  # kein Fehler
+
+
+def test_fehlender_basiszins_ist_warnung(client, time_machine):
+    WorkerLebenszeichen.objects.create(name="w1", zuletzt=timezone.now())
+    time_machine.move_to("2031-07-02 12:00:00+02:00")
+    WorkerLebenszeichen.objects.update(zuletzt=timezone.now())
+    status, daten = _abfragen(client)
+    assert status == 200 and daten["status"] == "warnung" and daten["pruefungen"]["basiszins"] == "warnung"
+
+
+def test_basiszins_setzen(capsys):
+    from decimal import Decimal
+
+    from django.core.management import CommandError, call_command
+
+    from dunning.models import Basiszins
+
+    with pytest.raises(CommandError, match=r"1\. Januar und 1\. Juli"):
+        call_command("basiszins_setzen", "2031-02-01", "1.0", "--quelle", "x")
+    with pytest.raises(CommandError, match="unplausibel"):
+        call_command("basiszins_setzen", "2031-01-01", "25", "--quelle", "x")
+    with pytest.raises(CommandError, match="unplausibel"):
+        call_command("basiszins_setzen", "2031-01-01", "1.234", "--quelle", "x")
+    call_command("basiszins_setzen", "2031-01-01", "-0.88", "--quelle", "Bundesbank, 30.12.2030")
+    eintrag = Basiszins.objects.get(gueltig_ab="2031-01-01")
+    assert eintrag.satz == Decimal("-0.88") and "Bundesbank" in eintrag.quelle
+    with pytest.raises(CommandError, match="bereits"):
+        call_command("basiszins_setzen", "2031-01-01", "1.0", "--quelle", "x")
+    call_command("basiszins_setzen", "2031-01-01", "1.0", "--quelle", "Korrektur", "--korrigieren")
+    assert Basiszins.objects.get(gueltig_ab="2031-01-01").satz == Decimal("1.0")
