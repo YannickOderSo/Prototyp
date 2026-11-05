@@ -1,0 +1,12 @@
+{
+  "content": [
+    {"id": "art-maler-stunde", "title": "Malerarbeiten Facharbeiter", "description": "je Stunde", "type": "SERVICE",
+     "articleNumber": "L-100", "unitName": "Stunde", "price": {"netPrice": 58.00, "grossPrice": 69.02, "leadingPrice": "NET", "taxRate": 19},
+     "archived": false, "version": 2},
+    {"id": "art-farbe", "title": "Dispersionsfarbe weiß 10 l", "type": "PRODUCT", "articleNumber": "M-200", "unitName": "Eimer",
+     "price": {"netPrice": 49.90, "grossPrice": 59.38, "leadingPrice": "NET", "taxRate": 19}, "archived": false, "version": 1},
+    {"id": "art-brutto", "title": "Anfahrt pauschal", "type": "SERVICE", "unitName": "pauschal",
+     "price": {"grossPrice": 35.70, "leadingPrice": "GROSS", "taxRate": 19}, "archived": false, "version": 1}
+  ],
+  "first": true, "last": true, "totalPages": 1, "totalElements": 3, "numberOfElements": 3, "size": 250, "number": 0
+}

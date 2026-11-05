@@ -1,0 +1,13 @@
+{
+  "organizationId": "aa93e8a8-2aa3-470b-b914-caad8a255dd8",
+  "companyName": "Malerbetrieb Muster GmbH",
+  "created": {
+    "userId": "1aea4e7f-0e5c-4a7f-9a8f-2f6a2d7a1c11",
+    "userName": "Max Muster",
+    "userEmail": "max@muster.example",
+    "date": "2026-10-01T10:00:00.000+02:00"
+  },
+  "connectionId": "3dea098b-9b5a-4d0e-b5f4-1e3c1b0a6f22",
+  "taxType": "net",
+  "smallBusiness": false
+}

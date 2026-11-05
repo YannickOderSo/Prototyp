@@ -1,0 +1,10 @@
+{
+  "content": [
+    {"id": "inv-0900", "voucherType": "invoice", "voucherStatus": "paid", "voucherNumber": "RE0900",
+     "voucherDate": "2026-06-01T00:00:00.000+02:00", "createdDate": "2026-06-01T08:00:00.000+02:00",
+     "updatedDate": "2026-06-30T08:00:00.000+02:00", "dueDate": "2026-06-15T00:00:00.000+02:00",
+     "contactId": "kon-unternehmer", "contactName": "Bau AG", "totalAmount": 800.00, "openAmount": 0.00,
+     "currency": "EUR", "archived": false}
+  ],
+  "first": true, "last": true, "totalPages": 1, "totalElements": 1, "numberOfElements": 1, "size": 250, "number": 0
+}

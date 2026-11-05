@@ -1,0 +1,10 @@
+{
+  "content": [
+    {"id": "dpi-0003", "voucherType": "downpaymentinvoice", "voucherStatus": "open", "voucherNumber": "AR1003",
+     "voucherDate": "2026-11-01T00:00:00.000+01:00", "createdDate": "2026-11-01T08:00:00.000+01:00",
+     "updatedDate": "2026-11-01T08:00:00.000+01:00", "dueDate": "2026-11-15T00:00:00.000+01:00",
+     "contactId": "kon-unternehmer", "contactName": "Bau AG", "totalAmount": 2380.00, "openAmount": 2380.00,
+     "currency": "EUR", "archived": false}
+  ],
+  "first": false, "last": true, "totalPages": 2, "totalElements": 3, "numberOfElements": 1, "size": 250, "number": 1
+}

@@ -84,3 +84,35 @@ def client_freigeber(client, freigeber):
 @pytest.fixture
 def client_mitarbeiter(client, mitarbeiter):
     return anmelden_als(client, mitarbeiter)
+
+
+@pytest.fixture
+def lexware_api():
+    """respx-Router für die nachgebaute Lexware-API; prüft jede Anfrage auf finalize."""
+    import respx
+
+    from tests.lexware_mock import finalize_waechter, standard_routen
+
+    with respx.mock(assert_all_called=False, assert_all_mocked=True) as router:
+        standard_routen(router)
+        yield router
+        for aufruf in router.calls:
+            finalize_waechter(aufruf.request)
+
+
+@pytest.fixture
+def ohne_warten(monkeypatch):
+    """Keine echten Pausen in Tests (Token-Bucket und Backoff)."""
+    import connectors.drossel
+
+    pausen = []
+    monkeypatch.setattr(connectors.drossel.time, "sleep", lambda s: pausen.append(s))
+    return pausen
+
+
+@pytest.fixture
+def lexware(lexware_api, ohne_warten):
+    from connectors.drossel import TokenBucket
+    from connectors.lexware import LexwareConnector
+
+    return LexwareConnector("test-schluessel", eimer=TokenBucket(1000, 1000), schlafen=lambda s: ohne_warten.append(s))

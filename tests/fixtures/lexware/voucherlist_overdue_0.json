@@ -1,0 +1,15 @@
+{
+  "content": [
+    {"id": "inv-0004", "voucherType": "invoice", "voucherStatus": "overdue", "voucherNumber": "RE0990",
+     "voucherDate": "2026-08-01T00:00:00.000+02:00", "createdDate": "2026-08-01T08:00:00.000+02:00",
+     "updatedDate": "2026-08-01T08:00:00.000+02:00", "dueDate": "2026-08-15T00:00:00.000+02:00",
+     "contactId": "kon-unternehmer", "contactName": "Bau AG", "totalAmount": 5000.00, "openAmount": 5000.00,
+     "currency": "EUR", "archived": false},
+    {"id": "inv-0005", "voucherType": "invoice", "voucherStatus": "overdue", "voucherNumber": "RE0995",
+     "voucherDate": "2026-09-10T00:00:00.000+02:00", "createdDate": "2026-09-10T08:00:00.000+02:00",
+     "updatedDate": "2026-09-10T08:00:00.000+02:00", "dueDate": null,
+     "contactId": null, "contactName": "Sammelkunde", "totalAmount": 450.50, "openAmount": 450.50,
+     "currency": "EUR", "archived": false}
+  ],
+  "first": true, "last": true, "totalPages": 1, "totalElements": 2, "numberOfElements": 2, "size": 250, "number": 0
+}

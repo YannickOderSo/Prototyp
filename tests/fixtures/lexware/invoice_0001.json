@@ -1,0 +1,11 @@
+{"id": "inv-0001", "organizationId": "aa93e8a8-2aa3-470b-b914-caad8a255dd8", "createdDate": "2026-10-20T09:12:00.000+02:00",
+ "updatedDate": "2026-10-20T09:12:00.000+02:00", "version": 2, "language": "de", "archived": false, "voucherStatus": "open",
+ "voucherNumber": "RE1001", "voucherDate": "2026-10-20T00:00:00.000+02:00", "dueDate": "2026-11-03T00:00:00.000+01:00",
+ "address": {"contactId": "kon-unternehmer", "name": "Bau AG", "street": "Bahnhofstr. 1", "city": "Berlin", "zip": "10115", "countryCode": "DE"},
+ "lineItems": [{"type": "service", "id": "art-maler-stunde", "name": "Malerarbeiten Facharbeiter", "quantity": 17.24, "unitName": "Stunde",
+   "unitPrice": {"currency": "EUR", "netAmount": 58.00, "grossAmount": 69.02, "taxRatePercentage": 19}, "discountPercentage": 0, "lineItemAmount": 1000.00}],
+ "totalPrice": {"currency": "EUR", "totalNetAmount": 1000.00, "totalGrossAmount": 1190.00, "totalTaxAmount": 190.00},
+ "taxConditions": {"taxType": "net"},
+ "paymentConditions": {"paymentTermLabel": "Zahlbar innerhalb von 14 Tagen", "paymentTermDuration": 14},
+ "shippingConditions": {"shippingDate": "2026-10-19T00:00:00.000+02:00", "shippingType": "service"},
+ "title": "Rechnung"}

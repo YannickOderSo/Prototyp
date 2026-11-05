@@ -1,0 +1,2 @@
+{"openAmount": 74.80, "currency": "EUR", "paymentStatus": "openRevenue", "voucherType": "invoice", "voucherStatus": "open",
+ "paymentItems": [{"paymentItemType": "manualPayment", "postingDate": "2026-10-30T00:00:00.000+01:00", "amount": 25.00, "currency": "EUR"}]}

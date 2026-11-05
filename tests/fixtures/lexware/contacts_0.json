@@ -1,0 +1,19 @@
+{
+  "content": [
+    {"id": "kon-unternehmer", "organizationId": "aa93e8a8-2aa3-470b-b914-caad8a255dd8", "version": 3,
+     "roles": {"customer": {"number": 10001}},
+     "company": {"name": "Bau AG", "contactPersons": [{"salutation": "Frau", "firstName": "Petra", "lastName": "Polier",
+                  "primary": true, "emailAddress": "petra.polier@bau-ag.example"}]},
+     "addresses": {"billing": [{"street": "Bahnhofstr. 1", "zip": "10115", "city": "Berlin", "countryCode": "DE"}]},
+     "emailAddresses": {"business": ["rechnung@bau-ag.example"]}, "archived": false},
+    {"id": "kon-privat", "organizationId": "aa93e8a8-2aa3-470b-b914-caad8a255dd8", "version": 1,
+     "roles": {"customer": {"number": 10002}},
+     "person": {"salutation": "Frau", "firstName": "Erika", "lastName": "Musterfrau"},
+     "addresses": {"billing": [{"street": "Hauptstr. 5", "zip": "12345", "city": "Musterort", "countryCode": "DE"}]},
+     "emailAddresses": {"private": ["erika@example.org"]}, "archived": false},
+    {"id": "kon-ohne-mail", "organizationId": "aa93e8a8-2aa3-470b-b914-caad8a255dd8", "version": 1,
+     "roles": {"customer": {"number": 10003}},
+     "person": {"firstName": "Otto", "lastName": "Ohnemail"}, "archived": false}
+  ],
+  "first": true, "last": true, "totalPages": 1, "totalElements": 3, "numberOfElements": 3, "size": 250, "number": 0
+}

@@ -17,7 +17,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 - [x] **M1-02** TOTP-2FA Pflicht mit Wiederherstellungscodes (A2). Bibliothek: `django-otp` oder eigene RFC-6238-Implementierung mit Replay-Schutz.
 - [x] **M1-03** Rate-Limits (A5) mit `django-ratelimit` je IP und je Konto.
 - [x] **M1-04** Mandantentrennung: `FirmaManager`, Middleware, generischer IDOR-Test (A4).
-- [ ] **M1-05** `connectors`: Protokoll `AccountingConnector`, `LexwareConnector` mit Token-Bucket (2/s), Retry auf 429/5xx, Fehlerklassen. Tests mit aufgezeichneten Antworten.
+- [x] **M1-05** `connectors`: Protokoll `AccountingConnector`, `LexwareConnector` mit Token-Bucket (2/s), Retry auf 429/5xx, Fehlerklassen. Tests mit aufgezeichneten Antworten.
 - [ ] **M1-06** Verbindung anlegen, Schlüssel verschlüsselt speichern, Test-Aufruf (B1).
 - [ ] **M1-07** Erstimport und nächtlicher Abgleich in den Spiegel (B2, B3 Teil Abgleich). Abnahme: Summen stimmen mit Lexware-Testkonto.
 - [ ] **M1-08** Webhooks registrieren und empfangen, Signaturprüfung, idempotente Verarbeitung (B3).

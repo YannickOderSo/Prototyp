@@ -17,7 +17,7 @@ Offizielle Doku: https://developers.lexware.io/docs/ — vor jeder Implementieru
 | Rechnung lesen | `GET /v1/invoices/{id}` | voucherStatus: draft, open, paid, voided |
 | Rechnungsentwurf | `POST /v1/invoices` **ohne** `finalize` | ohne `finalize` entsteht ein Entwurf. `finalize=true` ist in der App verboten (Linter-Regel / Test) |
 | Angebotsentwurf | `POST /v1/quotations` ohne `finalize` | wie oben |
-| Mahnungsentwurf | `POST /v1/dunnings?precedingSalesVoucherId={invoiceId}` | Mahnungen entstehen immer als Entwurf. Request-Body-Felder (Positionen, Gebühren, Einleitung) vor Implementierung in der Doku prüfen |
+| Mahnungsentwurf | `POST /v1/dunnings?precedingSalesVoucherId={invoiceId}` | Mahnungen entstehen immer als Entwurf. Pflichtfelder laut Doku (geprüft 5. November 2026): voucherDate, address, lineItems, taxConditions, shippingConditions, totalPrice. Kontakt und Steuerbedingungen müssen der Rechnung entsprechen; die App lädt dafür vorher `GET /v1/invoices/{id}`. Positionen: Textposition mit offenem Betrag, Zinsen und Pauschale als `custom` mit 0 % USt (wie im Doku-Beispiel bei `taxType net`) |
 | Mahnungs-PDF | `GET /v1/dunnings/{id}/file` | `/document` ist veraltet |
 | Rechnungs-PDF | `GET /v1/invoices/{id}/file` | Anhang für Erinnerung (Stufe 0) |
 | Kontakte | `GET /v1/contacts?page=…`, `GET /v1/contacts/{id}` | Filter email, name, number, customer |
@@ -30,7 +30,8 @@ Die API beschreibt **keinen E-Mail-Versand** von Rechnungen oder Mahnungen. Die 
 
 ## Webhooks
 
-- Endpunkt `POST /hooks/lexware/{verbindung_token}`. Signaturprüfung laut Lexware-Doku (Abschnitt Event Subscriptions, Signatur-Header und öffentlicher Schlüssel) vor Implementierung nachlesen und umsetzen.
+- Endpunkt `POST /hooks/lexware/{verbindung_token}`. Signaturprüfung laut Lexware-Doku (geprüft 5. November 2026): Header `X-Lxo-Signature` enthält eine base64-kodierte RSA-SHA512-Signatur des JSON-Bodys; öffentlicher Schlüssel unter https://developers.lexware.io/webhookSignature/public/public_key.pub (Kopie in `tests/fixtures/lexware/webhook_public_key.pub` und im Code).
+- Payload: `organizationId`, `eventType`, `resourceId`, `eventDate`. `POST /v1/event-subscriptions` antwortet mit `id` (Abo-ID). Lexware erwartet binnen 5000 ms 200/201/202/204, sonst Wiederholungen; 404 oder 410 löschen das Abo. Daher: sofort quittieren, Arbeit in die Job-Queue.
 - Webhook-Payload enthält nur die Resource-ID: immer nachladen, nie dem Payload vertrauen.
 - Idempotent verarbeiten; `token.revoked` setzt die Verbindung auf "getrennt" und benachrichtigt den Inhaber.
 
@@ -40,6 +41,14 @@ Die API beschreibt **keinen E-Mail-Versand** von Rechnungen oder Mahnungen. Die 
 2. Laufend: Webhooks.
 3. Nachts 2 Uhr: voucherlist mit `updatedDateFrom` = letzter Abgleich minus 1 Tag. Zusätzlich jede in der App als offen geführte Rechnung, die nicht mehr in der Offen-Liste auftaucht, einzeln nachladen.
 4. Vor jedem Versand einer Mahnung: `GET /v1/payments/{id}` (Frische-Check, D9).
+
+## Umsetzung (M1-05)
+
+- `connectors/base.py`: Protokoll `AccountingConnector` und Datentypen (alle Beträge `Decimal`, Daten in Europe/Berlin). Ergänzt gegenüber dem Entwurf unten: `list_receivables(status, updated_since)` (für den nächtlichen Abgleich mit `voucherStatus=any`), `get_receivable(id)` (Webhook-Nachladen), `get_contact(id)`, `delete_webhooks(ids)`.
+- `connectors/lexware.py`: Token-Bucket je Verbindung (2/s, keine Bursts, also mindestens 0,5 s Abstand), bis zu 5 Wiederholungen bei 429, 5xx und Netzwerkfehlern mit exponentiellem Backoff, Jitter und `Retry-After`. 401/402/403 → `NichtAutorisiert`, 404 → `NichtGefunden`, 4xx → `Validierungsfehler`. `GET /v1/payments` mit 406 (Entwurf) ist laut Doku kein Fehler.
+- `finalize`: `_anfrage()` verweigert jede Anfrage mit `finalize` in Pfad oder Parametern; ein Test prüft alle Requests aller schreibenden Methoden, ein zweiter durchsucht den Quelltext.
+- Geld wird ohne float geschrieben (`als_json`: Decimal als JSON-Zahl).
+- Tests laufen gegen **nachgebaute** Antworten im Doku-Format (`tests/fixtures/lexware/`), nicht gegen ein echtes Konto.
 
 ## Adapter-Schnittstelle (für sevdesk später)
 
