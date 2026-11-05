@@ -41,10 +41,21 @@ services:
     command: ["web"]
     ports:
       - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "/app/docker/healthcheck.py"]
+      interval: 5s
+      timeout: 5s
+      start_period: 60s
+      retries: 30
 
   worker:
     <<: *app
     command: ["worker"]
+    # Erst starten, wenn web die Migrationen ausgeführt hat
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgres://cockpit:cockpit@db:5432/cockpit
       EMAIL_HOST: mailpit
