@@ -30,3 +30,35 @@ def test_demo_daten(settings, client, mailoutbox):
     assert not Job.objects.exists() and mailoutbox == []
     with pytest.raises(CommandError, match="existiert bereits"):
         call_command("demo_daten")
+
+
+def test_statische_demo(settings, tmp_path):
+    """Klick-Demo für GitHub Pages: relative Links, kein Token, kein htmx, Hinweis-Banner."""
+    from datenimport.models import ImportVorgang
+
+    settings.DEBUG = True
+    call_command("demo_daten")
+    assert ImportVorgang.objects.get().status == "vorschau"
+    call_command("statische_demo", str(tmp_path / "demo"))
+    ziel = tmp_path / "demo"
+    seiten = list(ziel.rglob("*.html"))
+    assert len(seiten) > 20
+    for seite in seiten:
+        html = seite.read_text()
+        assert "Klick-Demo" in html
+        assert "csrfmiddlewaretoken" not in html and "X-CSRFToken" not in html
+        assert "htmx" not in html
+        assert 'href="/' not in html and 'src="/' not in html and 'action="/' not in html
+        assert "demo-kein-echter-schluessel" not in html
+    assert (ziel / "index.html").exists() and (ziel / "posten" / "index.html").exists()
+    assert (ziel / "static" / "web" / "style.css").exists() and (ziel / "static" / "demo" / "demo.js").exists()
+    assert (ziel / "import" / "vorlage" / "kunden.csv").exists()
+    assert not (ziel / "konto").exists() and not (ziel / "einstellungen" / "verbindung").exists()
+    posten = (ziel / "posten" / "index.html").read_text()
+    assert 'href="../static/web/style.css"' in posten
+
+
+def test_statische_demo_nur_mit_debug(settings, tmp_path):
+    settings.DEBUG = False
+    with pytest.raises(CommandError, match="DJANGO_DEBUG"):
+        call_command("statische_demo", str(tmp_path))

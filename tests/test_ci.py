@@ -32,3 +32,14 @@ def test_ci_baut_docker_image_und_e2e():
     ci = yaml.safe_load(CI.read_text())
     assert "docker build" in _schritte(ci["jobs"]["docker"])
     assert "e2e_starten.py" in _schritte(ci["jobs"]["e2e"])
+
+
+def test_pages_nur_demo_daten_ohne_geheimnisse():
+    """Die Klick-Demo auf GitHub Pages nutzt nur erfundene Demo-Daten und keine Secrets."""
+    text = (CI.parent / "pages.yml").read_text()
+    pages = yaml.safe_load(text)
+    befehle = _schritte(pages["jobs"]["bauen"])
+    assert "demo_daten" in befehle and "statische_demo" in befehle
+    assert "secrets." not in text
+    assert pages["jobs"]["bauen"]["env"]["DJANGO_DEBUG"] == "true"
+    assert pages["permissions"] == {"contents": "read"}

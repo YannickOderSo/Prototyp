@@ -216,3 +216,13 @@ Wunsch von Yannick: Betriebe, die bisher nur mit Excel gearbeitet haben, sollen 
 - Excel-Dateien aus echten Betrieben (Spaltennamen, Formate) für bessere Vorschläge sammeln.
 
 **Belegfluss:** nichts übernommen; der Import ist neu gebaut.
+
+## Klick-Demo auf GitHub Pages (5. November 2026)
+
+Wunsch: die Webapp zunächst unter GitHub Pages zeigen. GitHub Pages liefert nur statische Dateien aus und steht nicht unter EU-Kontrolle; die echte App (Django, Postgres, Worker) kann dort nicht laufen und darf es nach ADR-005 auch nicht. Deshalb gibt es dort eine **statische Klick-Demo**:
+- `manage.py statische_demo <ziel>` rendert die Seiten der Demo-Firma im Prozess (nur GET) als HTML mit relativen Links. Nur mit `DJANGO_DEBUG=true` und nur für die Demo-Firma aus `demo_daten`.
+- Entfernt werden CSRF-Token und htmx. Anmeldung, Webhooks, Lexware-Schlüssel und SMTP-Seiten werden nicht übernommen.
+- Formulare und Knöpfe zeigen nur „Nur Demo“. Ein Banner auf jeder Seite kennzeichnet die Demo.
+- Workflow `.github/workflows/pages.yml`: Postgres-Service, Demo-Daten, statische Seiten, Veröffentlichung mit `actions/deploy-pages`. Keine Secrets.
+- Einmalig nötig im Repository: Pages-Quelle „GitHub Actions“ und `build/mvp` für die Umgebung `github-pages` erlauben (README).
+- Die Demo-Daten enthalten jetzt auch einen Excel-Import alter Rechnungen in der Vorschau.

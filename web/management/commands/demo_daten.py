@@ -232,6 +232,21 @@ class Command(BaseCommand):
             },
         )
         regeln_anwenden(angebot)
+        # Ein Excel-Import alter offener Rechnungen wartet in der Vorschau (nur im Cockpit, nie in Lexware)
+        from datenimport import services as datenimport
+
+        alte = (
+            "Rechnung;Datum;Fällig am;Kunde;Betrag;Bezahlt\n"
+            f"2025-031;{heute - timedelta(days=80):%d.%m.%Y};{heute - timedelta(days=66):%d.%m.%Y};Bau AG;2.380,00;\n"
+            f"2025-040;{heute - timedelta(days=50):%d.%m.%Y};{heute - timedelta(days=36):%d.%m.%Y};"
+            "Erika Musterfrau;595,00;200,00\n"
+            f"2025-012;{heute - timedelta(days=120):%d.%m.%Y};{heute - timedelta(days=106):%d.%m.%Y};"
+            "Bau AG;400,00;400,00\n"
+            f"2025-050;{heute - timedelta(days=40):%d.%m.%Y};{heute - timedelta(days=26):%d.%m.%Y};"
+            "Malermeister Alt;100,00;\n"
+        ).encode()
+        vorgang = datenimport.hochladen(firma, nutzer, "posten", "alte-rechnungen.csv", alte)
+        datenimport.zuordnung_speichern(vorgang, vorgang.zuordnung, {}, kundentyp_uebernehmen=False)
 
 
 def _pos(artikel_id: str, beschreibung: str, menge: int, einheit: str) -> dict[str, object]:

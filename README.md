@@ -41,6 +41,20 @@ Demo-PDF an Mailpit; freigegebene Entwürfe bekommen eine Demo-ID statt eines ec
 Sprachmemos und Uploads brauchen echte Mistral- und AWS-Zugänge (`.env`) und enden ohne sie mit „Fehler“.
 Für einen frischen Stand: `docker compose down -v` und neu starten.
 
+## Klick-Demo im Browser (GitHub Pages)
+
+Der Workflow `.github/workflows/pages.yml` erzeugt bei jedem Push auf `build/mvp` eine statische Klick-Demo:
+`manage.py demo_daten` und danach `manage.py statische_demo _site`. Die Demo enthält nur erfundene Daten und hat kein
+Backend: Formulare und Knöpfe zeigen nur einen Hinweis. Die echte App läuft ausschließlich auf dem Server in
+Deutschland (ADR-005).
+
+Einmalig im Repository einrichten:
+1. Settings → Pages → Source: **GitHub Actions**.
+2. Settings → Environments → `github-pages` → Deployment branches: `build/mvp` erlauben (oder später nur `main`).
+3. Actions → „Klick-Demo (GitHub Pages)“ → Run workflow.
+
+Lokal: `DJANGO_DEBUG=true python manage.py statische_demo /tmp/demo`, dann `python -m http.server -d /tmp/demo`.
+
 ## Produktion
 
 `docker-compose.prod.yml` (Caddy, Web, Worker, Postgres, Sicherung mit restic), Vorlage `.env.prod.example`.

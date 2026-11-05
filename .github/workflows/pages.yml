@@ -1,0 +1,70 @@
+name: Klick-Demo (GitHub Pages)
+
+# Statische Klick-Demo mit erfundenen Demo-Daten. Kein Backend, keine echten Kundendaten,
+# keine Zugangsdaten. Die echte App läuft ausschließlich auf dem Server in Deutschland.
+on:
+  push:
+    branches: [build/mvp]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  bauen:
+    name: Demo-Seiten erzeugen
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: cockpit
+          POSTGRES_PASSWORD: cockpit
+          POSTGRES_DB: cockpit
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U cockpit"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://cockpit:cockpit@localhost:5432/cockpit
+      DJANGO_DEBUG: "true"
+      DJANGO_SECRET_KEY: nur-fuer-die-statische-demo-kein-geheimnis-1234567890
+      COCKPIT_FERNET_KEYS: RGVtby1udXItZnVlci1QYWdlcy1rZWluLUdlaGVpbSE=
+      DJANGO_ALLOWED_HOSTS: localhost
+      EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Abhängigkeiten
+        run: uv sync --frozen
+      - name: Demo-Daten und statische Seiten
+        run: |
+          uv run python manage.py migrate -v0
+          uv run python manage.py demo_daten
+          uv run python manage.py statische_demo _site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  veroeffentlichen:
+    name: Auf GitHub Pages veröffentlichen
+    needs: bauen
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
