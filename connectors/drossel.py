@@ -10,15 +10,16 @@ class TokenBucket:
         self,
         rate: float,
         kapazitaet: float,
-        uhr: Callable[[], float] = time.monotonic,
-        schlafen: Callable[[float], None] = time.sleep,
+        uhr: Callable[[], float] | None = None,
+        schlafen: Callable[[float], None] | None = None,
     ) -> None:
         self.rate = rate
         self.kapazitaet = kapazitaet
-        self.uhr = uhr
-        self.schlafen = schlafen
+        # Zur Laufzeit auflösen, damit Tests time.sleep ersetzen können
+        self.uhr = uhr or (lambda: time.monotonic())
+        self.schlafen = schlafen or (lambda s: time.sleep(s))
         self._token = kapazitaet
-        self._zuletzt = uhr()
+        self._zuletzt = self.uhr()
         self._sperre = threading.Lock()
 
     def _auffuellen(self) -> None:

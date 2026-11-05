@@ -104,9 +104,12 @@ def lexware_api():
 def ohne_warten(monkeypatch):
     """Keine echten Pausen in Tests (Token-Bucket und Backoff)."""
     import connectors.drossel
+    import connectors.lexware
 
     pausen = []
     monkeypatch.setattr(connectors.drossel.time, "sleep", lambda s: pausen.append(s))
+    # Großer Eimer: der Token-Bucket selbst ist in test_lexware.py getrennt getestet
+    monkeypatch.setattr(connectors.lexware, "eimer_fuer", lambda _s: connectors.drossel.TokenBucket(10_000, 10_000))
     return pausen
 
 
@@ -116,3 +119,30 @@ def lexware(lexware_api, ohne_warten):
     from connectors.lexware import LexwareConnector
 
     return LexwareConnector("test-schluessel", eimer=TokenBucket(1000, 1000), schlafen=lambda s: ohne_warten.append(s))
+
+
+@pytest.fixture
+def verbindung(firma):
+    from cockpit.krypto import verschluesseln
+    from connectors.models import Verbindung
+
+    return Verbindung.objects.create(
+        firma=firma,
+        schluessel_verschluesselt=verschluesseln("test-schluessel"),
+        firmenname_extern="Malerbetrieb Muster GmbH",
+    )
+
+
+@pytest.fixture
+def worker():
+    from jobs.worker import Worker
+
+    return Worker(name="test", sperrzeit=60)
+
+
+def alle_jobs_ausfuehren(worker, max_runden=50):
+    """Arbeitet alle fälligen Jobs ab (auch Folge-Jobs)."""
+    for _ in range(max_runden):
+        if not worker.einen_ausfuehren():
+            return
+    raise AssertionError("Job-Schleife endet nicht")

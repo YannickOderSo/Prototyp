@@ -22,7 +22,10 @@ def lexware(request: FirmaRequest) -> HttpResponse:
         except ConnectorFehler as fehler:
             form.add_error("schluessel", _meldung(fehler))
         else:
-            messages.success(request, f"Verbunden mit Lexware: {verbindung.firmenname_extern}.")
+            from ledger.aufgaben import erstimport_einplanen
+
+            erstimport_einplanen(verbindung)
+            messages.success(request, f"Verbunden mit Lexware: {verbindung.firmenname_extern}. Der Erstimport läuft.")
             return redirect("connectors:lexware")
     return render(request, "connectors/lexware.html", {"form": form, "verbindung": verbindung})
 

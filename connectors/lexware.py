@@ -134,7 +134,7 @@ class LexwareConnector:
         basis_url: str = "https://api.lexware.io",
         client: httpx.Client | None = None,
         eimer: TokenBucket | None = None,
-        schlafen: Callable[[float], None] = time.sleep,
+        schlafen: Callable[[float], None] | None = None,
         timeout: float = 30.0,
     ) -> None:
         if not api_schluessel:
@@ -144,7 +144,7 @@ class LexwareConnector:
         self._client = client or httpx.Client(timeout=timeout)
         kennung = hashlib.sha256(api_schluessel.encode()).hexdigest()[:16]
         self._eimer = eimer or eimer_fuer(f"lexware:{kennung}")
-        self._schlafen = schlafen
+        self._schlafen = schlafen or (lambda s: time.sleep(s))
 
     # ------------------------------------------------------------------ HTTP
     def _anfrage(

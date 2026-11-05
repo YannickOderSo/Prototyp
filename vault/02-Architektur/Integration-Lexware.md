@@ -42,6 +42,13 @@ Die API beschreibt **keinen E-Mail-Versand** von Rechnungen oder Mahnungen. Die 
 3. Nachts 2 Uhr: voucherlist mit `updatedDateFrom` = letzter Abgleich minus 1 Tag. Zusätzlich jede in der App als offen geführte Rechnung, die nicht mehr in der Offen-Liste auftaucht, einzeln nachladen.
 4. Vor jedem Versand einer Mahnung: `GET /v1/payments/{id}` (Frische-Check, D9).
 
+Umgesetzt in M1-07 (`ledger/abgleich.py`, Jobs in `ledger/aufgaben.py`):
+- Erstimport: Kontakte (`customer=true`), Artikel, dann `open` und `overdue`; danach `erstimport_fertig`. Abweichend von Punkt 1 wird **nicht** für jede offene Rechnung `payments` abgefragt, weil die Voucherlist `openAmount` bereits liefert; das spart bei 500 Rechnungen gut vier Minuten Rate-Limit. Zahlungen werden beim Frische-Check (D9) und für bezahlte Belege abgefragt.
+- Folge-Job Zahlungshistorie: `paid,paidoff` der letzten 12 Monate, je Beleg `payments` für das Zahldatum (Grundlage für C3 und C4).
+- Nachtabgleich 2 Uhr: ein Job je Verbindung; `voucherStatus=any` mit `updatedDateFrom` = letzter Abgleich minus 1 Tag, dann die komplette Offen-Liste, fehlende offene Belege einzeln nachladen (`GET /v1/invoices/{id}` bzw. `/v1/down-payment-invoices/{id}` plus `payments`). Nicht mehr auffindbare Belege werden im Spiegel als storniert geführt.
+- Kundentyp, Pausen und Notizen pflegt nur die App; der Abgleich überschreibt sie nie.
+- Abgelehnter Schlüssel (401/402/403): Verbindung auf „Fehler“, Job ohne Wiederholung. Nicht erreichbar oder 429: Job wird mit Backoff wiederholt.
+
 ## Umsetzung (M1-05)
 
 - `connectors/base.py`: Protokoll `AccountingConnector` und Datentypen (alle Beträge `Decimal`, Daten in Europe/Berlin). Ergänzt gegenüber dem Entwurf unten: `list_receivables(status, updated_since)` (für den nächtlichen Abgleich mit `voucherStatus=any`), `get_receivable(id)` (Webhook-Nachladen), `get_contact(id)`, `delete_webhooks(ids)`.
