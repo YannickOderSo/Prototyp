@@ -32,3 +32,18 @@ Regeln: ADR-007. Übernommene Stellen tragen im Code den Vermerk
 
 **Neue offene Fragen:** keine.
 
+
+### Bericht M1 Konto, Lexware lesen, Cockpit (5. November 2026)
+
+**Fertig:** M1-01 Konten, Rollen, Einladungscodes, Registrierung · M1-02 TOTP-Zwei-Faktor als Pflicht · M1-03 Rate-Limits · M1-04 Mandantentrennung mit generischem IDOR-Test · M1-05 Connector-Protokoll und LexwareConnector · M1-06 Verbindung mit verschlüsseltem Schlüssel · M1-07 Erstimport und Nachtabgleich · M1-08 Webhooks mit Signaturprüfung · M1-09 Cockpit (C1–C5, dazu C6) · M1-10 Kundentyp pflegen.
+
+**Tests:** 205 Tests, lokal grün gegen Postgres 16, Gesamtabdeckung 94 %. CI grün. Abgedeckt sind unter anderem RFC-6238-Testvektoren und Replay-Schutz, 429 nach 10 Fehlversuchen je IP und je Konto, der IDOR-Test über alle URL-Muster mit Parametern, das Fehlen von `finalize` in allen Lexware-Requests (Laufzeitwächter und Quelltextprüfung), ein Lasttest mit 500 Rechnungen und eingestreuten 429, Kennzahlen mit bekannten Summen, Ladezeit der Postenliste bei 1.000 Posten unter 1 s und die Webhook-Signatur mit dem **offiziellen** Beispiel aus der Lexware-Doku.
+
+**Nur gegen Mocks getestet, Echtlauf nötig:**
+- Alle Lexware-Aufrufe laufen gegen **nachgebaute** Antworten im Format der Doku (`tests/fixtures/lexware/`), nicht gegen ein echtes Konto. Die Meilenstein-Abnahme M1 („Summen stimmen mit dem Lexware-Testkonto exakt“, „bezahlte Rechnung verschwindet binnen 5 Minuten“) ist nur gegen diese Nachbildung erfüllt. Für den Echtlauf braucht es ein Lexware-Office-XL-Testkonto.
+- Webhook-Empfang: Signaturprüfung mit dem echten Lexware-Schlüssel und dem Doku-Beispiel geprüft; Zustellung echter Ereignisse an eine öffentliche HTTPS-Adresse steht aus.
+- Das Rate-Limit-Verhalten von Lexware (2/s, 429) ist simuliert, nicht gemessen.
+
+**Belegfluss:** Nichts übernommen. Gelesen wurden `lexware.py` (Datumsformat, `shippingConditions`), `totp.py` und `krypto.py` (Replay-Schutz, Fernet). Alles ist neu gebaut (Tabelle oben).
+
+**Neue offene Fragen:** Altersstruktur nach Tagen überfällig; Prognose ohne Posten mit Termin in der Vergangenheit; Token-Bucket je Prozess; Mahnung nur mit Textposition (Echtlauf). Alle mit Annahme in `05-Kontext/Offene-Fragen.md`.
