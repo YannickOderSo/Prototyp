@@ -1,0 +1,19 @@
+; Belegfluss KI-Telefonassistent (ADR-010) – Beispiel-Dialplan für Asterisk 20+
+; Voraussetzungen: Module func_curl und res_audiosocket/app_audiosocket geladen.
+; Das Geheimnis steht NICHT im Repository: BELEGFLUSS_TOKEN = TELEFON_ASTERISK_TOKEN der App.
+
+[globals]
+BELEGFLUSS_URL=https://app.example.de/telefon/asterisk/anruf/
+BELEGFLUSS_TOKEN=BITTE-SETZEN
+BELEGFLUSS_AUDIOSOCKET=127.0.0.1:9092
+
+; Eingehende Anrufe vom SIP-Trunk (Kontext in pjsip.conf: context=belegfluss-eingang)
+[belegfluss-eingang]
+exten => _X.,1,NoOp(Belegfluss: Anruf an ${EXTEN} von ${CALLERID(num)})
+ same => n,Answer()
+ same => n,Set(UUID=${CURL(${BELEGFLUSS_URL},did=${EXTEN}&clip=${URIENCODE(${CALLERID(num)})}&token=${BELEGFLUSS_TOKEN})})
+ same => n,GotoIf($[${REGEX("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" ${UUID})}]?gespraech:nicht_erreichbar)
+ same => n(gespraech),AudioSocket(${UUID},${BELEGFLUSS_AUDIOSOCKET})
+ same => n,Hangup()
+ same => n(nicht_erreichbar),Playback(belegfluss-nicht-erreichbar)
+ same => n,Hangup()

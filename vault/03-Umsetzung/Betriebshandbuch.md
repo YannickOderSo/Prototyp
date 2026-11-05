@@ -256,3 +256,41 @@ Vor dem ersten Pilotbetrieb, in dieser Reihenfolge. Alles hier ist bisher nur mi
 - [ ] Mahntexte, Zinslogik und Verzugstabelle durch Anwalt/Steuerberater geprüft (M4-07, Offene Fragen).
 - [ ] Datenschutz und Recht: alle Punkte aus [[Pruefliste-Team]]; `manage.py check --deploy` ohne `cockpit.W001` (keine Platzhalter-Rechtstexte mehr).
 - [ ] Basiszins für das laufende Halbjahr eingetragen (`/healthz` ohne `basiszins: warnung`).
+
+## 11. KI-Telefonassistent (Prototyp, ADR-010)
+
+**Status:** Gesprächsführung, Testanruf im Browser, Anmeldung durch Asterisk und AudioSocket-Dienst sind gebaut und gegen simulierte Anrufe getestet. Mit einer echten Telefonleitung lief noch **kein** Anruf.
+
+**Bausteine auf dem Server**
+1. **SIP-Trunk** eines deutschen Anbieters mit Rufnummern. Den Anbieter und die Kosten nennt die Kostenkalkulation Telefonassistent. Zugangsdaten nur in `/etc/asterisk/pjsip.conf` auf dem Server, nie im Repository.
+2. **Asterisk 20+** auf dem Server in Deutschland, mit `func_curl` und `app_audiosocket`.
+   - Beispiele liegen in `docker/asterisk/` (`pjsip.conf.beispiel`, `extensions.conf.beispiel`).
+   - SIP über TLS (5061) und SRTP. Die Firewall öffnet nur 5061 und den RTP-Bereich für den Anbieter.
+3. **Belegfluss-Dienst** `python manage.py telefon_dienst`:
+   - Er hört auf `TELEFON_AUDIOSOCKET_HOST:PORT`, Standard `127.0.0.1:9092`, also nur lokal.
+   - Ohne `TELEFON_ASTERISK_TOKEN` startet er nicht.
+   - Er läuft als eigener Prozess neben web und worker, z. B. als weiterer Compose-Dienst mit demselben Image und dem Befehl `python manage.py telefon_dienst`.
+4. **Piper** (Sprachausgabe) im Image bzw. auf dem Server:
+   - `PIPER_BEFEHL` ist der Pfad zum Programm.
+   - `PIPER_MODELL` ist der Pfad zur deutschen Stimme (`.onnx`). Die `.onnx.json` muss daneben liegen, denn sie enthält die Abtastrate.
+   - Die Lizenz der Stimme vor dem Einsatz prüfen.
+5. Optional `TELEFON_MODELL` für ein schnelleres Modell, nur ein EU-Inferenzprofil. Sonst gilt `BEDROCK_MODELL`.
+
+**Neuen Betrieb freischalten**
+1. Eine Rufnummer aus dem Trunk zuteilen. In der Admin-Shell: `Telefonassistent.objects.update_or_create(firma=…, defaults={"rufnummer": "+49…"})`. Die Nummer muss eindeutig sein.
+2. Der Inhaber schaltet den Assistenten unter Einstellungen → KI-Telefonassistent ein und richtet die Rufumleitung bei Nichtannahme und bei besetzt auf diese Nummer ein. Die Anleitung steht auf derselben Seite.
+3. Ein Testanruf von außen. Danach muss unter „Rückrufe“ eine Notiz stehen, und das Team muss eine Mail bekommen haben.
+
+**Störungen**
+- *Anrufer hört eine Fehleransage:* Die Anmeldung bei Belegfluss ist gescheitert.
+  - Prüfen, ob das Token im Dialplan und in der App gleich ist.
+  - Prüfen, ob die Nummer zugeteilt und der Assistent eingeschaltet ist. Antwort 404 bedeutet „unbekannt oder aus“.
+- *Assistent schweigt:* `telefon_dienst` läuft nicht, oder Piper bzw. die Stimme fehlt. Siehe Logs.
+- *Assistent stellt nur feste Fragen:* Das ist der Ausfallbetrieb, weil Bedrock nicht erreichbar oder das KI-Limit erreicht ist. Das Protokoll zeigt `telefon.ausfallbetrieb`. Die Notizen entstehen trotzdem.
+- *Antworten zu langsam (über 4 s):* `TELEFON_MODELL` auf ein schnelleres EU-Profil setzen und die Serverlast prüfen.
+
+**Vor dem ersten echten Anruf (Prüfliste)**
+- Rechtliche Prüfung der Ansage: § 201 StGB, Informationspflichten nach Art. 13 DSGVO. Dazu die AVV mit Telefonie-Anbieter, Mistral und AWS.
+- Lizenz der Piper-Stimme für den gewerblichen Einsatz.
+- Lasttest mit mehreren gleichzeitigen Gesprächen.
+- Notrufhinweis in der Ansage, das ist der Pflichtteil. Belegfluss vermittelt keine Notrufe.

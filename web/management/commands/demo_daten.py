@@ -272,6 +272,50 @@ class Command(BaseCommand):
             f"2025-050;{heute - timedelta(days=40):%d.%m.%Y};{heute - timedelta(days=26):%d.%m.%Y};"
             "Malermeister Alt;100,00;\n"
         ).encode()
+        # KI-Telefonassistent (ADR-010): eingeschaltet mit Demo-Nummer und drei Rückruf-Notizen
+        from telefon.models import Gespraech, Rueckruf, Telefonassistent
+
+        Telefonassistent.objects.create(firma=firma, aktiv=True, rufnummer="+4930000000000")
+        for name, anliegen, nummer, dringlichkeit, zeit, vor_minuten in [
+            ("Familie Weber", "Wasserfleck an der Küchendecke, wird größer.", "01512345678", "dringend", "", 25),
+            (
+                "Herr Krüger",
+                "Angebot für Fassadenanstrich, Einfamilienhaus.",
+                "0301234567",
+                "normal",
+                "nachmittags",
+                140,
+            ),
+            (
+                "",
+                "Anruf ohne Nachricht (aufgelegt, bevor ein Anliegen genannt wurde).",
+                "01709876543",
+                "normal",
+                "",
+                300,
+            ),
+        ]:
+            g = Gespraech.objects.create(
+                firma=firma,
+                anrufer_nummer=nummer,
+                status=Gespraech.Status.BEENDET if name else Gespraech.Status.ABGEBROCHEN,
+                begonnen=jetzt - timedelta(minutes=vor_minuten),
+                beendet=jetzt - timedelta(minutes=vor_minuten - 2),
+                runden=3 if name else 0,
+                verlauf=[{"rolle": "assistent", "text": "Guten Tag, Sie sind verbunden mit " + FIRMA + "."}]
+                + ([{"rolle": "anrufer", "text": anliegen}] if name else []),
+            )
+            Rueckruf.objects.create(
+                firma=firma,
+                gespraech=g,
+                name=name,
+                anliegen=anliegen,
+                rueckrufnummer=nummer,
+                dringlichkeit=dringlichkeit,
+                beste_zeit=zeit,
+                kontakt=kunden["k-weber"] if name == "Familie Weber" else None,
+                erstellt=jetzt - timedelta(minutes=vor_minuten),
+            )
         vorgang = datenimport.hochladen(firma, nutzer, "posten", "alte-rechnungen.csv", alte)
         datenimport.zuordnung_speichern(vorgang, vorgang.zuordnung, {}, kundentyp_uebernehmen=False)
 

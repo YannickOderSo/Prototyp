@@ -1,0 +1,45 @@
+; Belegfluss KI-Telefonassistent (ADR-010) – Beispiel für einen SIP-Trunk (Registrierung beim Anbieter).
+; Zugangsdaten NICHT ins Repository: Platzhalter auf dem Server ersetzen. Anbieter: deutscher SIP-Trunk (siehe
+; Kostenkalkulation Telefonassistent); Werte für Server, Benutzer und Passwort stehen im Kundenbereich des Anbieters.
+
+[transport-tls]
+type=transport
+protocol=tls
+bind=0.0.0.0:5061
+cert_file=/etc/asterisk/keys/asterisk.pem
+priv_key_file=/etc/asterisk/keys/asterisk.key
+method=tlsv1_2
+
+[trunk-auth]
+type=auth
+auth_type=userpass
+username=BITTE-SETZEN
+password=BITTE-SETZEN
+
+[trunk-registrierung]
+type=registration
+transport=transport-tls
+outbound_auth=trunk-auth
+server_uri=sips:sip.ANBIETER.de
+client_uri=sips:BITTE-SETZEN@sip.ANBIETER.de
+retry_interval=60
+
+[trunk-aor]
+type=aor
+contact=sips:sip.ANBIETER.de
+
+[trunk]
+type=endpoint
+transport=transport-tls
+context=belegfluss-eingang
+disallow=all
+allow=alaw,ulaw
+media_encryption=sdes
+outbound_auth=trunk-auth
+aors=trunk-aor
+direct_media=no
+
+[trunk-identify]
+type=identify
+endpoint=trunk
+match=sip.ANBIETER.de

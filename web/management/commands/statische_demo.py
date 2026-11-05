@@ -39,7 +39,15 @@ START = [
     "/import/",
 ]
 # Nicht in die Demo: Anmeldung, Webhooks, Downloads mit Kundendaten und Seiten mit Geheimnissen
-AUSGESCHLOSSEN = ("/konto/", "/hooks/", "/healthz", "/einstellungen/verbindung/", "/mahnungen/smtp/")
+AUSGESCHLOSSEN = (
+    "/konto/",
+    "/hooks/",
+    "/healthz",
+    "/einstellungen/verbindung/",
+    "/mahnungen/smtp/",
+    "/telefon/test/",  # Testanruf braucht das Backend
+    "/telefon/asterisk/",
+)
 TROTZDEM = ("/konto/profil/", "/konto/team/")  # unbedenklich, zeigen Avatare und Team
 # Reiter und Zeiträume sind Links mit Parametern; nur diese werden als eigene Seiten abgelegt
 ERLAUBTE_PARAMETER = {"ansicht", "zeitraum"}
