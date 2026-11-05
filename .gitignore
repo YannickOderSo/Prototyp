@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.coverage
+coverage.xml
+htmlcov/
+staticfiles/
+var/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+test-results/
+node_modules/
