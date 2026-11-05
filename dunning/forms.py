@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Mahnplan
+from .models import Mahnplan, SmtpZugang
 from .texte import PLATZHALTER, unbekannte_platzhalter
 
 
@@ -51,3 +51,20 @@ class MahnplanForm(forms.ModelForm):
             if unbekannt:
                 self.add_error(feld, "Unbekannte Platzhalter: " + ", ".join("{" + u + "}" for u in unbekannt))
         return daten
+
+
+class SmtpForm(forms.ModelForm):
+    passwort = forms.CharField(
+        label="Passwort",
+        required=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+        help_text="Leer lassen, um das gespeicherte Passwort zu behalten.",
+    )
+
+    class Meta:
+        model = SmtpZugang
+        fields = ["aktiv", "host", "port", "benutzer", "starttls", "ssl", "absender_adresse"]
+        help_texts = {
+            "aktiv": "Ohne eigenes SMTP versendet das Cockpit über seinen EU-Mailanbieter mit Ihrem Namen.",
+            "absender_adresse": "Diese Adresse muss Ihr SMTP-Server als Absender erlauben (SPF/DKIM Ihrer Domain).",
+        }

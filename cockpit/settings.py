@@ -158,6 +158,8 @@ EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
 EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=30)
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="cockpit@localhost")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+# Geheimes Token für Zustellmeldungen (Bounces) des SMTP-Anbieters: /hooks/zustellung/<token>/
+ZUSTELLUNG_WEBHOOK_TOKEN = env.str("ZUSTELLUNG_WEBHOOK_TOKEN", default="")
 
 # Externe Dienste, ausschließlich EU-Endpunkte (ADR-005)
 LEXWARE_BASIS_URL = env.str("LEXWARE_BASIS_URL", default="https://api.lexware.io")

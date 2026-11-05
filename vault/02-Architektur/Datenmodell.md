@@ -29,7 +29,8 @@ Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich �
   Umgesetzt (M2-01) mit zusätzlich: erinnerung_aktiv, abstand_tage (10, Untergrenze 7), frist_mahnung1_tage (10), frist_mahnung2_tage (7), verzugshinweis_auf_rechnungen (Firmeneinstellung für § 286 Abs. 3 bei Privatkunden), bcc_an_firma, automatik_aktiv, betreff_/text_ je Stufe (leer = Standardtext aus `dunning/texte.py`). Abstände zwischen Stufen mindestens 7 Tage (Validierung). Änderungen werden protokolliert.
 - **Basiszins**: gueltig_ab, satz — gepflegte Tabelle, Startwerte siehe `Mahnlogik-und-Recht.md` (Data-Migration `dunning/0002`)
 - **Mahnvorschlag**: beleg, stufe (0 Erinnerung, 1, 2), erstellt_am, faellig_seit_tagen, offen_betrag, zinsen, pauschale, gesamt, status (`vorgeschlagen` | `freigegeben` | `versendet` | `verworfen` | `fehler`), freigegeben_von, freigegeben_am, verworfen_grund, lexware_dunning_id, eindeutig auf (beleg, stufe)
-- **Versand**: vorschlag oder entwurf, empfaenger, betreff, text, anhang_name, message_id, gesendet_am, zustellfehler
+- **Versand**: vorschlag oder entwurf, empfaenger, betreff, text, anhang_name, message_id, gesendet_am, zustellfehler (umgesetzt mit zustellfehler_am)
+- **SmtpZugang** (M2-06, optional je Firma): host, port, benutzer, passwort_verschluesselt, starttls, ssl, absender_adresse, aktiv, geprueft_am. Aktivieren nur nach erfolgreicher Testmail an den Inhaber.
 
 ## Erfassen
 

@@ -13,4 +13,5 @@ urlpatterns = [
     path("<int:pk>/pdf/", views.pdf, name="pdf"),
     path("<int:pk>/post-versendet/", views.post_versendet, name="post_versendet"),
     path("mahnplan/", views.mahnplan, name="mahnplan"),
+    path("smtp/", views.smtp, name="smtp"),
 ]

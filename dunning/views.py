@@ -8,11 +8,13 @@ from accounts.mandant import hole_oder_404
 from accounts.rechte import freigabe_berechtigt, nur_inhaber
 from accounts.typen import FirmaRequest
 from audit.services import protokolliere
+from cockpit.krypto import verschluesseln
 
 from . import freigabe as dienst
-from .forms import MahnplanForm
+from .forms import MahnplanForm, SmtpForm
 from .mail import inhalt, zinsberechnung_text
-from .models import Mahnvorschlag
+from .mailversand import testmail
+from .models import Mahnvorschlag, SmtpZugang, Versand
 from .services import basiszins_fehlt, basiszinsen, mahnplan_fuer
 from .vorschlaege import klaerung_noetig
 
@@ -60,6 +62,9 @@ def freigabe(request: FirmaRequest) -> HttpResponse:
             "post": alle.filter(status=Mahnvorschlag.Status.POST_BEREIT),
             "versendet": alle.filter(status=Mahnvorschlag.Status.VERSENDET).order_by("-versendet_am")[:20],
             "klaerung": klaerung_noetig(request.firma, timezone.localdate()),
+            "zustellfehler": Versand.objects.fuer(request.firma)
+            .exclude(zustellfehler="")
+            .order_by("-gesendet_am")[:20],
             "basiszins_fehlt": basiszins_fehlt(timezone.localdate()),
         },
     )
@@ -144,3 +149,34 @@ def post_versendet(request: FirmaRequest, pk: int) -> HttpResponse:
             request, f"{vorschlag.get_stufe_display()} zu {vorschlag.beleg.nummer} als per Post versendet vermerkt."
         )
     return redirect("dunning:freigabe")
+
+
+@nur_inhaber
+def smtp(request: FirmaRequest) -> HttpResponse:
+    zugang = SmtpZugang.objects.fuer(request.firma).first() or SmtpZugang(firma=request.firma)
+    form = SmtpForm(request.POST or None, instance=zugang)
+    if request.method == "POST" and form.is_valid():
+        zugang = form.save(commit=False)
+        if form.cleaned_data["passwort"]:
+            zugang.passwort_verschluesselt = verschluesseln(form.cleaned_data["passwort"])
+        if zugang.aktiv:
+            try:
+                testmail(zugang, request.user.email)
+            except Exception as fehler:
+                form.add_error(
+                    None,
+                    f"Die Testmail konnte nicht gesendet werden ({type(fehler).__name__}). Eigenes SMTP bleibt aus.",
+                )
+                return render(request, "dunning/smtp.html", {"form": form})
+            zugang.geprueft_am = timezone.now()
+        zugang.save()
+        protokolliere(
+            request.firma,
+            "einstellung.smtp_geaendert",
+            nutzer=request.user,
+            objekt=zugang,
+            daten={"aktiv": zugang.aktiv},
+        )
+        messages.success(request, "SMTP-Einstellungen gespeichert." + (" Testmail gesendet." if zugang.aktiv else ""))
+        return redirect("dunning:smtp")
+    return render(request, "dunning/smtp.html", {"form": form})

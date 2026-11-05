@@ -7,9 +7,9 @@ from datetime import date, timedelta
 from decimal import Decimal
 from email.utils import formataddr
 
-from django.conf import settings
 from django.utils import timezone
 
+from .mailversand import absender_adresse
 from .models import Mahnvorschlag
 from .recht import ZinsAbschnitt, ZinsErgebnis, zinstext
 from .services import mahnplan_fuer
@@ -107,7 +107,7 @@ def inhalt(vorschlag: Mahnvorschlag, versandtag: date | None = None) -> MailInha
         ),
     }
     return MailInhalt(
-        absender=formataddr((firma.email_absender or firma.name, settings.DEFAULT_FROM_EMAIL)),
+        absender=formataddr((firma.email_absender or firma.name, absender_adresse(firma))),
         empfaenger=kontakt.email if kontakt else "",
         reply_to=firma.reply_to,
         bcc=firma.reply_to if plan.bcc_an_firma and firma.reply_to else "",

@@ -68,6 +68,12 @@
 </ul>
 {% endif %}
 
+{% if zustellfehler %}
+<h2>Zustellfehler</h2>
+<p class="hilfe">Diese Mails hat der Mailserver des Kunden nicht angenommen. Bitte Adresse in Lexware prüfen oder per Post versenden.</p>
+<ul class="liste">{% for z in zustellfehler %}<li><div class="zeile"><span>{{ z.empfaenger }}</span><span class="neben">{{ z.gesendet_am|date:"d.m.Y" }}</span></div><div class="meldung fehler">{{ z.betreff }}: {{ z.zustellfehler }}</div></li>{% endfor %}</ul>
+{% endif %}
+
 {% if in_arbeit %}
 <h2>Freigegeben, Versand läuft</h2>
 <ul class="liste">{% for v in in_arbeit %}<li><div class="zeile"><span>{{ v.beleg.kontakt.name }}</span><span>{{ v.get_stufe_display }} {{ v.beleg.nummer }}</span></div></li>{% endfor %}</ul>

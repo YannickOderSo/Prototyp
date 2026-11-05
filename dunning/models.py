@@ -155,9 +155,32 @@ class Versand(FirmaModel):
     message_id = models.CharField(max_length=300, blank=True, db_index=True)
     gesendet_am = models.DateTimeField(default=timezone.now)
     zustellfehler = models.TextField(blank=True)
+    zustellfehler_am = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Versände"
 
     def __str__(self) -> str:
         return f"{self.betreff} → {self.empfaenger}"
+
+
+class SmtpZugang(FirmaModel):
+    """Optional: eigenes SMTP der Firma. Ohne aktiven Zugang versendet die Plattform (EU-Anbieter)."""
+
+    host = models.CharField("SMTP-Server", max_length=200)
+    port = models.PositiveIntegerField("Port", default=587)
+    benutzer = models.CharField("Benutzername", max_length=200, blank=True)
+    passwort_verschluesselt = models.TextField(blank=True)
+    starttls = models.BooleanField("STARTTLS", default=True)
+    ssl = models.BooleanField("SSL/TLS direkt (Port 465)", default=False)
+    absender_adresse = models.EmailField("Absenderadresse")
+    aktiv = models.BooleanField("Eigenes SMTP verwenden", default=False)
+    geprueft_am = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "SMTP-Zugang"
+        verbose_name_plural = "SMTP-Zugänge"
+        constraints = [models.UniqueConstraint(fields=["firma"], name="smtp_je_firma")]
+
+    def __str__(self) -> str:
+        return f"{self.host}:{self.port}"
