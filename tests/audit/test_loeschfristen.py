@@ -15,6 +15,7 @@ from audit.models import Protokolleintrag
 from capture.models import Datei, Erfassung, PostfachEingang
 from capture.services import anlegen
 from connectors.models import Verbindung, WebhookEreignis
+from datenimport.models import ImportVorgang
 from dunning.models import Mahnplan, Mahnvorschlag, Versand
 from jobs.models import Job, ZeitplanLauf
 from jobs.registry import zeitplan_eintraege
@@ -192,6 +193,7 @@ def test_firma_loeschen(firma, inhaber, freigeber, andere_firma, fremder_inhaber
     erfassung = _erfassung(firma, inhaber)
     pfad = _pfad(erfassung.dateien.get())
     Mahnplan.objects.create(firma=firma)
+    ImportVorgang.objects.create(firma=firma, art="kunden", dateiname="k.csv", zeilen=[["Bau AG"]])
     ZweiFaktor.objects.create(nutzer=inhaber, geheimnis_verschluesselt="x")
     ZweiFaktor.objects.create(nutzer=freigeber, geheimnis_verschluesselt="x")
     # Der Freigeber gehört auch zur anderen Firma und bleibt dort aktiv
@@ -200,7 +202,7 @@ def test_firma_loeschen(firma, inhaber, freigeber, andere_firma, fremder_inhaber
     call_command("firma_loeschen", firma.pk, "--bestaetigen", firma.name)
     firma.refresh_from_db()
     assert not firma.aktiv and firma.reply_to == "" and firma.name
-    for modell in (Erfassung, Beleg, Kontakt, Artikel, Mahnvorschlag, Versand, Verbindung, Mahnplan):
+    for modell in (Erfassung, Beleg, Kontakt, Artikel, Mahnvorschlag, Versand, Verbindung, Mahnplan, ImportVorgang):
         assert not modell.objects.fuer(firma).exists(), modell
     assert Beleg.objects.fuer(andere_firma).exists()
     assert not pfad.exists()
@@ -213,3 +215,46 @@ def test_firma_loeschen(firma, inhaber, freigeber, andere_firma, fremder_inhaber
     assert Nutzer.objects.filter(pk=inhaber.pk).exists()  # bleibt als Bezug des Protokolls
     assert Protokolleintrag.objects.filter(firma=firma, ereignis="firma.geloescht").exists()
     assert Protokolleintrag.objects.filter(firma=firma).count() > 1  # Protokoll bleibt
+
+
+def test_importzeilen_nach_7_tagen(firma, inhaber):
+    vorschau = [{"nr": 2, "status": "neu", "grund": "", "anzeige": "Bau AG", "daten": {"email": "a@b.example"}}]
+    alt = timezone.now() - timedelta(days=8)
+    fertig = ImportVorgang.objects.create(
+        firma=firma,
+        art="kunden",
+        dateiname="k.csv",
+        status="fertig",
+        zeilen=[["Bau AG"]],
+        vorschau=vorschau,
+        ergebnis={"angelegt": 1},
+        loeschen_ab=alt,
+    )
+    offen = ImportVorgang.objects.create(
+        firma=firma,
+        art="kunden",
+        dateiname="k.csv",
+        status="vorschau",
+        zeilen=[["X"]],
+        vorschau=vorschau,
+        loeschen_ab=alt,
+    )
+    laeuft = ImportVorgang.objects.create(
+        firma=firma,
+        art="kunden",
+        dateiname="k.csv",
+        status="freigegeben",
+        zeilen=[["X"]],
+        vorschau=vorschau,
+        loeschen_ab=alt,
+    )
+    neu = ImportVorgang.objects.create(firma=firma, art="kunden", dateiname="k.csv", zeilen=[["X"]], vorschau=vorschau)
+    bericht = ausfuehren()
+    for v in (fertig, offen, laeuft, neu):
+        v.refresh_from_db()
+    assert fertig.zeilen == [] and fertig.vorschau == [] and fertig.zeilen_geloescht_am is not None
+    assert fertig.ergebnis["angelegt"] == 1 and fertig.ergebnis["anzahl"]["neu"] == 1 and fertig.status == "fertig"
+    assert offen.zeilen == [] and offen.status == "verworfen"
+    assert laeuft.zeilen and laeuft.vorschau  # läuft noch
+    assert neu.zeilen and neu.vorschau
+    assert bericht.gesamt["importzeilen"] == 2

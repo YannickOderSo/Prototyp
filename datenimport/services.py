@@ -117,6 +117,32 @@ def freigeben(vorgang: ImportVorgang, nutzer: Nutzer) -> None:
         posten_anlegen(vorgang)
 
 
+def job_aktiv(vorgang: ImportVorgang) -> bool:
+    from jobs.models import Job
+
+    return Job.objects.filter(
+        eindeutig_schluessel=f"import:{vorgang.pk}", status__in=[Job.Status.WARTET, Job.Status.LAEUFT]
+    ).exists()
+
+
+def fortsetzen(vorgang: ImportVorgang, nutzer: Nutzer) -> None:
+    """Abgebrochener Import (z. B. Schlüssel abgelehnt): erneut einreihen. Schon angelegte Zeilen sind vermerkt."""
+    if vorgang.status != ImportVorgang.Status.FREIGEGEBEN or vorgang.art == ImportVorgang.Art.POSTEN:
+        raise ImportNichtMoeglich("Dieser Import läuft nicht.")
+    if job_aktiv(vorgang):
+        raise ImportNichtMoeglich("Der Import läuft bereits.")
+    verbindung = aktive_verbindung(vorgang.firma)
+    if verbindung is None:
+        raise ImportNichtMoeglich("Keine aktive Verbindung zu Lexware. Bitte zuerst den API-Schlüssel prüfen.")
+    enqueue(
+        "datenimport.ausfuehren",
+        {"verbindung_id": verbindung.pk, "vorgang_id": vorgang.pk},
+        firma=vorgang.firma,
+        eindeutig=f"import:{vorgang.pk}",
+    )
+    protokolliere(vorgang.firma, "import.fortgesetzt", nutzer=nutzer, objekt=vorgang)
+
+
 def verwerfen(vorgang: ImportVorgang, nutzer: Nutzer) -> None:
     with transaction.atomic():
         gesperrt = ImportVorgang.objects.select_for_update().get(pk=vorgang.pk)

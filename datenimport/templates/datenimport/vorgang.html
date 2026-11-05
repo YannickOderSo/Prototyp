@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block titel %}Import {{ v.get_art_display }}{% endblock %}
+{% block inhalt %}
+<p><a href="{% url 'datenimport:uebersicht' %}">← Import aus Excel</a></p>
+<h1>{{ v.get_art_display }} aus {{ v.dateiname }}</h1>
+<p class="leise">{{ v.zeilen|length }} Zeilen{% if v.blatt %} · Blatt „{{ v.blatt }}“{% endif %} · <span class="marke-status">{{ v.get_status_display }}</span></p>
+{% if blaetter|length > 1 and v.status == 'zuordnung' or blaetter|length > 1 and v.status == 'vorschau' %}<p class="hilfe">Die Datei hat mehrere Blätter ({{ blaetter|join:", " }}). Falsches Blatt? Laden Sie die Datei erneut hoch und tragen Sie das Blatt ein.</p>{% endif %}
+
+{% if v.status == 'zuordnung' or v.status == 'vorschau' %}
+<h2>1. Spalten zuordnen</h2>
+<p class="hilfe">Wir haben die Spalten anhand der Überschriften vorgeschlagen. Bitte prüfen. Felder mit * sind Pflicht.</p>
+<form method="post" action="{% url 'datenimport:zuordnung' v.pk %}" class="karte">
+  {% csrf_token %}
+  {% for f in felder %}
+  <div class="feld">
+    <label for="{{ f.name }}">{{ f.feld.titel }}{% if f.feld.pflicht %} *{% endif %}</label>
+    <select name="{{ f.name }}" id="{{ f.name }}">
+      <option value="">– nicht vorhanden –</option>
+      {% for s in spalten %}<option value="{{ s.index }}"{% if f.gewaehlt == s.index %} selected{% endif %}>{{ s.titel }}{% if s.beispiel %} (z. B. {{ s.beispiel|truncatechars:30 }}){% endif %}</option>{% endfor %}
+    </select>
+  </div>
+  {% endfor %}
+  {% if v.art == 'artikel' %}
+  <h3>Standardwerte für Zeilen ohne Angabe</h3>
+  <div class="feld"><label for="standard_einheit">Einheit</label><input type="text" name="standard_einheit" id="standard_einheit" maxlength="50" value="{{ v.standardwerte.einheit|default:'' }}" placeholder="z. B. Stück, Stunde, pauschal"></div>
+  <div class="feld"><label for="standard_steuersatz">Steuersatz</label><select name="standard_steuersatz" id="standard_steuersatz">{% for w, t in steuersaetze %}<option value="{{ w }}"{% if v.standardwerte.steuersatz == w %} selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+  <div class="feld"><label for="standard_typ">Art</label><select name="standard_typ" id="standard_typ">{% for w, t in artikeltypen %}<option value="{{ w }}"{% if v.standardwerte.typ == w %} selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+  <p class="hilfe">Preise und Steuersätze kommen ausschließlich aus Ihrer Datei oder diesen Standardwerten, nie aus einer Schätzung.</p>
+  {% endif %}
+  {% if v.art == 'kunden' %}
+  <div class="feld checkbox"><input type="checkbox" name="kundentyp_uebernehmen" value="1" id="kundentyp_uebernehmen"{% if v.kundentyp_uebernehmen %} checked{% endif %}> <label for="kundentyp_uebernehmen">Kundentyp (Privat oder Unternehmer) aus der Datei übernehmen</label>
+    <div class="hilfe">Der Kundentyp bestimmt Zinsen und Pauschale beim Mahnen. Nur ankreuzen, wenn die Spalte stimmt; sonst legen Sie ihn später je Kunde fest.</div></div>
+  {% endif %}
+  {% if fehlend %}<p class="meldung warnung">Noch zuordnen: {{ fehlend|join:", " }}</p>{% endif %}
+  <div class="knopfreihe"><button type="submit">{% if v.status == 'vorschau' %}Zuordnung ändern und Vorschau neu berechnen{% else %}Vorschau anzeigen{% endif %}</button></div>
+</form>
+{% endif %}
+
+{% if v.vorschau %}
+<h2>{% if v.status == 'vorschau' %}2. Vorschau prüfen{% else %}Ergebnis{% endif %}</h2>
+<section class="kennzahlen">
+  <div class="kennzahl"><div class="label">{% if v.status == 'fertig' %}angelegt{% else %}neu{% endif %}</div><div class="wert">{% if v.status == 'fertig' %}{{ v.ergebnis.angelegt|default:0 }}{% else %}{{ anzahl.neu }}{% endif %}</div></div>
+  <div class="kennzahl"><div class="label">Dubletten</div><div class="wert">{{ anzahl.dublette }}</div></div>
+  <div class="kennzahl{% if anzahl.fehler %} schlecht{% endif %}"><div class="label">fehlerhaft</div><div class="wert">{{ anzahl.fehler }}</div></div>
+  {% if v.art == 'posten' %}<div class="kennzahl"><div class="label">bereits bezahlt</div><div class="wert">{{ anzahl.bezahlt }}</div></div>{% endif %}
+</section>
+{% if v.status == 'vorschau' %}
+<p>{{ erklaerung }} Dubletten, bezahlte und fehlerhafte Zeilen werden übersprungen.</p>
+{% if v.art != 'posten' and not verbunden %}<p class="meldung warnung">Lexware ist nicht verbunden. <a href="{% url 'connectors:lexware' %}">Jetzt verbinden</a></p>{% endif %}
+<div class="knopfreihe">
+  <form method="post" action="{% url 'datenimport:freigeben' v.pk %}">{% csrf_token %}<button type="submit"{% if not anzahl.neu %} disabled{% endif %}>{{ anzahl.neu }} {% if v.art == 'posten' %}offene Rechnungen ins Cockpit übernehmen{% elif v.art == 'kunden' %}Kunden in Lexware anlegen{% else %}Artikel in Lexware anlegen{% endif %}</button></form>
+  <form method="post" action="{% url 'datenimport:verwerfen' v.pk %}">{% csrf_token %}<button type="submit" class="zweitrangig">Verwerfen</button></form>
+</div>
+{% elif v.status == 'freigegeben' and haengt %}
+<p class="meldung warnung" role="alert">Der Import wurde unterbrochen{% if not verbunden %}: Lexware ist nicht verbunden oder der API-Schlüssel wurde abgelehnt{% endif %}. Schon angelegte Einträge sind unten markiert und werden beim Fortsetzen nicht doppelt angelegt.</p>
+<div class="knopfreihe">
+  {% if verbunden %}<form method="post" action="{% url 'datenimport:fortsetzen' v.pk %}">{% csrf_token %}<button type="submit">Import fortsetzen</button></form>{% else %}<a class="knopf" href="{% url 'connectors:lexware' %}">Verbindung prüfen</a>{% endif %}
+</div>
+{% elif v.status == 'freigegeben' %}
+<p class="meldung" role="status">Freigegeben von {{ v.freigegeben_von.email|default:"" }} am {{ v.freigegeben_am|date:"d.m.Y H:i" }}. Die Einträge werden im Hintergrund in Lexware angelegt. <a href="{% url 'datenimport:vorgang' v.pk %}">Aktualisieren</a></p>
+{% elif v.status == 'fertig' %}
+<p class="meldung" role="status">Fertig. Freigegeben von {{ v.freigegeben_von.email|default:"" }} am {{ v.freigegeben_am|date:"d.m.Y H:i" }}.{% if v.art == 'posten' %} <a href="{% url 'ledger:posten' %}">Zu den offenen Posten</a>{% endif %}</p>
+{% endif %}
+<div class="tabelle-huelle">
+<table>
+  <thead><tr><th>Zeile</th><th>Eintrag</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for z in zeilen %}
+  <tr>
+    <td>{{ z.nr }}</td>
+    <td>{{ z.anzeige }}{% if z.fehler_anlage or z.grund %}<div class="hilfe">{{ z.fehler_anlage|default:z.grund }}</div>{% endif %}</td>
+    <td>{% if z.angelegt %}<span class="marke-status gut">angelegt</span>{% elif z.fehler_anlage %}<span class="marke-status schlecht">nicht angelegt</span>{% else %}<span class="marke-status{% if z.status == 'fehler' %} schlecht{% elif z.status == 'dublette' %} warnung{% elif z.status == 'neu' %} gut{% endif %}">{{ z.status_text }}</span>{% endif %}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% elif v.status == 'verworfen' %}
+<p>Dieser Import wurde verworfen. Es wurde nichts angelegt.</p>
+{% elif v.zeilen_geloescht_am %}
+<p class="leise">Die Zeilen der Datei wurden nach 7 Tagen gelöscht. Ergebnis: {{ v.ergebnis.angelegt|default:0 }} angelegt, {{ v.ergebnis.fehler|default:0 }} Fehler.</p>
+{% endif %}
+{% endblock %}

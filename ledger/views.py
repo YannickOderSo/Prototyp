@@ -109,6 +109,7 @@ def kundentyp_setzen(request: FirmaRequest, pk: int) -> HttpResponse:
 @firma_erforderlich
 def beleg(request: FirmaRequest, pk: int) -> HttpResponse:
     beleg = hole_oder_404(Beleg, request.firma, pk=pk)
+    from datenimport.forms import ZahlungForm
     from dunning.models import Mahnvorschlag
 
     return render(
@@ -119,6 +120,7 @@ def beleg(request: FirmaRequest, pk: int) -> HttpResponse:
             "heute": timezone.localdate(),
             "vorschlaege": Mahnvorschlag.objects.fuer(request.firma).filter(beleg=beleg).order_by("stufe"),
             "pause_form": PauseForm(initial={"mahnpause_bis": beleg.mahnpause_bis}),
+            "zahlung_form": ZahlungForm() if beleg.importiert else None,
             "hinweis_form": VerzugshinweisForm(
                 initial={"verzugshinweis": {None: "", True: "ja", False: "nein"}[beleg.verzugshinweis_enthalten]}
             ),

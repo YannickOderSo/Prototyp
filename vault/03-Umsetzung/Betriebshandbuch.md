@@ -137,7 +137,7 @@ Ausgerollt wird nur per Git-Tag aus der CI, nie vom Laptop.
   - Renovate oder Dependabot öffnet Pull Requests. Sicherheitsupdates zeitnah ausrollen.
   - Postgres-Minor-Updates mit `docker compose pull db && up -d`.
   - Ein Postgres-Major-Update nur mit Dump und Restore.
-- **Löschfristen** laufen automatisch täglich um 3:30 Uhr (`audit.loeschfristen`). Ergebnis je Firma im Protokoll (`loeschfristen.ausgefuehrt`).
+- **Löschfristen** laufen automatisch täglich um 3:30 Uhr (`audit.loeschfristen`). Ergebnis je Firma im Protokoll (`loeschfristen.ausgefuehrt`). Dazu gehören die gelesenen Zeilen eines Excel-Imports nach 7 Tagen; Anzahlen und Ergebnis bleiben. Ein Import, der nach 7 Tagen noch nicht freigegeben ist, gilt als verworfen.
 - **Betroffenenrechte**:
   - Export: `docker compose exec web python manage.py firma_export <firma_id> /tmp/export.zip`, danach `docker compose cp web:/tmp/export.zip .` und im Container löschen.
   - Löschung: `manage.py firma_loeschen <firma_id> --bestaetigen "<Firmenname>"`. Vorher exportieren. Das Protokoll bleibt 8 Jahre als Nachweis.
@@ -176,6 +176,11 @@ Ausgerollt wird nur per Git-Tag aus der CI, nie vom Laptop.
   3. Bei einer längeren Störung die Firmen über die Sammelmail bzw. telefonisch informieren. Mahnungen gehen erst nach der Störung raus, der Frische-Check läuft dann erneut.
   4. Nach der Störung prüfen, ob der Nachtabgleich gelaufen ist. Sonst von Hand anstoßen (Abschnitt 4, Schritt 7).
   5. Webhooks: Lexware stellt erneut zu. Fehlen Ereignisse, holt der Nachtabgleich die Änderungen nach (`updatedDateFrom` minus 1 Tag).
+
+**Excel-Import steht auf „wird importiert“** (nur Kunden und Artikel; offene Rechnungen werden sofort angelegt)
+- Ursache ist fast immer Lexware: Schlüssel abgelehnt (Verbindung auf „Fehler“) oder Lexware länger nicht erreichbar, sodass der Job nach allen Versuchen aufgegeben hat.
+- Die Seite des Imports zeigt dann „Der Import wurde unterbrochen“. Nach dem Neuverbinden setzt der Kunde (Inhaber oder Freigeber) mit „Import fortsetzen“ fort. Jede schon angelegte Zeile ist vermerkt und wird nicht doppelt angelegt (Protokoll `import.fortgesetzt`).
+- Zeilen, die Lexware dauerhaft ablehnt (z. B. ungültige Daten), stehen im Ergebnis als „nicht angelegt“ mit Grund. Der Kunde korrigiert sie in Excel und lädt nur diese Zeilen erneut hoch; schon angelegte Kunden erkennt die Vorschau als Dublette.
 
 **Mails kommen nicht an**
 - Bounces erreichen den Zustell-Webhook `/hooks/zustellung/<ZUSTELLUNG_WEBHOOK_TOKEN>/`. Der Zustellfehler steht dann mit Grund auf der Seite „Mahnungen“ der Firma und im Protokoll (`mahnung.zustellfehler`); eine eigene Benachrichtigung gibt es nicht.

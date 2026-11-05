@@ -9,6 +9,7 @@
     <div class="zeile"><strong>{{ s.nummer }}. {{ s.titel }}</strong><span class="marke-status{% if s.erledigt %} gut{% else %} warnung{% endif %}">{% if s.erledigt %}erledigt{% else %}offen{% endif %}</span></div>
     <div class="neben">{{ s.text }}</div>
     {% if s.nummer == 1 and not s.erledigt %}<div class="knopfreihe"><a class="knopf" href="{% url 'connectors:lexware' %}">Lexware verbinden</a></div>{% endif %}
+    {% if s.nummer == 1 and s.erledigt %}<p class="hilfe"><strong>Bisher mit Excel gearbeitet?</strong> Kunden, Artikel mit Preisen und alte offene Rechnungen können Sie <a href="{% url 'datenimport:uebersicht' %}">aus Excel übernehmen</a>, mit Vorschau vor jeder Anlage.</p>{% endif %}
     {% if s.nummer == 2 and not s.erledigt and schritte.0.erledigt %}
     <div class="knopfreihe">
       <a class="knopf" href="{% url 'ledger:kundentyp' %}">Kundentypen festlegen</a>

@@ -80,4 +80,4 @@ Grundlage: ADR-008, Anforderungen H1–H9. Entschieden am 5. November 2026.
 - [x] **M6-05** Artikel-Import nach Lexware mit Vorschau, Dubletten, Freigabe, Job und Protokoll (H3, H5, H9).
 - [x] **M6-06** Offene Posten aus Excel nur im Cockpit, vom Lexware-Abgleich ausgenommen, Zahlstatus von Hand (H6, H7).
 - [x] **M6-07** Mahnwesen für importierte Posten: Versand mit Zahlstatus aus dem Cockpit, Mahnschreiben-PDF der App, Hinweis in der Freigabe (H8).
-- [ ] **M6-08** Oberfläche (Upload, Zuordnung, Vorschau, Freigabe, Ergebnis), Hinweis im Einrichtungs-Assistenten, Tests, Vault.
+- [x] **M6-08** Oberfläche (Upload, Zuordnung, Vorschau, Freigabe, Ergebnis), Hinweis im Einrichtungs-Assistenten, Tests, Vault.

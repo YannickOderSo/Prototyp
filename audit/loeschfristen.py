@@ -4,6 +4,8 @@ Täglich um 3:30 Uhr (nach dem Nachtabgleich, vor dem Vorschlagslauf):
 
 - Rohdateien 7 Tage nach dem Hochladen (`Datei.loeschen_ab`). Audio löscht die Pipeline schon direkt nach der
   Transkription; der Datensatz (Name, Größe, Hash) bleibt als Nachweis.
+- Gelesene Zeilen und Vorschau eines Excel-Imports 7 Tage nach dem Hochladen (`ImportVorgang.loeschen_ab`, H9);
+  Anzahlen und Ergebnis bleiben als Nachweis. Ein Import, der noch läuft, wird erst nach seinem Ende geleert.
 - Erfassungen samt Transkript, KI-Ergebnis und Entwurf 12 Monate nach dem Anlegen (`Erfassung.loeschen_ab`).
 - Spiegeldaten (Kontakte, Artikel, Belege) 30 Tage nach dem Trennen der Verbindung, sofern die Firma nicht wieder
   verbunden ist. Mahnvorschläge und Versände hängen an den Belegen und werden mit gelöscht (Offene-Fragen.md);
@@ -29,6 +31,7 @@ from accounts.models import Firma
 from capture.dateien import loeschen as datei_loeschen
 from capture.models import Datei, Erfassung, PostfachEingang
 from connectors.models import Verbindung, WebhookEreignis
+from datenimport.models import ImportVorgang
 from dunning.models import Mahnvorschlag, Sammelmail, Versand
 from jobs.models import Job, ZeitplanLauf
 from ledger.models import Artikel, Beleg, Kontakt
@@ -68,6 +71,24 @@ def rohdateien(jetzt: datetime, bericht: Bericht) -> None:
         erfassung.status = Erfassung.Status.FEHLER
         erfassung.fehler = "Die Dateien wurden nach 7 Tagen gelöscht, bevor sie aufbereitet werden konnten."
         erfassung.save(update_fields=["status", "fehler"])
+
+
+def importzeilen(jetzt: datetime, bericht: Bericht) -> None:
+    faellig = (
+        ImportVorgang.objects.filter(zeilen_geloescht_am__isnull=True, loeschen_ab__lte=jetzt)
+        .exclude(status=ImportVorgang.Status.FREIGEGEBEN)  # läuft noch; braucht die Vorschau
+        .order_by("pk")
+    )
+    for vorgang in faellig.iterator():
+        vorgang.ergebnis = {
+            **vorgang.ergebnis,
+            "anzahl": {s: vorgang.anzahl(s) for s in ("neu", "dublette", "fehler", "bezahlt")},
+        }
+        vorgang.zeilen, vorgang.vorschau, vorgang.zeilen_geloescht_am = [], [], jetzt
+        if vorgang.status in (ImportVorgang.Status.ZUORDNUNG, ImportVorgang.Status.VORSCHAU):
+            vorgang.status = ImportVorgang.Status.VERWORFEN  # ohne Zeilen nicht mehr freigebbar
+        vorgang.save(update_fields=["ergebnis", "zeilen", "vorschau", "zeilen_geloescht_am", "status"])
+        bericht.zaehlen(vorgang.firma_id, "importzeilen")
 
 
 def erfassungen(jetzt: datetime, bericht: Bericht) -> None:
@@ -142,6 +163,7 @@ def ausfuehren(jetzt: datetime | None = None) -> Bericht:
     jetzt = jetzt or timezone.now()
     bericht = Bericht()
     rohdateien(jetzt, bericht)
+    importzeilen(jetzt, bericht)
     erfassungen(jetzt, bericht)
     spiegel_nach_trennung(jetzt, bericht)
     protokoll(bericht)
@@ -187,6 +209,7 @@ def firma_loeschen(firma: Firma) -> dict[str, int]:
             ("sammelmails", Sammelmail.objects.fuer(firma)),
             ("team_einladungen", TeamEinladung.objects.filter(firma=firma)),
             ("jobs", Job.objects.filter(firma=firma)),
+            ("importe", ImportVorgang.objects.fuer(firma)),
         ):
             anzahlen[name] = queryset.delete()[0]
         nutzer_ids = list(Mitgliedschaft.objects.filter(firma=firma).values_list("nutzer_id", flat=True))

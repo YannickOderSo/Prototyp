@@ -187,3 +187,32 @@ Das Betriebshandbuch liegt in [[Betriebshandbuch]], die Prüfliste für das Team
    - AVV und Verträge mit Unterauftragsverarbeitern,
    - Prüfung von Mahntexten und Zinslogik durch Anwalt und Steuerberater,
    - Versicherung.
+
+## Bericht M6 Import aus Excel (5. November 2026)
+
+Wunsch von Yannick: Betriebe, die bisher nur mit Excel gearbeitet haben, sollen alles übernehmen können. Entscheidung in [[ADR-008-Import-aus-Excel]], Anforderungen H1–H9.
+
+**Fertig:**
+- M6-01 Spezifikation, ADR-008, Datenmodell (`ImportVorgang`, `Beleg.quelle`, `Kontakt.adresse`, `Kontakt.excel_nummer`).
+- M6-02 Einlesen von `.xlsx` und CSV: Tabellenblatt wählbar, Semikolon oder Komma, UTF-8 oder Windows-1252, deutsche Zahlen und Daten, Excel-Seriendaten. Schutz gegen übergroße und gepackte Dateien (10 MB, 50 MB entpackt, 5.000 Zeilen, 50 Spalten); `.xls` wird mit Hinweis abgelehnt.
+- M6-03 Spaltenzuordnung mit Vorschlägen aus den Überschriften; Vorlagen als Excel und CSV.
+- M6-04 Kunden nach Lexware (`POST /v1/contacts`): Firma oder Person, Ansprechpartner, E-Mail, Rechnungsadresse; Kundennummer aus Excel als Notiz (Lexware vergibt die Nummer selbst). Kundentyp nur nach ausdrücklicher Bestätigung, mit Protokoll.
+- M6-05 Artikel nach Lexware (`POST /v1/articles`): Preise als Dezimalzahl ohne float, Steuersatz nur 0, 7 oder 19 %, Brutto wird mit kaufmännischer Rundung in netto umgerechnet. Preise kommen nur aus der Datei oder einem Standardwert des Nutzers, nie aus der KI.
+- M6-06 Alte offene Rechnungen nur im Cockpit (Quelle „import“), vom Lexware-Abgleich ausgenommen; Zahlstatus von Hand (bezahlt am oder neuer offener Betrag), protokolliert.
+- M6-07 Mahnen importierter Posten nach denselben Regeln: Frische-Check gegen den Cockpit-Stand, Erinnerung per Mail ohne Anhang, Mahnung und Brief als Mahnschreiben-PDF der App. Lexware wird für diese Posten nie aufgerufen; die Freigabe weist auf den von Hand gepflegten Zahlstatus hin.
+- M6-08 Oberfläche unter Einstellungen → Import aus Excel und als Hinweis im Einrichtungs-Assistenten: hochladen, zuordnen, Vorschau (neu, Dublette, Fehler mit Grund, bezahlt), Freigabe nur durch Inhaber oder Freigeber, Ergebnis je Zeile, „Import fortsetzen“ nach einem Abbruch. Zahlungsformular auf der Belegseite importierter Rechnungen, Kennzeichen „aus Excel“ in der Postenliste. IDOR-Fälle ergänzt, Löschfrist der Importzeilen nach 7 Tagen, `firma_loeschen` löscht Importe.
+
+**Tests:** 739 Tests (736 ohne und 3 mit Playwright). Neu unter anderem:
+- Vorschau aller drei Arten mit Dubletten gegen Spiegel und Datei.
+- Anlage per Job gegen nachgebaute Lexware-API mit genauem Request-Format.
+- Neuversuch ohne Doppelanlage, Fortsetzen nach abgelehntem Schlüssel, dauerhafter Fehler je Zeile.
+- Mahnen importierter Posten ohne einen einzigen Lexware-Aufruf.
+- PDF-Inhalt des Mahnschreibens, Löschfrist, Rollen und Mandantentrennung.
+- Die Oberfläche wurde zusätzlich in der lokalen Demo auf 390 px Breite durchgeklickt.
+
+**Nur gegen Mocks getestet, Echtlauf nötig:**
+- Anlage von Kontakten und Artikeln in einem echten Lexware-Konto. Das Request-Format folgt der Doku.
+- Ungeprüft ist, ob Lexware Ansprechpartner, Notiz und Adresse genau so übernimmt.
+- Excel-Dateien aus echten Betrieben (Spaltennamen, Formate) für bessere Vorschläge sammeln.
+
+**Belegfluss:** nichts übernommen; der Import ist neu gebaut.

@@ -210,6 +210,25 @@ def test_api_schluessel_abgelehnt_bricht_ab(firma, inhaber, spiegel, verbindung,
     vorgang.refresh_from_db()
     assert vorgang.status == ImportVorgang.Status.FREIGEGEBEN  # nicht „fertig“: nichts angelegt
     assert vorgang.ergebnis["zeilen"] == {}
+    assert not services.job_aktiv(vorgang)
+    # Ohne aktive Verbindung kein Fortsetzen; nach neuem Schlüssel geht es weiter
+    with pytest.raises(ImportNichtMoeglich, match="Verbindung"):
+        services.fortsetzen(vorgang, inhaber)
+    verbindung.refresh_from_db()
+    verbindung.status, verbindung.fehler = "aktiv", ""
+    verbindung.save()
+    zaehler = iter(range(1, 10))
+    lexware_api.post(f"{BASIS}/v1/contacts").mock(
+        side_effect=lambda _r: httpx.Response(200, json={"id": f"neu-{next(zaehler)}"})
+    )
+    lexware_api.get(url__regex=rf"{BASIS}/v1/contacts/neu-\d+$").respond(404)
+    services.fortsetzen(vorgang, inhaber)
+    with pytest.raises(ImportNichtMoeglich, match="läuft bereits"):
+        services.fortsetzen(vorgang, inhaber)
+    alle_jobs_ausfuehren(worker)
+    vorgang.refresh_from_db()
+    assert vorgang.status == ImportVorgang.Status.FERTIG and vorgang.ergebnis["angelegt"] == 2
+    assert Protokolleintrag.objects.filter(ereignis="import.fortgesetzt", nutzer=inhaber).exists()
 
 
 ARTIKEL_CSV = (

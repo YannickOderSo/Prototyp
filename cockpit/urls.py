@@ -11,5 +11,6 @@ urlpatterns = [
     path("mahnungen/", include("dunning.urls")),
     path("erfassen/", include("capture.urls")),
     path("berichte/", include("reports.urls")),
+    path("import/", include("datenimport.urls")),
     path("", include("web.urls")),
 ]

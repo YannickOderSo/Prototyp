@@ -40,7 +40,20 @@ def _erfassung(firma, nutzer=None, **extra):
     return {"pk": e.pk}
 
 
+def _import(firma, nutzer=None):
+    from datenimport.models import ImportVorgang
+
+    v = ImportVorgang.objects.create(firma=firma, art="kunden", dateiname="idor.csv", spalten=["Firma"], zeilen=[["X"]])
+    return {"pk": v.pk}
+
+
 FAELLE: dict[str, Fabrik] = {
+    "datenimport:vorgang": _import,
+    "datenimport:zuordnung": _import,
+    "datenimport:freigeben": _import,
+    "datenimport:verwerfen": _import,
+    "datenimport:fortsetzen": _import,
+    "datenimport:zahlung": _beleg,
     "capture:detail": _erfassung,
     "capture:neuversuch": _erfassung,
     "capture:transkript": _erfassung,
@@ -63,6 +76,7 @@ FAELLE: dict[str, Fabrik] = {
 # URLs mit Parametern, die keine Objekt-IDs einer Firma sind (mit Begründung)
 AUSNAHMEN: dict[str, str] = {
     "web:rechtstext": "öffentliche Rechtstexte, Slug statt ID",
+    "datenimport:vorlage": "leere Importvorlage je Art, enthält keine Firmendaten",
     "accounts:team_annehmen": "geheimes Einladungs-Token, gilt nur für die eingeladene E-Mail-Adresse",
     "accounts:password_reset_confirm": "Django-Token für Passwort-Reset, an Nutzer gebunden",
     "hooks:zustellung": "Webhook des Mailanbieters; geheimes Token aus der Umgebung, ändert nur Versände mit passender Message-ID",

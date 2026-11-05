@@ -11,6 +11,7 @@
   <li><a href="{% url 'capture:postfach' %}"><strong>Belegpostfach</strong></a><span class="neben">Mails weiterleiten, Absender freigeben</span></li>
   <li><a href="{% url 'accounts:team' %}"><strong>Team</strong></a><span class="neben">Inhaber, Freigeber, Mitarbeiter</span></li>
   {% endif %}
+  {% if request.darf_freigeben %}<li><a href="{% url 'datenimport:uebersicht' %}"><strong>Import aus Excel</strong></a><span class="neben">Kunden, Artikel und offene Rechnungen übernehmen</span></li>{% endif %}
   <li><a href="{% url 'accounts:sicherheit' %}"><strong>Sicherheit</strong></a><span class="neben">Zwei-Faktor-Anmeldung, Wiederherstellungscodes</span></li>
 </ul>
 {% if form %}

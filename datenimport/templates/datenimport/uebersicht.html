@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titel %}Import aus Excel{% endblock %}
+{% block inhalt %}
+<h1>Import aus Excel</h1>
+<p>Bisher mit Excel gearbeitet? Hier übernehmen Sie Kunden, Artikel mit Preisen und alte offene Rechnungen. Vor jedem Import sehen Sie eine Vorschau; angelegt wird erst nach Ihrer Freigabe.</p>
+<ul class="liste">
+  {% for wert, titel, erklaerung in arten %}
+  <li><div class="zeile"><strong>{{ titel }}</strong><span class="neben">Vorlage: <a href="{% url 'datenimport:vorlage' wert 'xlsx' %}">Excel</a> · <a href="{% url 'datenimport:vorlage' wert 'csv' %}">CSV</a></span></div>
+    <div class="neben">{{ erklaerung }}</div></li>
+  {% endfor %}
+</ul>
+<p class="hilfe">Empfohlene Reihenfolge: erst Kunden, dann Artikel, zuletzt offene Rechnungen (die Kunden müssen dafür schon in Lexware sein).</p>
+{% if not verbunden %}<p class="meldung warnung" role="status">Lexware ist nicht verbunden. Kunden und Artikel können erst nach der Verbindung angelegt werden. <a href="{% url 'connectors:lexware' %}">Jetzt verbinden</a></p>{% endif %}
+<h2>Datei hochladen</h2>
+<form method="post" enctype="multipart/form-data" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Hochladen und Spalten zuordnen</button></div>
+</form>
+{% if vorgaenge %}
+<h2>Letzte Importe</h2>
+<ul class="liste">
+  {% for v in vorgaenge %}
+  <li><div class="zeile"><a href="{% url 'datenimport:vorgang' v.pk %}">{{ v.get_art_display }}: {{ v.dateiname }}</a><span class="marke-status{% if v.status == 'fertig' %} gut{% elif v.status == 'vorschau' or v.status == 'zuordnung' %} warnung{% endif %}">{{ v.get_status_display }}</span></div>
+    <div class="neben">{{ v.erstellt|date:"d.m.Y H:i" }}{% if v.erstellt_von %} · {{ v.erstellt_von.email }}{% endif %}{% if v.status == 'fertig' %} · {{ v.ergebnis.angelegt|default:0 }} angelegt{% if v.ergebnis.fehler %}, {{ v.ergebnis.fehler }} Fehler{% endif %}{% endif %}</div></li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
