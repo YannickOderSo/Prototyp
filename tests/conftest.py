@@ -157,3 +157,17 @@ def mistral(settings):
     with respx.mock(assert_all_called=False) as router:
         router.route(url__startswith="http://127.0.0.1:8025").pass_through()
         yield router.post("https://api.mistral.ai/v1/audio/transcriptions")
+
+
+@pytest.fixture
+def ki(monkeypatch):
+    """Ersetzt den Bedrock-Client: `ki(antwort1, antwort2, …)` liefert den Fake-Client."""
+    import capture.extraktion
+    from tests.ki_fake import FakeClient
+
+    def setzen(*antworten):
+        client = FakeClient(*antworten)
+        monkeypatch.setattr(capture.extraktion, "client_fabrik", lambda: client)
+        return client
+
+    return setzen

@@ -175,6 +175,10 @@ BEDROCK_REGION = env.str("BEDROCK_REGION", default="eu-central-1")
 # EU-Inferenzprofil (Präfix "eu."): Routing nur innerhalb der EU. "global." und "us." blockiert ein Systemcheck.
 BEDROCK_MODELL = env.str("BEDROCK_MODELL", default="eu.anthropic.claude-sonnet-5-5")
 
+# Kostenlimit der KI je Firma und Monat
+KI_LIMIT_VORGAENGE_MONAT = env.int("KI_LIMIT_VORGAENGE_MONAT", default=300)
+KI_LIMIT_TOKENS_MONAT = env.int("KI_LIMIT_TOKENS_MONAT", default=3_000_000)
+
 # Fehlererfassung (GlitchTip selbst gehostet oder Sentry mit EU-Datenhaltung)
 SENTRY_DSN = env.str("SENTRY_DSN", default="")
 

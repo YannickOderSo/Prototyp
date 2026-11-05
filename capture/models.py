@@ -101,3 +101,19 @@ class Datei(FirmaModel):
 
 def neuer_pfad(firma_id: int) -> str:
     return f"{firma_id}/{uuid.uuid4().hex}"
+
+
+class KiVerbrauch(FirmaModel):
+    """KI-Verbrauch je Firma und Monat (Kostenlimit in Vorgängen und Token, KI-Pipeline)."""
+
+    monat = models.CharField(max_length=7)
+    vorgaenge = models.PositiveIntegerField(default=0)
+    eingabe_tokens = models.PositiveBigIntegerField(default=0)
+    ausgabe_tokens = models.PositiveBigIntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = "KI-Verbrauch"
+        constraints = [models.UniqueConstraint(fields=["firma", "monat"], name="kiverbrauch_je_monat")]
+
+    def __str__(self) -> str:
+        return f"KI {self.monat}: {self.vorgaenge}"

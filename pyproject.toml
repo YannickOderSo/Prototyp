@@ -48,6 +48,7 @@ ignore = ["RUF001", "RUF002", "RUF003", "RUF012", "S101", "DJ001", "UP046", "UP0
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S105", "S106", "S108", "S311", "S603", "S607", "E501"]
 "dunning/texte.py" = ["E501"]
+"capture/extraktion.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"
