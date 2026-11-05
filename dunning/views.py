@@ -29,6 +29,9 @@ def mahnplan(request: FirmaRequest) -> HttpResponse:
         plan = form.save(commit=False)
         plan.geaendert = timezone.now()
         plan.save()
+        if request.firma.mahnplan_bestaetigt_am is None:  # zählt im Einrichtungs-Assistenten als Schritt 3
+            request.firma.mahnplan_bestaetigt_am = plan.geaendert
+            request.firma.save(update_fields=["mahnplan_bestaetigt_am"])
         protokolliere(
             request.firma,
             "mahnplan.geaendert",

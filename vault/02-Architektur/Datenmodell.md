@@ -4,7 +4,7 @@ Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich �
 
 ## Konto
 
-- **Firma**: name, strasse, plz, ort, email_absender, reply_to, mahn_signatur, zeitzone, aktiv, erstellt
+- **Firma**: name, strasse, plz, ort, email_absender, reply_to, mahn_signatur, zeitzone, aktiv, erstellt (M4-03 ergänzt: mahnplan_bestaetigt_am, einrichtung_fertig_am für den Einrichtungs-Assistenten)
 - **Nutzer** (Django User, E-Mail als Login)
 - **Mitgliedschaft**: nutzer, firma, rolle (`inhaber` | `freigeber` | `mitarbeiter`). Ein Nutzer kann mehreren Firmen angehören.
 - **ZweiFaktor**: nutzer, geheimnis_verschluesselt, letzter_schritt, wiederherstellungscodes_hash[], eingerichtet_am (M1-02: eigene RFC-6238-Implementierung, SHA-1, 6 Stellen, ±1 Schritt Toleranz, jeder Schritt nur einmal gültig; 10 Wiederherstellungscodes als SHA-256; `login()` erst nach dem zweiten Faktor)

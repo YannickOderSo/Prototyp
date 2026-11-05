@@ -6,6 +6,9 @@
 {% if not request.firma %}
 <div class="karte"><p>Ihr Konto gehört noch zu keiner Firma. Bitte lassen Sie sich vom Inhaber einladen.</p></div>
 {% else %}
+{% if request.mitgliedschaft.ist_inhaber and not request.firma.einrichtung_fertig_am %}
+<div class="meldung">Willkommen! In vier Schritten ist das Cockpit startklar. <a class="knopf" href="{% url 'web:einrichtung' %}">Einrichtung {% if verbindung %}fortsetzen{% else %}starten{% endif %}</a></div>
+{% endif %}
 {% if not verbindung %}
 <div class="meldung warnung">
   Noch keine Verbindung zu Lexware Office.

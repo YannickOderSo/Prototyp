@@ -57,6 +57,8 @@ class Firma(models.Model):
     zeitzone = models.CharField(max_length=50, default="Europe/Berlin")
     aktiv = models.BooleanField(default=True)
     erstellt = models.DateTimeField(default=timezone.now)
+    mahnplan_bestaetigt_am = models.DateTimeField(null=True, blank=True)
+    einrichtung_fertig_am = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Firma"

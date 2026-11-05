@@ -4,6 +4,7 @@
 <h1>Einstellungen</h1>
 <ul class="liste">
   {% if ist_inhaber %}
+  <li><a href="{% url 'web:einrichtung' %}"><strong>Einrichtung</strong></a><span class="neben">Schritt für Schritt startklar, mit Probelauf</span></li>
   <li><a href="{% url 'connectors:lexware' %}"><strong>Lexware Office</strong></a><span class="neben">API-Schlüssel, Abgleich</span></li>
   <li><a href="{% url 'dunning:mahnplan' %}"><strong>Mahnplan</strong></a><span class="neben">Stufen, Fristen, Zinsen, Texte</span></li>
   <li><a href="{% url 'dunning:smtp' %}"><strong>E-Mail-Versand</strong></a><span class="neben">optional eigenes SMTP</span></li>

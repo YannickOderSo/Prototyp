@@ -93,22 +93,29 @@ def test_startseite_ohne_verbindung_zeigt_hinweis(client_inhaber, firma):
     assert reverse("connectors:lexware") in html
 
 
+def _ohne_token(html: str) -> str:
+    """Entfernt zufällige Zeichenketten (CSRF-Token), damit Suchen nach kurzen Belegnummern nicht zufällig treffen."""
+    return re.sub(r"[A-Za-z0-9]{32,}", "", html)
+
+
 @pytest.mark.django_db
 def test_postenliste_filter_kombinierbar(client_inhaber, daten, heute):
     url = reverse("ledger:posten")
-    alle = client_inhaber.get(url).content.decode()
+    alle = _ohne_token(client_inhaber.get(url).content.decode())
     for nr in ("RE1", "RE2", "RE3", "RE4"):
         assert nr in alle
     assert "AN1" not in alle and "RE5" not in alle and "F1" not in alle
-    html = client_inhaber.get(url, {"kunde": "bau", "faelligkeit": "ueberfaellig"}).content.decode()
+    html = _ohne_token(client_inhaber.get(url, {"kunde": "bau", "faelligkeit": "ueberfaellig"}).content.decode())
     assert "RE1" in html and "RE2" not in html and "RE3" not in html
-    html = client_inhaber.get(url, {"betrag_min": "100", "betrag_max": "600"}).content.decode()
+    html = _ohne_token(client_inhaber.get(url, {"betrag_min": "100", "betrag_max": "600"}).content.decode())
     assert "RE2" in html and "RE4" in html and "RE1" not in html and "RE3" not in html
-    html = client_inhaber.get(url, {"mahnstufe": "2"}).content.decode()
+    html = _ohne_token(client_inhaber.get(url, {"mahnstufe": "2"}).content.decode())
     assert "RE1" in html and "RE2" not in html
-    html = client_inhaber.get(url, {"faellig_von": "2026-10-25", "faellig_bis": "2026-11-30"}).content.decode()
+    html = _ohne_token(
+        client_inhaber.get(url, {"faellig_von": "2026-10-25", "faellig_bis": "2026-11-30"}).content.decode()
+    )
     assert "RE2" in html and "RE3" in html and "RE1" not in html
-    html = client_inhaber.get(url, {"sortierung": "-betrag"}).content.decode()
+    html = _ohne_token(client_inhaber.get(url, {"sortierung": "-betrag"}).content.decode())
     assert html.index("RE1") < html.index("RE2") < html.index("RE4") < html.index("RE3")
 
 

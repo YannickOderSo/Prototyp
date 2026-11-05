@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Einrichtung{% endblock %}
+{% block inhalt %}
+<h1>Einrichtung</h1>
+<ol class="liste schritte">
+  {% for s in schritte %}
+  <li id="schritt-{{ s.nummer }}">
+    <div class="zeile"><strong>{{ s.nummer }}. {{ s.titel }}</strong><span class="marke-status{% if s.erledigt %} gut{% else %} warnung{% endif %}">{% if s.erledigt %}erledigt{% else %}offen{% endif %}</span></div>
+    <div class="neben">{{ s.text }}</div>
+    {% if s.nummer == 1 and not s.erledigt %}<div class="knopfreihe"><a class="knopf" href="{% url 'connectors:lexware' %}">Lexware verbinden</a></div>{% endif %}
+    {% if s.nummer == 2 and not s.erledigt and schritte.0.erledigt %}
+    <div class="knopfreihe">
+      <a class="knopf" href="{% url 'ledger:kundentyp' %}">Kundentypen festlegen</a>
+    </div>
+    <p class="hilfe">Ohne Kundentyp wird nicht gemahnt. Die Angabe „Firma“ oder „Person“ aus Lexware wird dort angezeigt, aber nicht automatisch übernommen, weil davon Zinssatz und Pauschale abhängen.</p>
+    {% endif %}
+    {% if s.nummer == 3 %}
+    <form method="post" class="knopfreihe">{% csrf_token %}<input type="hidden" name="aktion" value="vorlage">
+      {% for schluessel, v in vorlagen.items %}<button type="submit" name="vorlage" value="{{ schluessel }}" class="{% if schluessel != 'standard' %}zweitrangig{% endif %}" title="{{ v.text }}">{{ v.titel }}</button>{% endfor %}
+    </form>
+    <ul class="hilfe">{% for schluessel, v in vorlagen.items %}<li><strong>{{ v.titel }}:</strong> {{ v.text }}</li>{% endfor %}</ul>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ol>
+
+{% if probelauf %}
+<section class="karte" aria-labelledby="probelauf">
+  <h2 id="probelauf">Probelauf: Das würde das Cockpit heute vorschlagen</h2>
+  <p class="hilfe">Nur eine Vorschau. Es wird nichts gespeichert und nichts versendet.</p>
+  <ul class="liste">
+    {% for k in probelauf.kandidaten %}
+    <li><div class="zeile"><span>{{ k.beleg.kontakt.name }} · {{ k.beleg.nummer }}</span><strong>{{ k.betraege.gesamt|euro }}</strong></div>
+      <div class="neben">{% if k.stufe == 0 %}Zahlungserinnerung{% else %}{{ k.stufe }}. Mahnung{% endif %} · {{ k.tage_ueberfaellig }} Tage überfällig{% if k.versandart == "post" %} · Postversand{% endif %}</div></li>
+    {% empty %}<li>Heute wäre nichts zu erinnern oder zu mahnen.</li>{% endfor %}
+  </ul>
+  {% if probelauf.klaerung %}<p class="meldung warnung">{{ probelauf.klaerung|length }} überfällige Posten würden nicht gemahnt, weil der Kundentyp oder Kontakt fehlt.</p>{% endif %}
+  <form method="post" class="knopfreihe">{% csrf_token %}<input type="hidden" name="aktion" value="abschliessen"><button type="submit">Einrichtung abschließen</button></form>
+</section>
+{% endif %}
+{% endblock %}
