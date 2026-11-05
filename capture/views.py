@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.mandant import hole_oder_404
-from accounts.rechte import firma_erforderlich
+from accounts.rechte import firma_erforderlich, freigabe_berechtigt
 from accounts.typen import FirmaRequest
 
 from .dateien import MAX_AUFNAHME_SEKUNDEN, DateiAbgelehnt
@@ -120,9 +120,16 @@ def transkript(request: FirmaRequest, pk: int) -> HttpResponse:
 
 
 @require_POST
-@firma_erforderlich
+@freigabe_berechtigt
 def freigeben(request: FirmaRequest, pk: int) -> HttpResponse:
-    """Freigabe und Übertragung als Entwurf nach Lexware: siehe M3-08."""
+    """Nur Inhaber und Freigeber (A3), nur per POST aus einer 2FA-Sitzung (ADR-004)."""
+    from .uebertragung import freigeben as dienst
+
     erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
-    messages.error(request, "Die Übertragung nach Lexware ist noch nicht verfügbar.")
+    try:
+        dienst(erfassung, request.user)
+    except ValueError as fehler:
+        messages.error(request, str(fehler))
+    else:
+        messages.success(request, "Freigegeben. Der Entwurf wird in Lexware angelegt.")
     return redirect("capture:detail", pk=erfassung.pk)

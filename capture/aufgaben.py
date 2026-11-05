@@ -56,3 +56,22 @@ def _extrahieren(j: Job) -> None:
             raise JobAbbruch(str(fehler)) from fehler
         raise
     entwurf_bilden(erfassung, ergebnis, hinweise)
+
+
+@job("capture.uebertragen")
+def _uebertragen(j: Job) -> None:
+    from connectors.fehler import ConnectorFehler
+
+    from .uebertragung import uebertragen, zurueck_zur_pruefung
+
+    erfassung = _erfassung(j)
+    try:
+        uebertragen(erfassung)
+    except ConnectorFehler as fehler:
+        if not fehler.wiederholbar or j.versuche + 1 >= j.max_versuche:
+            zurueck_zur_pruefung(erfassung, f"Lexware: {fehler.meldung} ({fehler})")
+            raise JobAbbruch(str(fehler)) from fehler
+        raise
+    except ValueError as fehler:
+        zurueck_zur_pruefung(erfassung, str(fehler))
+        raise JobAbbruch(str(fehler)) from fehler
