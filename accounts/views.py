@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, logout
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_not_required
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -11,6 +12,7 @@ from django.views.decorators.http import require_POST
 from audit.services import protokolliere
 
 from .anmeldung import FIRMA, vorlogin_setzen
+from .drosselung import fehlversuch, gesperrt, zu_viele_versuche
 from .forms import AnmeldeForm, NeuesKontoForm, RegistrierungsForm, TeamEinladungsForm
 from .models import Mitgliedschaft, Nutzer, TeamEinladung, Zustimmung
 from .rechte import nur_inhaber
@@ -52,10 +54,15 @@ def anmelden(request: HttpRequest) -> HttpResponse:
     if request.user.is_authenticated:
         return redirect("web:start")
     form = AnmeldeForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        nutzer = authenticate(request, email=form.cleaned_data["email"].lower(), password=form.cleaned_data["passwort"])
-        if isinstance(nutzer, Nutzer):
-            return nach_passwort(request, nutzer, request.GET.get("next"))
+    if request.method == "POST":
+        email = str(request.POST.get("email", "")).lower()
+        if gesperrt(request, "login", email):
+            return zu_viele_versuche(request)
+        if form.is_valid():
+            nutzer = authenticate(request, email=email, password=form.cleaned_data["passwort"])
+            if isinstance(nutzer, Nutzer):
+                return nach_passwort(request, nutzer, request.GET.get("next"))
+        fehlversuch(request, "login", email)
         form.add_error(None, "E-Mail-Adresse oder Passwort stimmen nicht.")
     return render(request, "accounts/anmelden.html", {"form": form})
 
@@ -70,6 +77,10 @@ def abmelden(request: HttpRequest) -> HttpResponse:
 @login_not_required
 def registrierung(request: HttpRequest) -> HttpResponse:
     form = RegistrierungsForm(request.POST or None)
+    if request.method == "POST" and gesperrt(request, "registrierung"):
+        return zu_viele_versuche(request)
+    if request.method == "POST":
+        fehlversuch(request, "registrierung")  # jede Registrierung zählt, nicht nur fehlerhafte
     if request.method == "POST" and form.is_valid():
         daten = form.cleaned_data
         try:
@@ -154,3 +165,14 @@ def team_annehmen(request: HttpRequest, token: str) -> HttpResponse:
         protokolliere(einladung.firma, "konto.angelegt", nutzer=nutzer, objekt=nutzer)
         return nach_passwort(request, nutzer)
     return render(request, "accounts/einladung_neues_konto.html", {"form": form, "einladung": einladung})
+
+
+class PasswortVergessen(auth_views.PasswordResetView):
+    """Passwort-Reset mit Rate-Limit je IP und je E-Mail (A5). Jede Anfrage zählt."""
+
+    def post(self, request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+        email = str(request.POST.get("email", "")).lower()
+        if gesperrt(request, "passwort_reset", email):
+            return zu_viele_versuche(request)
+        fehlversuch(request, "passwort_reset", email)
+        return super().post(request, *args, **kwargs)

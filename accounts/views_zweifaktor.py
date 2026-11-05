@@ -14,6 +14,7 @@ from audit.services import protokolliere
 
 from . import totp
 from .anmeldung import anmeldung_abschliessen, vorlogin_nutzer
+from .drosselung import fehlversuch, gesperrt, zu_viele_versuche
 from .models import Mitgliedschaft
 from .typen import FirmaRequest
 from .zweifaktor import (
@@ -67,6 +68,8 @@ def einrichten(request: HttpRequest) -> HttpResponse:
         return redirect("accounts:zweiter_faktor")
     zf = einrichtung_beginnen(nutzer)
     form = CodeForm(request.POST or None)
+    if request.method == "POST" and gesperrt(request, "zwei_faktor", nutzer.email):
+        return zu_viele_versuche(request)
     if request.method == "POST" and form.is_valid():
         codes = einrichtung_bestaetigen(zf, form.cleaned_data["code"])
         if codes is not None:
@@ -74,6 +77,7 @@ def einrichten(request: HttpRequest) -> HttpResponse:
             request.session[CODES_ANZEIGEN] = codes
             _protokollieren(nutzer.pk, "konto.zwei_faktor_eingerichtet")
             return redirect("accounts:wiederherstellungscodes")
+        fehlversuch(request, "zwei_faktor", nutzer.email)
         form.add_error(
             "code", "Der Code passt nicht. Bitte prüfen Sie die Uhrzeit Ihres Handys und versuchen Sie es erneut."
         )
@@ -94,6 +98,8 @@ def pruefen(request: HttpRequest) -> HttpResponse:
     if zf is None:
         return redirect("accounts:zweiter_faktor_einrichten")
     form = PruefForm(request.POST or None)
+    if request.method == "POST" and gesperrt(request, "zwei_faktor", nutzer.email):
+        return zu_viele_versuche(request)
     if request.method == "POST" and form.is_valid():
         eingabe = form.cleaned_data["code"].strip()
         if code_pruefen(zf, eingabe):
@@ -105,6 +111,7 @@ def pruefen(request: HttpRequest) -> HttpResponse:
             rest = len(zf.wiederherstellungscodes_hash)
             messages.warning(request, f"Wiederherstellungscode verwendet. Noch {rest} Codes übrig.")
             return redirect(_ziel(request))
+        fehlversuch(request, "zwei_faktor", nutzer.email)
         form.add_error("code", "Der Code ist ungültig oder wurde bereits verwendet.")
         return render(request, "accounts/zweifaktor_pruefen.html", {"form": form}, status=200)
     return render(request, "accounts/zweifaktor_pruefen.html", {"form": form})
@@ -120,11 +127,14 @@ def wiederherstellungscodes(request: FirmaRequest) -> HttpResponse:
 def sicherheit(request: FirmaRequest) -> HttpResponse:
     zf = aktiver_zweiter_faktor(request.user)
     form = CodeForm(request.POST or None)
+    if request.method == "POST" and gesperrt(request, "zwei_faktor", request.user.email):
+        return zu_viele_versuche(request)
     if request.method == "POST" and form.is_valid() and zf is not None:
         if code_pruefen(zf, form.cleaned_data["code"]):
             request.session[CODES_ANZEIGEN] = neue_wiederherstellungscodes(zf)
             _protokollieren(request.user.pk, "konto.wiederherstellungscodes_erneuert")
             return redirect("accounts:wiederherstellungscodes")
+        fehlversuch(request, "zwei_faktor", request.user.email)
         form.add_error("code", "Der Code passt nicht.")
     rest = len(zf.wiederherstellungscodes_hash) if zf else 0
     return render(request, "accounts/sicherheit.html", {"form": form, "rest": rest})

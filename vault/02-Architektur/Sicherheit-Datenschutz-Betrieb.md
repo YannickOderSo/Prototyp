@@ -6,6 +6,7 @@
 - Mandantentrennung über einen `FirmaManager` und eine Middleware, die `request.firma` aus der Mitgliedschaft setzt. Jede View holt Objekte nur mit `firma=request.firma`. Ein generischer Test iteriert alle URL-Muster mit `pk` und prüft 404 für fremde Objekte.
 - Geheimnisse (API-Schlüssel, TOTP, SMTP) mit `MultiFernet` verschlüsselt; Schlüssel aus Umgebungsvariablen, Rotation dokumentiert.
 - Rate-Limits je IP und je Konto für Login, 2FA, Passwort-Reset, Registrierung, Webhooks.
+  Umgesetzt (M1-03): django-ratelimit mit festen 15-Minuten-Fenstern im Datenbank-Cache (gilt über alle Prozesse). Ab 10 Fehlversuchen je IP oder je Konto antwortet die App mit 429, bevor Passwort oder Code geprüft werden. Passwort-Reset und Registrierung zählen jede Anfrage. Hinter Caddy wird die Client-IP aus dem letzten Eintrag von `X-Forwarded-For` gelesen (`COCKPIT_HINTER_PROXY=true`, nur wenn die App ausschließlich über Caddy erreichbar ist).
 - Belegpostfach: Whitelist der Absender **und** Prüfung des `Authentication-Results`-Headers (DKIM pass oder SPF pass mit Alignment). Anhänge max. 10 je Mail, je 25 MB, Gesamtgröße 50 MB.
 - Uploads: MIME-Prüfung per Inhalt, nicht per Endung; nie ausführen; außerhalb des Webroots speichern.
 - Webhooks: Signaturprüfung, Token im Pfad, Payload nur als Hinweis, Daten immer nachladen.

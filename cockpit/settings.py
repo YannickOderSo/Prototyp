@@ -136,6 +136,10 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # HSTS-Preload ist eine Domain-Entscheidung des Teams, nicht des Codes
 SILENCED_SYSTEM_CHECKS = ["security.W021"]
 
+# Hinter Caddy: Client-IP aus X-Forwarded-For (nur aktivieren, wenn die App nicht direkt erreichbar ist)
+HINTER_PROXY = env.bool("COCKPIT_HINTER_PROXY", default=False)
+RATELIMIT_VIEW = "accounts.drosselung.zu_viele_versuche"
+
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "web:start"
 

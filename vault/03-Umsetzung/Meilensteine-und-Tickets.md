@@ -15,7 +15,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 
 - [x] **M1-01** `accounts`: Firma, Mitgliedschaft mit Rollen, Einladungscodes, Registrierung (A1), Login mit E-Mail.
 - [x] **M1-02** TOTP-2FA Pflicht mit Wiederherstellungscodes (A2). Bibliothek: `django-otp` oder eigene RFC-6238-Implementierung mit Replay-Schutz.
-- [ ] **M1-03** Rate-Limits (A5) mit `django-ratelimit` je IP und je Konto.
+- [x] **M1-03** Rate-Limits (A5) mit `django-ratelimit` je IP und je Konto.
 - [ ] **M1-04** Mandantentrennung: `FirmaManager`, Middleware, generischer IDOR-Test (A4).
 - [ ] **M1-05** `connectors`: Protokoll `AccountingConnector`, `LexwareConnector` mit Token-Bucket (2/s), Retry auf 429/5xx, Fehlerklassen. Tests mit aufgezeichneten Antworten.
 - [ ] **M1-06** Verbindung anlegen, Schlüssel verschlüsselt speichern, Test-Aufruf (B1).

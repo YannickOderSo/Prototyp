@@ -8,7 +8,7 @@ app_name = "accounts"
 
 _passwort = {
     "vergessen": login_not_required(
-        auth_views.PasswordResetView.as_view(
+        views.PasswortVergessen.as_view(
             template_name="accounts/passwort_vergessen.html",
             email_template_name="accounts/mail_passwort_reset.txt",
             subject_template_name="accounts/mail_passwort_reset_betreff.txt",
