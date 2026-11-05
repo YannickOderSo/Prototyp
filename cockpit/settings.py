@@ -125,8 +125,13 @@ SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
 SECURE_HSTS_SECONDS = env.int("DJANGO_HSTS_SECONDS", default=0 if DEBUG else 31536000)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
-SECURE_SSL_REDIRECT = env.bool("DJANGO_SSL_REDIRECT", default=False)
+SECURE_SSL_REDIRECT = env.bool("DJANGO_SSL_REDIRECT", default=not DEBUG)
+# Interne Health-Checks (Docker, Uptime im internen Netz) laufen ohne TLS
+SECURE_REDIRECT_EXEMPT = [r"^healthz$"]
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# HSTS-Preload ist eine Domain-Entscheidung des Teams, nicht des Codes
+SILENCED_SYSTEM_CHECKS = ["security.W021"]
 
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "web:start"
