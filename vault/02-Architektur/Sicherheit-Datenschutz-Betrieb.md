@@ -21,8 +21,10 @@
 - Unterauftragsverarbeiter (in App und AVV auflisten): Hetzner (Hosting, DE), Amazon Web Services EMEA (Bedrock, Frankfurt), Mistral AI (Transkription, EU), EU-SMTP-Anbieter, Lexware (Verbindung im Auftrag der Firma, eigener Vertrag der Firma).
 - Datenminimierung gegenüber KI (siehe KI-Pipeline). Keine Nutzung für Training (vertraglich bei Bedrock und Mistral zusichern lassen bzw. prüfen).
 - Löschfristen: Audio sofort nach Transkription; Rohdateien 7 Tage; Transkripte und Erfassungen 12 Monate; Spiegeldaten bei Trennung der Verbindung nach 30 Tagen; Protokoll 8 Jahre (Nachweis gegenüber Kunden). Löschjob täglich.
+  Umgesetzt (M4-04, `audit/loeschfristen.py`, Job `audit.loeschfristen` täglich 3:30 Uhr): Rohdateien nach `Datei.loeschen_ab` (Datensatz mit Name, Größe, Hash bleibt; nie aufbereitete Erfassungen gehen auf „Fehler“); Erfassungen samt Transkript, KI-Ergebnis und Entwurf nach `Erfassung.loeschen_ab`; Spiegeldaten (Kontakte, Artikel, Belege, daran hängende Mahnvorschläge und Versände, Webhook-Ereignisse) 30 Tage nach dem Trennen, wenn die Firma nicht wieder verbunden ist; danach darf ein anderes Lexware-Konto verbunden werden. Protokoll nach 8 Jahren mit derselben Bedingung wie der Trigger. Technische Reste: erledigte Jobs 30 Tage, fehlgeschlagene Jobs, Zeitplanläufe und verarbeitete Webhook-Ereignisse 90 Tage, Postfach-Eingänge und Sammelmail-Nachweise 12 Monate. Je Firma ein Protokolleintrag `loeschfristen.ausgefuehrt` nur mit Anzahlen.
 - Nur der Inhaber diktiert. Hinweis in der Aufnahme-Oberfläche: "Keine Kundengespräche aufnehmen."
 - Betroffenenrechte: Export und Löschung je Firma per Admin-Kommando.
+  Umgesetzt: `manage.py firma_export <firma_id> <datei>` (M4-02) und `manage.py firma_loeschen <firma_id> --bestaetigen "<Firmenname>"` (M4-04). Die Löschung trennt Lexware (Webhooks abmelden, Schlüssel löschen), löscht alle fachlichen Daten und Dateien, deaktiviert Nutzer ohne weitere Firma und behält nur das Protokoll mit dem Firmennamen als Bezug.
 
 ## Betrieb
 
