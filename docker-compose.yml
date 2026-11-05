@@ -49,6 +49,7 @@ services:
       DATABASE_URL: postgres://cockpit:cockpit@db:5432/cockpit
       EMAIL_HOST: mailpit
       EMAIL_PORT: "1025"
+      DJANGO_DEBUG: "true"
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-nur-lokal-kein-geheimnis}
       COCKPIT_FERNET_KEYS: ${COCKPIT_FERNET_KEYS:-TG9rYWwtbnVyLWZ1ZXItRW50d2lja2x1bmctMTIzNDU=}
       COCKPIT_MIGRATE_ON_START: "0"
