@@ -1,6 +1,6 @@
 {% autoescape off %}Guten Tag,
 
-für Ihr Konto im Forderungs-Cockpit wurde ein neues Passwort angefordert. Über diesen Link vergeben Sie es:
+für Ihr Konto bei Belegfluss wurde ein neues Passwort angefordert. Über diesen Link vergeben Sie es:
 
 {{ protocol }}://{{ domain }}{% url 'accounts:password_reset_confirm' uidb64=uid token=token %}
 

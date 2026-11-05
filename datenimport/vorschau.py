@@ -232,7 +232,7 @@ def _posten(v: ImportVorgang) -> list[dict[str, Any]]:
         if offen <= 0:
             status, grund = "bezahlt", "Bereits vollständig bezahlt, wird nicht importiert"
         elif schluessel in vorhanden:
-            status, grund = "dublette", "Rechnungsnummer ist schon im Cockpit (aus Lexware oder früherem Import)"
+            status, grund = "dublette", "Rechnungsnummer ist schon in Belegfluss (aus Lexware oder früherem Import)"
         elif schluessel in gesehen:
             status, grund = "dublette", f"Doppelt in der Datei (Zeile {gesehen[schluessel]})"
         else:

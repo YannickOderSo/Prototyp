@@ -65,6 +65,6 @@ class SmtpForm(forms.ModelForm):
         model = SmtpZugang
         fields = ["aktiv", "host", "port", "benutzer", "starttls", "ssl", "absender_adresse"]
         help_texts = {
-            "aktiv": "Ohne eigenes SMTP versendet das Cockpit über seinen EU-Mailanbieter mit Ihrem Namen.",
+            "aktiv": "Ohne eigenes SMTP versendet Belegfluss über seinen EU-Mailanbieter mit Ihrem Namen.",
             "absender_adresse": "Diese Adresse muss Ihr SMTP-Server als Absender erlauben (SPF/DKIM Ihrer Domain).",
         }

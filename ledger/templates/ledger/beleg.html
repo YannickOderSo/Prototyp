@@ -9,7 +9,7 @@
   <div class="kennzahl"><div class="label">Kunde</div><div class="wert">{% if b.kontakt %}<a href="{% url 'ledger:kunde' b.kontakt.pk %}">{{ b.kontakt.name }}</a>{% else %}{{ b.kontakt_name|default:"(ohne Kunde)" }}{% endif %}</div></div>
   <div class="kennzahl"><div class="label">Mahnstufe</div><div class="wert">{{ b.mahnstufe }}</div></div>
 </section>
-{% if b.importiert %}<p class="meldung" role="status">Aus Excel übernommen{% if b.import_vorgang %} ({{ b.import_vorgang.dateiname }}){% endif %}. Diese Rechnung kennt Lexware nicht: Den Zahlstatus pflegen Sie hier im Cockpit.</p>{% endif %}
+{% if b.importiert %}<p class="meldung" role="status">Aus Excel übernommen{% if b.import_vorgang %} ({{ b.import_vorgang.dateiname }}){% endif %}. Diese Rechnung kennt Lexware nicht: Den Zahlstatus pflegen Sie hier in Belegfluss.</p>{% endif %}
 {% if b.mahnpause_bis and b.mahnpause_bis >= heute %}<p class="meldung warnung">Pausiert bis {{ b.mahnpause_bis|datum }}: Es entstehen keine Vorschläge.</p>{% endif %}
 {% if vorschlaege %}
 <h2>Erinnerungen und Mahnungen</h2>

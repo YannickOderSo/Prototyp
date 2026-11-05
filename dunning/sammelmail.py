@@ -80,7 +80,7 @@ def inhalt(firma: Firma, jetzt: datetime | None = None) -> tuple[str, str, int]:
     if klaerung:
         text += f"\nBei {klaerung} überfälligen Posten fehlt der Kundentyp; diese werden nicht gemahnt.\n"
     text += (
-        f"\nZur Freigabe im Cockpit (Anmeldung mit Passwort und Zwei-Faktor-Code nötig):\n{link}\n\n"
+        f"\nZur Freigabe in Belegfluss (Anmeldung mit Passwort und Zwei-Faktor-Code nötig):\n{link}\n\n"
         "Aus Sicherheitsgründen gibt dieser Link selbst nichts frei.\n"
     )
     for abschnitt in ABSCHNITTE:

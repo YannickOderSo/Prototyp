@@ -19,7 +19,7 @@
 {% elif verbindung and verbindung.status == "getrennt" %}
 <p class="meldung warnung">Die Verbindung ist getrennt{% if verbindung.fehler %} ({{ verbindung.fehler }}){% endif %}. Bitte hinterlegen Sie einen neuen Schlüssel.</p>
 {% else %}
-<p>Verbinden Sie das Cockpit mit Ihrem Lexware-Office-Konto. Das Cockpit liest offene Rechnungen, Kontakte und Artikel und legt in Lexware nur Entwürfe an. Rechnungen schließen Sie wie gewohnt in Lexware ab.</p>
+<p>Verbinden Sie Belegfluss mit Ihrem Lexware-Office-Konto. Belegfluss liest offene Rechnungen, Kontakte und Artikel und legt in Lexware nur Entwürfe an. Rechnungen schließen Sie wie gewohnt in Lexware ab.</p>
 {% endif %}
 <form method="post" class="karte" novalidate>
   {% csrf_token %}

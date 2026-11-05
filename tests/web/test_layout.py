@@ -98,3 +98,32 @@ def test_schrift_selbst_gehostet():
     assert 'url("fonts/inter-latin-wght-normal.woff2")' in css
     assert "googleapis" not in css and "@import" not in css
     assert (Path(settings.BASE_DIR) / "web" / "static" / "web" / "fonts" / "inter-latin-wght-normal.woff2").exists()
+
+
+def test_branding_belegfluss(startseite, client_inhaber):
+    """Name, Logo-Zeichen inline (eindeutige Verlaufs-IDs je Vorkommen) und Favicons."""
+    for html in (startseite.content.decode(), client_inhaber.get(reverse("web:start")).content.decode()):
+        assert "· Belegfluss</title>" in html
+        assert 'rel="icon" href="/static/web/logo/favicon.svg"' in html
+        assert 'rel="apple-touch-icon" href="/static/web/logo/apple-touch-icon.png"' in html
+        assert '<span class="marke-name">Beleg<span>fluss</span></span>' in html
+        assert "Forderungs-Cockpit" not in html
+    html = client_inhaber.get(reverse("web:start")).content.decode()
+    ids = re.findall(r'<linearGradient id="([^"]+)"', html)
+    assert ids and len(ids) == len(set(ids)), ids  # Seitenleiste und Handy-Kopf: keine doppelten IDs
+
+
+def test_logo_dateien_vorhanden():
+    from pathlib import Path
+
+    from django.conf import settings
+
+    ordner = Path(settings.BASE_DIR) / "web" / "static" / "web" / "logo"
+    for datei in (
+        "belegfluss-zeichen.svg",
+        "belegfluss-logo.svg",
+        "favicon.svg",
+        "favicon-32.png",
+        "apple-touch-icon.png",
+    ):
+        assert (ordner / datei).stat().st_size > 0, datei

@@ -244,3 +244,14 @@ Wunsch: die Oberfläche professioneller und schöner. Vorbilder:
 - Feste Aktionsleiste „Markierte freigeben“ unter langen Freigabelisten.
 - Anmeldeseiten als schmale, zentrierte Karte.
 - Weiterhin keine Inline-Styles und keine fremden Server. Alle Tests und die drei Playwright-Abläufe sind grün, auch auf 390 px ohne horizontales Scrollen.
+
+## Marke Belegfluss (5. November 2026)
+
+Der Produktname ist **Belegfluss**. Logo-Entwurf: Ein Kassenbon steht für den „Beleg“, zwei fließende Wellen statt Textzeilen für den „Fluss“. Vier Varianten wurden verglichen, gewählt wurde die, die auch bei 16 px als Favicon lesbar bleibt.
+
+**Eingebaut:**
+- Seitenleiste, Kopf auf dem Handy, Anmeldeseiten, Seitentitel, Favicon und Apple-Touch-Icon.
+- Einladungs- und Passwort-Mails, Testmail, Sammelmail-Link und Name in der Authenticator-App.
+- Alle Texte, in denen „das Cockpit“ das Produkt meinte. „Cockpit“ heißt weiter die Übersichtsseite.
+
+**Nicht geändert:** Python-Paket `cockpit` und Django-Projekt. Der Aufwand stünde in keinem Verhältnis, und Migrationen sowie Deploy hängen daran.

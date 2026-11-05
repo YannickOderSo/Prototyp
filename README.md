@@ -1,4 +1,8 @@
-# Forderungs- und Abrechnungs-Cockpit (Arbeitstitel)
+<img src="web/static/web/logo/belegfluss-logo.svg" alt="Belegfluss" height="56">
+
+# Belegfluss
+
+Früherer Arbeitstitel: Forderungs- und Abrechnungs-Cockpit. Python-Paket und Django-Projekt heißen weiter `cockpit`.
 
 Aufsatz auf Lexware Office für Handwerksbetriebe und kleine Dienstleister: Forderungs-Cockpit,
 Mahnautomatik mit Freigabe und Erfassung per Sprache, Foto oder Mail als Entwurf im Bestandstool.

@@ -1,5 +1,7 @@
 # Start hier
 
+**Produktname: Belegfluss** (entschieden am 5. November 2026, vorher Arbeitstitel „Forderungs- und Abrechnungs-Cockpit“). „Cockpit“ bleibt der Name der Übersichtsseite in der App. Logo und Farben: `web/static/web/logo/` und [[Konventionen]]. Nicht zu verwechseln mit Lukas' älterem Repository `belegfluss`: Für Code daraus gilt weiter [[ADR-007-Eigenbau-Belegfluss-als-Orientierung]].
+
 Stand: 5. November 2026 · Autor: Yannick (mit Claude) · Status: bereit zum Bauen nach bestandener Validierung
 
 ## Worum es geht

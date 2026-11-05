@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
   <meta name="htmx-config" content='{"includeIndicatorStyles": false, "allowEval": false, "allowScriptTags": false}'>
-  <title>{% block titel %}Cockpit{% endblock %} · Forderungs-Cockpit</title>
+  <title>{% block titel %}Cockpit{% endblock %} · Belegfluss</title>
+  <link rel="icon" href="{% static 'web/logo/favicon.svg' %}" type="image/svg+xml">
+  <link rel="icon" href="{% static 'web/logo/favicon-32.png' %}" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="{% static 'web/logo/apple-touch-icon.png' %}">
+  <meta name="application-name" content="Belegfluss">
+  <meta name="apple-mobile-web-app-title" content="Belegfluss">
   <link rel="preload" href="{% static 'web/fonts/inter-latin-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'web/style.css' %}">
   <script src="{% static 'web/htmx-2.0.4.min.js' %}" defer></script>
@@ -15,7 +20,7 @@
   <a class="sprungmarke" href="#inhalt">Zum Inhalt springen</a>
   {% if navigation %}
   <aside class="seitenleiste">
-    <a class="marke" href="{% url 'web:start' %}"><span class="marke-zeichen">{% icon "wallet" %}</span><span class="marke-name">Forderungs-Cockpit</span></a>
+    <a class="marke" href="{% url 'web:start' %}" aria-label="Belegfluss, zum Cockpit">{% include "web/_logo_zeichen.html" with id="leiste" %}<span class="marke-name">Beleg<span>fluss</span></span></a>
     {% if request.firma %}<div class="firmenwahl" title="Aktive Firma">{% icon "building-2" %}<span>{{ request.firma.name }}</span></div>{% endif %}
     <nav class="navigation" aria-label="Hauptnavigation">
       {% for punkt in navigation %}
@@ -27,7 +32,7 @@
     </div>
   </aside>
   <header class="kopf-handy">
-    <a class="marke" href="{% url 'web:start' %}"><span class="marke-zeichen">{% icon "wallet" %}</span><span class="marke-name">Cockpit</span></a>
+    <a class="marke" href="{% url 'web:start' %}" aria-label="Belegfluss, zum Cockpit">{% include "web/_logo_zeichen.html" with id="kopf" %}<span class="marke-name">Beleg<span>fluss</span></span></a>
     {% if request.firma %}<span class="firmenwahl">{{ request.firma.name }}</span>{% endif %}
   </header>
   <nav class="unterleiste" aria-label="Schnellnavigation">
@@ -47,7 +52,7 @@
   </nav>
   {% else %}
   <header class="kopf">
-    <a class="marke" href="{% url 'web:start' %}"><span class="marke-zeichen">{% icon "wallet" %}</span><span class="marke-name">Forderungs-Cockpit</span></a>
+    <a class="marke" href="{% url 'web:start' %}" aria-label="Belegfluss, zur Startseite">{% include "web/_logo_zeichen.html" with id="anmeldung" %}<span class="marke-name">Beleg<span>fluss</span></span></a>
   </header>
   {% endif %}
   <main id="inhalt">

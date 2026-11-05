@@ -1,7 +1,7 @@
 [project]
 name = "cockpit"
 version = "0.1.0"
-description = "Forderungs- und Abrechnungs-Cockpit als Aufsatz auf Lexware Office"
+description = "Belegfluss: Forderungen und Abrechnung als Aufsatz auf Lexware Office"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [

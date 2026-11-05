@@ -189,7 +189,7 @@ def test_eigenes_smtp_ueber_mailpit(client_inhaber, firma, inhaber, mahnung_bere
     )
     assert antwort.status_code == 302
     (testmail,) = mailpit.nachrichten()
-    assert testmail["Subject"] == "Testmail aus dem Forderungs-Cockpit"
+    assert testmail["Subject"] == "Testmail aus Belegfluss"
     assert testmail["To"][0]["Address"] == inhaber.email
     mailpit.leeren()
     freigeben(firma, inhaber, [mahnung_bereit.pk])

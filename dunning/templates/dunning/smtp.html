@@ -2,7 +2,7 @@
 {% block titel %}E-Mail-Versand{% endblock %}
 {% block inhalt %}
 <h1>E-Mail-Versand</h1>
-<p>Standard: Das Cockpit versendet über seinen Mailanbieter in der EU, mit dem Absendernamen und der Antwortadresse Ihrer Firma. Optional können Sie Ihren eigenen SMTP-Server eintragen. Beim Einschalten senden wir eine Testmail an Sie.</p>
+<p>Standard: Belegfluss versendet über seinen Mailanbieter in der EU, mit dem Absendernamen und der Antwortadresse Ihrer Firma. Optional können Sie Ihren eigenen SMTP-Server eintragen. Beim Einschalten senden wir eine Testmail an Sie.</p>
 <form method="post" class="karte" novalidate>
   {% csrf_token %}
   {% include "web/_formular.html" %}

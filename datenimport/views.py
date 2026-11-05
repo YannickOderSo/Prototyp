@@ -178,7 +178,7 @@ def freigeben(request: FirmaRequest, pk: int) -> HttpResponse:
     else:
         v.refresh_from_db()
         if v.art == ImportVorgang.Art.POSTEN:
-            messages.success(request, f"{v.ergebnis.get('angelegt', 0)} offene Rechnungen sind jetzt im Cockpit.")
+            messages.success(request, f"{v.ergebnis.get('angelegt', 0)} offene Rechnungen sind jetzt in Belegfluss.")
         else:
             messages.success(request, "Freigegeben. Die Einträge werden jetzt im Hintergrund in Lexware angelegt.")
     return redirect("datenimport:vorgang", pk=v.pk)

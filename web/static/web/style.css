@@ -1,5 +1,5 @@
 /*
- * Forderungs-Cockpit · Design-System
+ * Belegfluss · Design-System
  * Mobil zuerst, ohne Framework, ohne Inline-Styles (CSP). Ruhige Finanz-Optik nach dem Vorbild von Mercury
  * (zurückhaltende Flächen, Farbe nur für Status) und Stripe (klare Zahlen in Tabellen, rechtsbündig, feste Breite).
  * Schrift: Inter (SIL OFL), selbst gehostet. Icons: Lucide (ISC), inline. Lizenzen in THIRD_PARTY.md.
@@ -122,12 +122,9 @@ p { margin: 0 0 12px; }
 
 .marke { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--grau-900); font-weight: 650; letter-spacing: -0.01em; }
 .marke:hover { color: var(--grau-900); }
-.marke-zeichen {
-  display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; color: #fff;
-  background: linear-gradient(135deg, var(--primaer-500), var(--primaer-800));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--schatten-s);
-}
-.marke-zeichen .icon { width: 18px; height: 18px; }
+.logo-zeichen { width: 32px; height: 32px; flex: none; border-radius: 8px; box-shadow: var(--schatten-s); }
+.marke-name { font-size: 1.0625rem; font-weight: 680; letter-spacing: -0.025em; color: var(--grau-900); }
+.marke-name span { color: var(--primaer); }
 
 /* Seitenleiste nur auf breiten Bildschirmen */
 .seitenleiste { display: none; }
@@ -518,7 +515,9 @@ hr { border: 0; border-top: 1px solid var(--rand); margin: 20px 0; }
     border-right: 1px solid var(--rand);
     overflow-y: auto;
   }
-  .seitenleiste .marke { padding: 4px 8px 14px; font-size: 1rem; }
+  .seitenleiste .marke { padding: 4px 8px 14px; }
+  .seitenleiste .logo-zeichen { width: 34px; height: 34px; }
+  .seitenleiste .marke-name { font-size: 1.125rem; }
   .seitenleiste .firmenwahl {
     display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 9px 10px;
     border: 1px solid var(--rand); border-radius: var(--radius); background: var(--grau-50);

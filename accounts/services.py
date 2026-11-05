@@ -79,9 +79,9 @@ def team_einladen(firma: Firma, von: Nutzer, email: str, rolle: str) -> TeamEinl
     )
     link = settings.BASIS_URL + reverse("accounts:team_annehmen", args=[token])
     send_mail(
-        subject=f"Einladung in das Forderungs-Cockpit von {firma.name}",
+        subject=f"Einladung zu Belegfluss von {firma.name}",
         message=(
-            f"Guten Tag,\n\n{von.name or von.email} hat Sie in das Forderungs-Cockpit von {firma.name} eingeladen "
+            f"Guten Tag,\n\n{von.name or von.email} hat Sie zu Belegfluss von {firma.name} eingeladen "
             f"(Rolle: {Rolle(rolle).label}).\n\nZum Annehmen öffnen Sie bitte diesen Link (gültig "
             f"{TEAM_EINLADUNG_TAGE} Tage):\n{link}\n\nSie werden dabei gebeten, ein Passwort und die "
             "Zwei-Faktor-Anmeldung einzurichten.\n"

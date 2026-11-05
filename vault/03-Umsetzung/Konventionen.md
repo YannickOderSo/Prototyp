@@ -13,3 +13,9 @@
   - Farbe nur für Status (gut, warnung, schlecht) und die Hauptaktion. Beträge in Ziffern fester Breite und rechtsbündig.
   - Desktop ab 1024 px mit Seitenleiste. Auf dem Handy höchstens vier Hauptziele in der unteren Leiste, der Rest unter „Mehr“. Neue Navigationspunkte kommen in `web/context.py` (mit Icon aus `web/icons.py`).
   - Keine Inline-Styles und keine externen Schriften oder Icons (CSP, Datenschutz). Lizenzen in `THIRD_PARTY.md`.
+- **Marke Belegfluss:**
+  - Logo-Zeichen: ein Kassenbon mit zwei fließenden Wellen auf einer blauen Kachel, Verlauf #3B63E0 → #1B357F, Wellen #22B8E0 → #3B63E0.
+  - Schriftzug „Beleg“ in #101828 und „fluss“ in #2952CC, gesetzt in Inter.
+  - Dateien liegen in `web/static/web/logo/`: Zeichen, Logo hell und dunkel, Favicon, Apple-Touch-Icon.
+  - In der App inline über `web/_logo_zeichen.html` mit eindeutiger `id` je Vorkommen.
+  - Mahnungen und Erinnerungen an die Kunden der Betriebe tragen **kein** Belegfluss-Logo, denn sie kommen vom Betrieb.

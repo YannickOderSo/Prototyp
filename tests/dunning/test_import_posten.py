@@ -84,7 +84,7 @@ def test_vorschau_offener_posten(firma, inhaber, kunden, heute):
     assert zeilen[3]["status"] == "neu" and zeilen[3]["daten"]["offen"] == "400.00"
     assert zeilen[3]["daten"]["kunde"] == "Dach KG"
     assert zeilen[4]["status"] == "bezahlt"
-    assert zeilen[5]["status"] == "dublette" and "schon im Cockpit" in zeilen[5]["grund"]
+    assert zeilen[5]["status"] == "dublette" and "schon in Belegfluss" in zeilen[5]["grund"]
     assert zeilen[6]["status"] == "fehler" and "nicht in Lexware" in zeilen[6]["grund"]
     assert zeilen[7]["status"] == "fehler" and "Fälligkeit" in zeilen[7]["grund"]
     assert zeilen[8]["status"] == "bezahlt"  # mehr bezahlt als berechnet: nichts mehr offen
@@ -206,7 +206,7 @@ def test_frische_check_aus_dem_cockpit(firma, inhaber, kunden, umgebung, worker)
     alle_jobs_ausfuehren(worker)
     vorschlag.refresh_from_db()
     assert vorschlag.status == "vorgeschlagen" and vorschlag.offen_betrag == D("190.00")
-    assert "im Cockpit geändert" in vorschlag.hinweise[0]
+    assert "in Belegfluss geändert" in vorschlag.hinweise[0]
     freigeben(firma, inhaber, [vorschlag.pk])
     services.zahlung_eintragen(beleg, inhaber, date(2026, 11, 5), None)
     alle_jobs_ausfuehren(worker)

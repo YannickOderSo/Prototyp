@@ -53,7 +53,7 @@ def test_ganzer_ablauf_offene_rechnungen(client_freigeber, firma, freigeber, bau
     vorgang.refresh_from_db()
     assert vorgang.status == "vorschau"
     seite = client_freigeber.get(reverse("datenimport:vorgang", args=[vorgang.pk])).content.decode()
-    assert "1 offene Rechnungen ins Cockpit übernehmen" in seite and "2024-117 · Bau AG" in seite
+    assert "1 offene Rechnungen in Belegfluss übernehmen" in seite and "2024-117 · Bau AG" in seite
     client_freigeber.post(reverse("datenimport:freigeben", args=[vorgang.pk]))
     vorgang.refresh_from_db()
     assert vorgang.status == "fertig" and vorgang.freigegeben_von == freigeber

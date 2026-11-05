@@ -68,7 +68,7 @@ def _frische_check(vorschlag: Mahnvorschlag, zahlung_offen: Decimal, bezahlt: bo
         vorschlag.freigegeben_von = None
         vorschlag.freigegeben_am = None
         vorschlag.hinweise = [
-            f"Der offene Betrag hat sich {'im Cockpit' if beleg.importiert else 'in Lexware'} geändert "
+            f"Der offene Betrag hat sich {'in Belegfluss' if beleg.importiert else 'in Lexware'} geändert "
             f"({alt} → {zahlung_offen}). Bitte erneut freigeben.",
             *vorschlag.hinweise,
         ]

@@ -1,6 +1,6 @@
 # Arbeitsanweisung für Agenten
 
-Dieses Repository baut das **Forderungs- und Abrechnungs-Cockpit** (Arbeitstitel). Die vollständige Spezifikation liegt im Ordner `vault/` (Obsidian-kompatibel, reines Markdown).
+Dieses Repository baut **Belegfluss** (früherer Arbeitstitel: Forderungs- und Abrechnungs-Cockpit). Die vollständige Spezifikation liegt im Ordner `vault/` (Obsidian-kompatibel, reines Markdown).
 
 Lies vor jeder Arbeit in dieser Reihenfolge:
 
@@ -15,6 +15,6 @@ Harte Regeln, die nie gebrochen werden:
 - Rechnungen, Nummern, E-Rechnung und Archiv bleiben im **Bestandstool** (Lexware Office, später sevdesk). Diese App baut kein eigenes Rechnungsprogramm.
 - Personenbezogene Daten werden nur in der **EU** verarbeitet.
 - Jeder Schritt mit Außenwirkung wird im Protokoll festgehalten.
-- Von Grund auf selbst bauen. Code aus `belegfluss` (Lukas) nur als Orientierung; Übernahme nur nach den Bedingungen in ADR-007, mit Herkunftsvermerk und eigenen Tests.
+- Von Grund auf selbst bauen. Code aus Lukas' älterem Repository `belegfluss` nur als Orientierung; Übernahme nur nach den Bedingungen in ADR-007, mit Herkunftsvermerk und eigenen Tests.
 
 Wenn eine Spezifikation fehlt oder widersprüchlich ist: in `vault/05-Kontext/Offene-Fragen.md` eintragen, die konservativste Annahme treffen und weiterarbeiten.

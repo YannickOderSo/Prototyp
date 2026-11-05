@@ -36,7 +36,7 @@ HOECHSTE_STUFE = 2
 
 
 HINWEIS_IMPORT = (
-    "Posten aus dem Excel-Import: Der Zahlstatus wird im Cockpit gepflegt, nicht in Lexware. "
+    "Posten aus dem Excel-Import: Der Zahlstatus wird in Belegfluss gepflegt, nicht in Lexware. "
     "Bitte vor der Freigabe prüfen, ob inzwischen bezahlt wurde."
 )
 

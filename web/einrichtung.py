@@ -110,7 +110,7 @@ def schritte(firma: Firma) -> list[Schritt]:
             firma.einrichtung_fertig_am is not None,
             "Einrichtung abgeschlossen."
             if firma.einrichtung_fertig_am
-            else "Sehen Sie, was das Cockpit heute vorschlagen würde.",
+            else "Sehen Sie, was Belegfluss heute vorschlagen würde.",
         ),
     ]
 

@@ -4,9 +4,9 @@ from .lesen import MAX_BYTES
 from .models import ImportVorgang
 
 ERKLAERUNG = {
-    "kunden": "Werden nach Ihrer Freigabe in Lexware angelegt und erscheinen danach im Cockpit.",
+    "kunden": "Werden nach Ihrer Freigabe in Lexware angelegt und erscheinen danach in Belegfluss.",
     "artikel": "Werden nach Ihrer Freigabe in Lexware angelegt und stehen danach für Angebote zur Verfügung.",
-    "posten": "Alte offene Rechnungen werden nur im Cockpit geführt und gemahnt, nie in Lexware gebucht.",
+    "posten": "Alte offene Rechnungen werden nur in Belegfluss geführt und gemahnt, nie in Lexware gebucht.",
 }
 
 

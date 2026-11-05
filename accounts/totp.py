@@ -51,6 +51,6 @@ def passender_schritt(geheimnis: str, code: str, letzter_schritt: int | None, je
     return treffer
 
 
-def provisioning_uri(geheimnis: str, konto: str, aussteller: str = "Forderungs-Cockpit") -> str:
+def provisioning_uri(geheimnis: str, konto: str, aussteller: str = "Belegfluss") -> str:
     parameter = urlencode({"secret": geheimnis, "issuer": aussteller, "digits": STELLEN, "period": SCHRITT_SEKUNDEN})
     return f"otpauth://totp/{quote(aussteller)}:{quote(konto)}?{parameter}"

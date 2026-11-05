@@ -2,13 +2,13 @@
 {% load cockpit %}
 {% block titel %}Cockpit{% endblock %}
 {% block inhalt %}
-<h1>Forderungs-Cockpit</h1>
+<h1>Cockpit</h1>
 {% if request.firma %}<p>Ihre offenen Forderungen auf einen Blick, Stand {% now "j. F Y" %}.</p>{% endif %}
 {% if not request.firma %}
 <div class="karte"><p>Ihr Konto gehört noch zu keiner Firma. Bitte lassen Sie sich vom Inhaber einladen.</p></div>
 {% else %}
 {% if request.mitgliedschaft.ist_inhaber and not request.firma.einrichtung_fertig_am %}
-<div class="meldung">Willkommen! In vier Schritten ist das Cockpit startklar. <a class="knopf" href="{% url 'web:einrichtung' %}">Einrichtung {% if verbindung %}fortsetzen{% else %}starten{% endif %}</a></div>
+<div class="meldung">Willkommen bei Belegfluss! In vier Schritten ist alles startklar. <a class="knopf" href="{% url 'web:einrichtung' %}">Einrichtung {% if verbindung %}fortsetzen{% else %}starten{% endif %}</a></div>
 {% endif %}
 {% if not verbindung %}
 <div class="meldung warnung">

@@ -50,7 +50,7 @@ def test_sechsstellig_und_toleranz():
 
 def test_provisioning_uri():
     uri = totp.provisioning_uri("ABC", "a@b.example")
-    assert uri.startswith("otpauth://totp/Forderungs-Cockpit:a%40b.example?")
+    assert uri.startswith("otpauth://totp/Belegfluss:a%40b.example?")
     assert "secret=ABC" in uri
 
 

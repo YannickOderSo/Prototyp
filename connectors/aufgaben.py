@@ -59,7 +59,7 @@ def _widerrufen(j: Job) -> None:
         send_mail(
             subject="Lexware-Verbindung getrennt",
             message=(
-                "Guten Tag,\n\nder API-Schlüssel für Lexware Office wurde widerrufen. Das Cockpit kann keine "
+                "Guten Tag,\n\nder API-Schlüssel für Lexware Office wurde widerrufen. Belegfluss kann keine "
                 "offenen Posten mehr abgleichen und keine Mahnungen vorbereiten.\n\nBitte hinterlegen Sie einen "
                 f"neuen Schlüssel: {settings.BASIS_URL}{reverse('connectors:lexware')}\n"
             ),

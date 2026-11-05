@@ -68,7 +68,7 @@ def smtp_verbindung(zugang: SmtpZugang) -> BaseEmailBackend:
 def testmail(zugang: SmtpZugang, empfaenger: str) -> None:
     """Prüft einen (noch nicht aktiven) SMTP-Zugang mit einer Testmail. Wirft bei jedem Fehler."""
     EmailMessage(
-        "Testmail aus dem Forderungs-Cockpit",
+        "Testmail aus Belegfluss",
         "Diese Testmail bestätigt, dass Ihr SMTP-Zugang funktioniert.",
         from_email=zugang.absender_adresse,
         to=[empfaenger],
