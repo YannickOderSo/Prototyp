@@ -13,7 +13,25 @@ def _kontakt(firma, nutzer=None):
     return {"pk": k.pk}
 
 
+def _vorschlag(firma, nutzer=None, **extra):
+    from dunning.models import Mahnvorschlag
+    from ledger.models import Beleg, Kontakt
+
+    n = Beleg.objects.count()
+    k = Kontakt.objects.create(
+        firma=firma, extern_id=f"idor-v-{n}", name="IDOR", kundentyp="unternehmer", email="a@b.example"
+    )
+    b = Beleg.objects.create(firma=firma, extern_id=f"idor-b-{n}", nummer=f"I{n}", kontakt=k, offen=10, status="offen")
+    v = Mahnvorschlag.objects.create(firma=firma, beleg=b, stufe=0, pdf=b"%PDF-", **extra)
+    return {"pk": v.pk}
+
+
 FAELLE: dict[str, Fabrik] = {
+    "dunning:vorschau": _vorschlag,
+    "dunning:verwerfen": _vorschlag,
+    "dunning:neuversuch": _vorschlag,
+    "dunning:pdf": _vorschlag,
+    "dunning:post_versendet": _vorschlag,
     "ledger:kunde": _kontakt,
     "ledger:kundentyp_setzen": _kontakt,
 }

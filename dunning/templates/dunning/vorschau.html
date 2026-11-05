@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Vorschau{% endblock %}
+{% block inhalt %}
+<h1>Vorschau: {{ v.get_stufe_display }}</h1>
+<p>So geht die Mail hinaus, wenn Sie heute freigeben.</p>
+{% include "dunning/_vorschau.html" %}
+{% if v.status == "vorgeschlagen" %}
+<form method="post" action="{% url 'dunning:freigeben' %}" class="knopfreihe">
+  {% csrf_token %}<input type="hidden" name="vorschlag" value="{{ v.pk }}">
+  <button type="submit">{% if v.versandart == "post" %}Für Postversand freigeben{% else %}Jetzt freigeben{% endif %}</button>
+  <a class="knopf zweitrangig" href="{% url 'dunning:freigabe' %}">Zurück</a>
+</form>
+{% else %}<p><a href="{% url 'dunning:freigabe' %}">Zurück</a></p>{% endif %}
+{% endblock %}

@@ -301,3 +301,6 @@ pre, code { white-space: pre-wrap; overflow-wrap: anywhere; }
 .anteil-98 { width: 98%; }
 .anteil-99 { width: 99%; }
 .anteil-100 { width: 100%; }
+
+.mailtext { background: #fafbfc; border: 1px solid var(--rand); border-radius: 8px; padding: 12px; font-family: inherit; }
+details summary { cursor: pointer; padding: 10px 0; }

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Mahnungen freigeben{% endblock %}
+{% block inhalt %}
+<h1>Mahnungen freigeben</h1>
+<p>Nichts geht ohne Ihre Freigabe hinaus. Vor jedem Versand prüft das Cockpit in Lexware, ob inzwischen bezahlt wurde.</p>
+{% if basiszins_fehlt %}<p class="meldung warnung">Für heute ist kein aktueller Basiszinssatz gepflegt. Bis zur Pflege werden keine Verzugszinsen berechnet.</p>{% endif %}
+
+{% if anzahl_offen %}
+<form method="post" action="{% url 'dunning:freigeben' %}" id="sammelfreigabe">
+  {% csrf_token %}
+  <div class="karte checkbox"><input type="checkbox" id="alle" data-alle-markieren="vorschlaege"> <label for="alle">Alle markieren</label></div>
+  {% for stufe, label, liste in stufen %}{% if liste %}
+  <h2>{{ label }} ({{ liste|length }})</h2>
+  <ul class="liste">
+    {% for v in liste %}
+    <li id="vorschlag-{{ v.pk }}">
+      <div class="zeile">
+        <span class="checkbox"><input type="checkbox" name="vorschlag" value="{{ v.pk }}" id="v{{ v.pk }}" data-gruppe="vorschlaege">
+          <label for="v{{ v.pk }}"><strong>{{ v.beleg.kontakt.name }}</strong></label></span>
+        <strong>{{ v.gesamt|euro }}</strong>
+      </div>
+      <div class="zeile neben"><span>{{ v.beleg.nummer }} · {{ v.faellig_seit_tagen }} Tage überfällig · {{ v.beleg.kontakt.get_kundentyp_display }}</span>
+        <span>{% if v.zinsen %}inkl. {{ v.zinsen|euro }} Zinsen{% endif %}{% if v.pauschale %} · {{ v.pauschale|euro }} Pauschale{% endif %}</span></div>
+      {% if v.versandart == "post" %}<div><span class="marke-status warnung">Postversand nötig</span></div>{% endif %}
+      {% for h in v.hinweise %}{% if "Postversand" not in h %}<div class="hilfe">{{ h }}</div>{% endif %}{% endfor %}
+      <div class="knopfreihe">
+        <a class="knopf zweitrangig" href="{% url 'dunning:vorschau' v.pk %}">Vorschau</a>
+        <details><summary>Verwerfen</summary>
+          <div class="feld"><label for="grund{{ v.pk }}">Grund</label>
+            <input type="text" id="grund{{ v.pk }}" name="grund" form="verwerfen{{ v.pk }}" required maxlength="300" placeholder="z. B. Kunde hat Ratenzahlung vereinbart"></div>
+          <button type="submit" class="gefahr" form="verwerfen{{ v.pk }}">Verwerfen</button>
+        </details>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}{% endfor %}
+  <div class="knopfreihe"><button type="submit">Markierte freigeben</button></div>
+  <p class="hilfe">Vorschläge mit „Postversand nötig“ werden nach der Freigabe als PDF vorbereitet; Sie versenden sie selbst per Post.</p>
+</form>
+{% for stufe, label, liste in stufen %}{% for v in liste %}
+<form method="post" action="{% url 'dunning:verwerfen' v.pk %}" id="verwerfen{{ v.pk }}">{% csrf_token %}</form>
+{% endfor %}{% endfor %}
+{% else %}
+<p class="karte">Zurzeit liegen keine Vorschläge zur Freigabe vor.</p>
+{% endif %}
+
+{% if post %}
+<h2>Postversand vorbereitet</h2>
+<ul class="liste">
+  {% for v in post %}
+  <li><div class="zeile"><strong>{{ v.beleg.kontakt.name }}</strong><span>{{ v.get_stufe_display }} {{ v.beleg.nummer }}</span></div>
+    <div class="knopfreihe"><a class="knopf zweitrangig" href="{% url 'dunning:pdf' v.pk %}">PDF herunterladen</a>
+      <form method="post" action="{% url 'dunning:post_versendet' v.pk %}">{% csrf_token %}<button type="submit">Per Post versendet</button></form></div></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if fehler %}
+<h2>Versand fehlgeschlagen</h2>
+<ul class="liste">
+  {% for v in fehler %}
+  <li><div class="zeile"><strong>{{ v.beleg.kontakt.name }}</strong><span>{{ v.get_stufe_display }} {{ v.beleg.nummer }}</span></div>
+    <div class="meldung fehler">{{ v.fehler }}</div>
+    <form method="post" action="{% url 'dunning:neuversuch' v.pk %}" class="knopfreihe">{% csrf_token %}<button type="submit">Erneut versuchen</button></form></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if in_arbeit %}
+<h2>Freigegeben, Versand läuft</h2>
+<ul class="liste">{% for v in in_arbeit %}<li><div class="zeile"><span>{{ v.beleg.kontakt.name }}</span><span>{{ v.get_stufe_display }} {{ v.beleg.nummer }}</span></div></li>{% endfor %}</ul>
+{% endif %}
+
+{% if klaerung %}
+<h2>Klärung nötig</h2>
+<p class="hilfe">Diese überfälligen Posten werden nicht gemahnt, weil der Kundentyp oder der Kontakt fehlt.</p>
+<ul class="liste">{% for b in klaerung %}<li><div class="zeile"><span>{{ b.kontakt_name|default:"(ohne Kunde)" }} · {{ b.nummer }}</span><strong>{{ b.offen|euro }}</strong></div>
+  {% if b.kontakt %}<a href="{% url 'ledger:kundentyp' %}">Kundentyp festlegen</a>{% else %}<span class="hilfe">Ohne Kontakt in Lexware (Sammelkunde): bitte selbst klären.</span>{% endif %}</li>{% endfor %}</ul>
+{% endif %}
+
+{% if versendet %}
+<h2>Zuletzt versendet</h2>
+<ul class="liste">{% for v in versendet %}<li><div class="zeile"><span>{{ v.beleg.kontakt.name }} · {{ v.get_stufe_display }} {{ v.beleg.nummer }}</span><span class="neben">{{ v.versendet_am|date:"d.m.Y H:i" }}</span></div></li>{% endfor %}</ul>
+{% endif %}
+{% endblock %}

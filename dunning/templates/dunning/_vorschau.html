@@ -1,0 +1,9 @@
+{% load cockpit %}
+<div class="karte vorschau">
+  <p><strong>Von:</strong> {{ mail.absender }}<br>
+     <strong>An:</strong> {{ mail.empfaenger|default:"keine E-Mail-Adresse (Postversand)" }}<br>
+     <strong>Antwort an:</strong> {{ mail.reply_to|default:"–" }}{% if mail.bcc %}<br><strong>Kopie (BCC):</strong> {{ mail.bcc }}{% endif %}<br>
+     <strong>Betreff:</strong> {{ mail.betreff }}<br>
+     <strong>Anhang:</strong> {{ mail.anhang_name }}{% if v.stufe > 0 %} (Mahnung aus Lexware){% else %} (Rechnung aus Lexware){% endif %}</p>
+  <pre class="mailtext">{{ mail.text }}</pre>
+</div>

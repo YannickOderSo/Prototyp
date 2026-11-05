@@ -85,5 +85,6 @@ Quelle für den aktuellen Wert: Bundesbank-Pressemitteilung vom 30.06.2026. Die 
 
 - Vorschläge entstehen täglich, Versand **nur** nach Freigabe durch Inhaber oder Freigeber (eingeloggt, 2FA).
 - Freigabe einzeln oder als Sammelfreigabe "alle markierten".
+- Umgesetzt (M2-04): Seite „Mahnungen“ (`/mahnungen/`) nur für Inhaber und Freigeber. Freigeben nur per POST mit CSRF-Token aus einer angemeldeten Sitzung (2FA); GET-Aufrufe ändern nie etwas, auch nicht über einen Link aus einer Mail. Vor der Freigabe wird erneut geprüft: noch offen, Kundentyp gesetzt, nicht pausiert. Freigabe und Versand-Job entstehen in derselben Datenbanktransaktion. Verwerfen nur mit Grund; verworfene Stufen werden nicht erneut vorgeschlagen. Die Vorschau nutzt dieselbe Funktion wie der Versand (`dunning/mail.py`), zeigt also exakt die Mail (D10). Alles wird protokolliert.
 - Vor dem Versand: Frische-Check im Bestandstool. Ist der Posten bezahlt oder der offene Betrag gesunken, Vorschlag verwerfen bzw. neu berechnen und erneut zur Freigabe stellen.
 - Versand per E-Mail mit Absendername der Firma, Reply-To der Firma, PDF-Anhang. Kopie (BCC) an die Firma optional.
