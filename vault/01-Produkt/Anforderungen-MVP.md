@@ -82,6 +82,22 @@ Umsetzung F6 (M4-03): Seite „Einrichtung“ (`/einrichtung/`, nur Inhaber) mit
 
 Umsetzung F1 (M4-01): Abschnitt der Sammelfreigabe-Mail und Seite „Berichte“. „Eingegangen“ ist der Bruttobetrag der in den letzten 7 Tagen vollständig bezahlten Rechnungen laut Lexware; Teilzahlungen auf weiterhin offene Rechnungen zählen dort nicht mit (offene Frage).
 
+## H. Import aus Excel (Meilenstein 6, vor dem Pilot)
+
+Entscheidung in ADR-008. Gilt nur für Betriebe mit Lexware Office.
+
+| ID | Anforderung | Abnahme |
+| --- | --- | --- |
+| H1 MUSS | Upload von Excel (`.xlsx`) und CSV mit Kopfzeile; Tabellenblatt wählbar; Zahlen, Beträge und Daten in deutschem Format | Beispieldateien aus Excel (Semikolon, Dezimalkomma, `TT.MM.JJJJ`) werden korrekt gelesen |
+| H2 MUSS | Spaltenzuordnung mit Vorschlägen aus den Spaltennamen, vom Nutzer änderbar; Vorlagen zum Herunterladen | Vorlagen werden ohne Änderung vollständig zugeordnet |
+| H3 MUSS | Vorschau vor jedem Import: neue Einträge, Dubletten (schon in Lexware oder im Cockpit), fehlerhafte Zeilen mit Grund | Nichts wird ohne Vorschau und Freigabe angelegt |
+| H4 MUSS | Kunden werden nach Freigabe durch Inhaber oder Freigeber in Lexware angelegt (Firma oder Person, E-Mail, Rechnungsadresse); der Kundentyp aus Excel wird nur nach ausdrücklicher Bestätigung übernommen | Kontakt erscheint in Lexware und danach im Cockpit; keine Dubletten |
+| H5 MUSS | Artikel werden nach Freigabe in Lexware angelegt (Bezeichnung, Art, Einheit, Nettopreis, Steuersatz 0, 7 oder 19 %) | Artikel steht danach für die Erfassung zur Verfügung |
+| H6 MUSS | Alte offene Rechnungen werden nur im Cockpit geführt (Quelle „Import“), nie in Lexware gebucht; Kunde muss in Lexware existieren | Posten erscheinen in Cockpit und Postenliste, der Lexware-Abgleich verändert sie nicht |
+| H7 MUSS | Zahlstatus importierter Posten pflegt der Betrieb im Cockpit: bezahlt mit Datum oder neuer offener Betrag; protokolliert | Bezahlte Posten erscheinen nicht mehr als offen und werden nicht gemahnt |
+| H8 MUSS | Mahnwesen für importierte Posten nach denselben Regeln; Versand prüft den Zahlstatus im Cockpit; Mahnschreiben-PDF (Stufe 1 und 2, Postversand) erzeugt die App; Freigabe weist auf den manuell gepflegten Zahlstatus hin | Mahnung zu einem importierten Posten geht mit PDF der App hinaus; bezahlt markierte Posten werden nicht versendet |
+| H9 MUSS | Jeder Import und jede Freigabe wird protokolliert; die Importdatei wird wie Rohdateien nach 7 Tagen gelöscht | Protokoll zeigt Datei, Anzahl und Ergebnis |
+
 ## G. sevdesk (Meilenstein 5)
 
 | ID | Anforderung | Abnahmekriterium |

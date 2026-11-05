@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "dunning",
     "capture",
     "reports",
+    "datenimport",
     "web",
 ]
 

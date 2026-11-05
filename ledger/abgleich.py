@@ -47,6 +47,7 @@ def kontakt_speichern(firma: Firma, kontakt: Contact) -> Kontakt:
             "kundennummer": kontakt.kundennummer,
             "ist_unternehmen_extern": kontakt.ist_unternehmen,
             "archiviert": kontakt.archiviert,
+            "adresse": kontakt.adresse,
             "aktualisiert": timezone.now(),
         },
     )

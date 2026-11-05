@@ -25,10 +25,12 @@ import httpx
 
 from .base import (
     Article,
+    ArticleDraft,
     BelegArt,
     BelegStatus,
     CompanyInfo,
     Contact,
+    ContactDraft,
     DraftLine,
     DunningFees,
     ExternalRef,
@@ -373,7 +375,60 @@ class LexwareConnector:
             kundennummer=str(kunde.get("number") or ""),
             ist_unternehmen=bool(firma) if (firma or person) else None,
             archiviert=bool(daten.get("archived", False)),
+            adresse=LexwareConnector._adresse(daten),
         )
+
+    @staticmethod
+    def _adresse(daten: dict[str, Any]) -> str:
+        """Erste Rechnungsadresse als mehrzeiliger Text (für Mahnschreiben der App)."""
+        adressen = (daten.get("addresses") or {}).get("billing") or []
+        if not adressen:
+            return ""
+        a = adressen[0]
+        zeilen = [
+            str(a.get("supplement") or ""),
+            str(a.get("street") or ""),
+            " ".join(x for x in (str(a.get("zip") or ""), str(a.get("city") or "")) if x),
+        ]
+        if a.get("countryCode") and a.get("countryCode") != "DE":
+            zeilen.append(str(a["countryCode"]))
+        return "\n".join(z for z in zeilen if z.strip())
+
+    def create_contact(self, draft: ContactDraft) -> str:
+        """Kunde anlegen (Doku: version 0, Rolle customer, company XOR person, je höchstens eine Adresse/E-Mail)."""
+        daten: dict[str, Any] = {"version": 0, "roles": {"customer": {}}}
+        if draft.ist_firma:
+            daten["company"] = {"name": draft.name}
+        else:
+            person: dict[str, Any] = {"lastName": draft.name}
+            if draft.vorname:
+                person["firstName"] = draft.vorname
+            daten["person"] = person
+        if draft.strasse or draft.plz or draft.ort:
+            daten["addresses"] = {
+                "billing": [
+                    {"street": draft.strasse, "zip": draft.plz, "city": draft.ort, "countryCode": draft.land or "DE"}
+                ]
+            }
+        if draft.email:
+            daten["emailAddresses"] = {"business": [draft.email]}
+        if draft.telefon:
+            daten["phoneNumbers"] = {"business": [draft.telefon]}
+        if draft.notiz:
+            daten["note"] = draft.notiz
+        return str(self._json("POST", "/v1/contacts", daten=daten)["id"])
+
+    def create_article(self, draft: ArticleDraft) -> str:
+        """Artikel anlegen (Doku: title, type, unitName, price mit netPrice, leadingPrice NET, taxRate 0/7/19)."""
+        daten: dict[str, Any] = {
+            "title": draft.bezeichnung,
+            "type": draft.typ,
+            "unitName": draft.einheit,
+            "price": {"netPrice": draft.netto, "leadingPrice": "NET", "taxRate": draft.steuersatz},
+        }
+        if draft.artikelnummer:
+            daten["articleNumber"] = draft.artikelnummer
+        return str(self._json("POST", "/v1/articles", daten=daten)["id"])
 
     def list_contacts(self) -> Iterable[Contact]:
         for eintrag in self._seiten("/v1/contacts", {"customer": "true"}):

@@ -17,8 +17,10 @@ from ledger.models import Artikel, Beleg, Kontakt
 
 from .base import (
     Article,
+    ArticleDraft,
     CompanyInfo,
     Contact,
+    ContactDraft,
     DunningFees,
     ExternalRef,
     InvoiceDraft,
@@ -98,7 +100,7 @@ class DemoConnector:
 
     def list_contacts(self) -> Iterable[Contact]:
         return [
-            Contact(k.extern_id, k.name, k.email, k.kundennummer, k.ist_unternehmen_extern, k.archiviert)
+            Contact(k.extern_id, k.name, k.email, k.kundennummer, k.ist_unternehmen_extern, k.archiviert, k.adresse)
             for k in Kontakt.objects.fuer(self.firma)
         ]
 
@@ -110,6 +112,33 @@ class DemoConnector:
             Article(a.extern_id, a.bezeichnung, a.einheit, a.netto, a.steuersatz, a.typ, a.artikelnummer, a.archiviert)
             for a in Artikel.objects.fuer(self.firma)
         ]
+
+    def create_contact(self, draft: ContactDraft) -> str:
+        extern_id = f"demo-kontakt-{uuid.uuid4().hex[:8]}"
+        adresse = "\n".join(z for z in (draft.strasse, f"{draft.plz} {draft.ort}".strip()) if z)
+        Kontakt.objects.create(
+            firma=self.firma,
+            extern_id=extern_id,
+            name=" ".join(x for x in (draft.vorname, draft.name) if x),
+            email=draft.email,
+            ist_unternehmen_extern=draft.ist_firma,
+            adresse=adresse,
+        )
+        return extern_id
+
+    def create_article(self, draft: ArticleDraft) -> str:
+        extern_id = f"demo-artikel-{uuid.uuid4().hex[:8]}"
+        Artikel.objects.create(
+            firma=self.firma,
+            extern_id=extern_id,
+            bezeichnung=draft.bezeichnung,
+            einheit=draft.einheit,
+            netto=draft.netto,
+            steuersatz=draft.steuersatz,
+            typ=draft.typ,
+            artikelnummer=draft.artikelnummer,
+        )
+        return extern_id
 
     def create_invoice_draft(self, draft: InvoiceDraft) -> ExternalRef:
         return ExternalRef("invoice", f"demo-rechnung-{uuid.uuid4().hex[:8]}")

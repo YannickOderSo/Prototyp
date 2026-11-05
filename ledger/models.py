@@ -26,8 +26,10 @@ class Kontakt(FirmaModel):
     kundennummer = models.CharField(max_length=50, blank=True)
     ist_unternehmen_extern = models.BooleanField(null=True, blank=True, help_text="Firma/Person laut Lexware (Hinweis)")
     archiviert = models.BooleanField(default=False)
+    adresse = models.TextField(blank=True, help_text="Rechnungsadresse laut Lexware (für Mahnschreiben der App)")
     # in der App gepflegt
     kundentyp = models.CharField(max_length=20, choices=Kundentyp.choices, default=Kundentyp.UNBEKANNT)
+    excel_nummer = models.CharField(max_length=50, blank=True, help_text="Kundennummer aus einem Excel-Import")
     mahnpause_bis = models.DateField(null=True, blank=True)
     notiz = models.TextField(blank=True)
     aktualisiert = models.DateTimeField(default=timezone.now)
@@ -75,6 +77,10 @@ class Beleg(FirmaModel):
 
     OFFENE_STATUS = (Status.OFFEN, Status.UEBERFAELLIG)
 
+    class Quelle(models.TextChoices):
+        LEXWARE = "lexware", "Lexware"
+        IMPORT = "import", "Import aus Excel"
+
     extern_id = models.CharField(max_length=100)
     art = models.CharField(max_length=20, choices=Art.choices, default=Art.RECHNUNG)
     nummer = models.CharField(max_length=50, blank=True)
@@ -94,6 +100,15 @@ class Beleg(FirmaModel):
     )
     mahnpause_bis = models.DateField(null=True, blank=True)
     mahnstufe = models.PositiveSmallIntegerField(default=0, help_text="Höchste versendete Stufe (0 = keine)")
+    # ADR-008: importierte Posten leben nur im Cockpit und sind vom Lexware-Abgleich ausgenommen
+    quelle = models.CharField(max_length=10, choices=Quelle.choices, default=Quelle.LEXWARE)
+    import_vorgang = models.ForeignKey(
+        "datenimport.ImportVorgang", null=True, blank=True, on_delete=models.SET_NULL, related_name="belege"
+    )
+
+    @property
+    def importiert(self) -> bool:
+        return self.quelle == self.Quelle.IMPORT
 
     class Meta:
         verbose_name_plural = "Belege"

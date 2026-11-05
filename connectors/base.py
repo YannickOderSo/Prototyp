@@ -72,6 +72,35 @@ class Contact:
     kundennummer: str = ""
     ist_unternehmen: bool | None = None
     archiviert: bool = False
+    adresse: str = ""
+
+
+@dataclass(frozen=True)
+class ContactDraft:
+    """Neuer Kunde für das Bestandstool (Import, ADR-008). Firma oder Person, nie beides."""
+
+    name: str
+    ist_firma: bool
+    vorname: str = ""
+    email: str = ""
+    strasse: str = ""
+    plz: str = ""
+    ort: str = ""
+    land: str = "DE"
+    telefon: str = ""
+    notiz: str = ""
+
+
+@dataclass(frozen=True)
+class ArticleDraft:
+    """Neuer Artikel für das Bestandstool (Import, ADR-008). Preis aus der Preisliste des Betriebs."""
+
+    bezeichnung: str
+    typ: Literal["PRODUCT", "SERVICE"]
+    einheit: str
+    netto: Decimal
+    steuersatz: Decimal
+    artikelnummer: str = ""
 
 
 @dataclass(frozen=True)
@@ -173,6 +202,10 @@ class AccountingConnector(Protocol):
     def get_contact(self, contact_id: str) -> Contact | None: ...
 
     def list_articles(self) -> Iterable[Article]: ...
+
+    def create_contact(self, draft: ContactDraft) -> str: ...
+
+    def create_article(self, draft: ArticleDraft) -> str: ...
 
     def create_invoice_draft(self, draft: InvoiceDraft) -> ExternalRef: ...
 

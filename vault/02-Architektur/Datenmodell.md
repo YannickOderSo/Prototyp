@@ -56,3 +56,9 @@ Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich �
 - **Prognose (C4):** erwarteter Eingang = Fälligkeit + durchschnittlicher Verzug des Kunden (kaufmännisch auf Tage gerundet, nie früher als die Fälligkeit). Vier Wochen ab heute. Liegt der erwartete Termin schon in der Vergangenheit, zählt der Posten als „überfällig, Termin unsicher“ und nicht in die Wochen.
 - **C6 (SOLL, umgesetzt):** Tage von Fälligkeit bis Zahlung je Zahlungsmonat, letzte 6 Monate, als Balken.
 - **Beleg.mahnstufe:** höchste versendete Stufe; in der App gepflegt (vom Versand gesetzt), für den Filter in C2.
+
+## Import aus Excel (M6, ADR-008)
+
+- **ImportVorgang** (App `datenimport`): firma, art (`kunden` | `artikel` | `posten`), status (`zuordnung` → `vorschau` → `freigegeben` → `fertig` | `fehler` | `verworfen`), dateiname, blatt, spalten, zeilen (gelesene Zellen als Text), zuordnung (Feld → Spaltennummer), standardwerte (z. B. Steuersatz), kundentyp_uebernehmen, vorschau (je Zeile `neu` | `dublette` | `fehler` mit Grund und Daten), ergebnis (je Zeile Lexware-ID bzw. Fehler, für Neuversuche ohne Doppelanlage), erstellt_von, freigegeben_von, freigegeben_am, loeschen_ab (7 Tage), zeilen_geloescht_am. Die Datei selbst wird nicht gespeichert.
+- **Kontakt** ergänzt: `adresse` (Rechnungsadresse aus Lexware, für Mahnschreiben der App) und `excel_nummer` (Kundennummer aus dem Excel-Import, nur für die Zuordnung offener Posten; Lexware vergibt eigene Nummern).
+- **Beleg** ergänzt: `quelle` (`lexware` | `import`) und `import_vorgang`. Importierte Posten haben `extern_id` = `import-<vorgang>-<zeile>`, werden vom Lexware-Abgleich nie verändert und ihr Zahlstatus wird im Cockpit gepflegt.
