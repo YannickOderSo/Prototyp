@@ -70,6 +70,8 @@ Jede Anforderung hat eine ID. Tickets und Tests referenzieren diese IDs. "MUSS" 
 | ID | Anforderung | Abnahmekriterium |
 | --- | --- | --- |
 | F1 MUSS | Wöchentlicher Liquiditätsbericht per Mail: eingegangen, überfällig, gemahnt, Prognose | Versand Montag zusammen mit der Sammelfreigabe |
+
+Umsetzung F1 (M4-01): Abschnitt der Sammelfreigabe-Mail und Seite „Berichte“. „Eingegangen“ = Bruttobetrag der in den letzten 7 Tagen vollständig bezahlten Rechnungen laut Lexware; Teilzahlungen auf offene Rechnungen zählen dort nicht mit (offene Frage). |  |  |
 | F2 MUSS | Protokoll aller Aktionen mit Außenwirkung (Freigabe, Versand, Entwurf angelegt, Einstellungen) mit Nutzer und Zeit; nur anhängend | Kein Update/Delete auf Protokolltabelle über die App |
 | F3 MUSS | Datenexport je Firma (CSV aller Vorschläge, Versände, Protokoll) | Inhaber kann jederzeit exportieren |
 | F4 MUSS | Health-Endpoint, strukturierte Logs, Fehlererfassung | Ausfall des Workers ist binnen 5 Minuten sichtbar |

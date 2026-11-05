@@ -7,5 +7,6 @@ urlpatterns = [
     path("posten/", include("ledger.urls")),
     path("mahnungen/", include("dunning.urls")),
     path("erfassen/", include("capture.urls")),
+    path("berichte/", include("reports.urls")),
     path("", include("web.urls")),
 ]

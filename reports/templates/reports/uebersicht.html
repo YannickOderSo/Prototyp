@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Berichte{% endblock %}
+{% block inhalt %}
+<h1>Wochenbericht</h1>
+<p class="leise">{{ b.von|date:"d.m." }} bis {{ b.bis|date:"d.m.Y" }}. Diesen Bericht erhalten Inhaber und Freigeber montags mit der Sammelfreigabe.</p>
+<section class="kennzahlen">
+  <div class="kennzahl"><div class="label">Eingegangen</div><div class="wert">{{ b.eingegangen_summe|euro }}</div><div class="label">{{ b.eingegangen_anzahl }} Rechnungen bezahlt</div></div>
+  <div class="kennzahl schlecht"><div class="label">Überfällig</div><div class="wert">{{ b.kennzahlen.summe_ueberfaellig|euro }}</div><div class="label">{{ b.kennzahlen.anzahl_ueberfaellig }} Posten</div></div>
+  <div class="kennzahl"><div class="label">Offen gesamt</div><div class="wert">{{ b.kennzahlen.summe_offen|euro }}</div></div>
+  <div class="kennzahl"><div class="label">Erwartet in 4 Wochen</div><div class="wert">{{ b.prognose.summe|euro }}</div></div>
+</section>
+<h2>Gemahnt</h2>
+<ul class="liste">{% for label, anzahl, summe in b.gemahnt %}<li><div class="zeile"><span>{{ label }}</span><span>{{ anzahl }}{% if anzahl %} · {{ summe|euro }}{% endif %}</span></div></li>{% endfor %}</ul>
+{% if request.mitgliedschaft.ist_inhaber %}{% url 'reports:export' as export_url %}{% if export_url %}<p><a class="knopf zweitrangig" href="{{ export_url }}">Daten exportieren (CSV)</a></p>{% endif %}{% endif %}
+{% endblock %}

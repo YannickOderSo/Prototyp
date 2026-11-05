@@ -12,6 +12,7 @@ NAVIGATION = [
     ("ledger:kunden", "Kunden", False),
     ("dunning:freigabe", "Mahnungen", True),
     ("capture:liste", "Erfassen", False),
+    ("reports:uebersicht", "Berichte", True),
     ("web:einstellungen", "Einstellungen", False),
 ]
 

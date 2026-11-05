@@ -54,7 +54,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 
 ## M4 Bericht, Onboarding, Härtung (ca. 8 PT)
 
-- [ ] **M4-01** Wochenbericht (F1).
+- [x] **M4-01** Wochenbericht (F1).
 - [ ] **M4-02** Export je Firma (F3) mit CSV-Injection-Schutz.
 - [ ] **M4-03** Onboarding-Assistent (F6).
 - [ ] **M4-04** Löschjobs nach Fristen.
