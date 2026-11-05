@@ -16,6 +16,7 @@ Regeln: ADR-007. Übernommene Stellen tragen im Code den Vermerk
 | Protokoll | neu gebaut | Belegfluss hat kein datenbankseitig geschütztes Protokoll |
 | TOTP und Fernet-Verschlüsselung | neu gebaut, Belegfluss gelesen | `belegfluss/web/portal/totp.py` und `krypto.py` nur als Orientierung für den Replay-Schutz gelesen; eigene Implementierung mit RFC-6238-Testvektoren und MultiFernet-Rotation |
 | Lexware-Connector | neu gebaut, Belegfluss gelesen | `belegfluss/lexware.py` zeigte Datumsformat und `shippingConditions` (service/serviceperiod); eigener Connector mit Protokoll, Token-Bucket, Fehlerklassen, Mahnungen, Webhooks und Decimal statt float |
+| Mahnautomatik (Recht, Vorschläge, Versand) | neu gebaut | Belegfluss hat kein Mahnwesen mit Verzugsrecht; `rechnen.py` im Portal wurde nicht übernommen, weil es zum eigenen Rechnungsprogramm gehört (ADR-001) |
 | Layout und CSS | neu gebaut | Eigene mobile Oberfläche; Landingpages und Styles aus Belegfluss werden nicht übernommen |
 
 ## Berichte
@@ -47,3 +48,18 @@ Regeln: ADR-007. Übernommene Stellen tragen im Code den Vermerk
 **Belegfluss:** Nichts übernommen. Gelesen wurden `lexware.py` (Datumsformat, `shippingConditions`), `totp.py` und `krypto.py` (Replay-Schutz, Fernet). Alles ist neu gebaut (Tabelle oben).
 
 **Neue offene Fragen:** Altersstruktur nach Tagen überfällig; Prognose ohne Posten mit Termin in der Vergangenheit; Token-Bucket je Prozess; Mahnung nur mit Textposition (Echtlauf). Alle mit Annahme in `05-Kontext/Offene-Fragen.md`.
+
+### Bericht M2 Mahnautomatik (5. November 2026)
+
+**Fertig:** M2-01 Mahnplan und Basiszins-Tabelle · M2-02 Verzugsbeginn, Zinsen, Pauschale als reine Funktionen · M2-03 täglicher Vorschlagslauf · M2-04 Freigabe-Ansicht mit Vorschau · M2-05 Versand-Job mit Frische-Check und Lexware-Mahnung · M2-06 E-Mail-Versand (Plattform oder eigenes SMTP), Zustellfehler · M2-07 Sammelfreigabe-Mail · M2-08 Pausen.
+
+**Tests:** 363 Tests, Gesamtabdeckung 94 %, `dunning` 95,2 % (Vorgabe 90 %), `dunning/recht.py` 100 %. Jede Zeile der Verzugstabelle und jede Zinsregel hat einen Tabellen-Test (Basiszinswechsel zum 1.1. und 1.7., Schaltjahr, Teilzahlung, fehlender Basiszins, unter 1 €, ROUND_HALF_UP). Die Meilenstein-Abnahme ist als Test `tests/dunning/test_abnahme_m2.py` umgesetzt: 20 präparierte Rechnungen ergeben exakt die erwarteten 11 Vorschläge und 2 Klärungsfälle; nach der Freigabe kommen 9 Mails mit den **von Hand gerechneten** Beträgen in Mailpit an, eine bezahlte Rechnung wird vom Frische-Check verworfen, eine geht in den Postversand.
+
+**Nur gegen Mocks getestet, Echtlauf nötig:**
+- Lexware: Mahnungsentwurf (`POST /v1/dunnings`), PDF-Abruf und Zahlstatus laufen gegen nachgebaute Antworten. Offen ist insbesondere, ob Lexware eine Mahnung mit nur einer Textposition annimmt und wie das PDF mit den 0-%-Positionen aussieht.
+- E-Mail: geprüft gegen Mailpit (lokal und in CI), nicht gegen einen echten EU-SMTP-Anbieter. Zustellbarkeit (SPF, DKIM, DMARC für die Plattformdomain) und Bounce-Format des Anbieters sind offen.
+- Die Rechtslogik ist nach dem Vault umgesetzt und getestet, aber nicht juristisch geprüft (M4-07).
+
+**Belegfluss:** nichts übernommen, alles neu gebaut.
+
+**Neue offene Fragen:** Zinsbeginn am Folgetag, 30-Tage-Frist ab dem späteren Datum aus Fälligkeit und Zugang, Zeile 4 der Verzugstabelle (Versand + 2), Privatkunde mit Hinweis und früher Erinnerung, Teilzahlungen im Verzugszeitraum, Pauschale in der 2. Mahnung, Bounce-Format des SMTP-Anbieters. Alle mit schuldnergünstiger Annahme in `05-Kontext/Offene-Fragen.md`.
