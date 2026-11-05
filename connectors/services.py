@@ -9,6 +9,7 @@ from audit.services import protokolliere
 from cockpit.krypto import entschluesseln, verschluesseln
 
 from .base import AccountingConnector
+from .demo import DEMO_ORGANISATION
 from .fehler import ConnectorFehler
 from .lexware import LexwareConnector
 from .models import Verbindung
@@ -17,6 +18,11 @@ from .models import Verbindung
 def connector_fuer(verbindung: Verbindung) -> AccountingConnector:
     if verbindung.typ != Verbindung.Typ.LEXWARE:
         raise NotImplementedError("sevdesk folgt in M5")
+    if settings.DEBUG and verbindung.organisation_id == DEMO_ORGANISATION:
+        # Nur lokale Demo (manage.py demo_daten): keine Anfrage nach außen
+        from .demo import DemoConnector
+
+        return DemoConnector(verbindung.firma)
     return LexwareConnector(entschluesseln(verbindung.schluessel_verschluesselt), basis_url=settings.LEXWARE_BASIS_URL)
 
 

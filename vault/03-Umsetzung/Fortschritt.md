@@ -147,6 +147,12 @@ Alle Tickets M0-01 bis M4-07 sind abgehakt. Die CI prüft:
 
 Das Betriebshandbuch liegt in [[Betriebshandbuch]], die Prüfliste für das Team in [[Pruefliste-Team]].
 
+**Lokale Demo:**
+- Start mit `manage.py demo_daten`, Anleitung in der README.
+- Angelegt werden eine Demo-Firma, Rechnungen in allen Altersstufen, die heutigen Mahnvorschläge und eine Erfassung in der Prüfansicht.
+- Der Demo-Connector (`connectors/demo.py`) wird nur mit `DJANGO_DEBUG=true` und nur für die Demo-Verbindung verwendet. Er arbeitet ausschließlich auf der eigenen Datenbank und sendet keine Anfrage nach außen; ein Test prüft das. Freigegebene Mahnungen gehen so lokal als Mail mit Demo-PDF an Mailpit.
+- Neue Sprachmemos oder Uploads brauchen in der Demo echte Mistral- und AWS-Zugänge, sonst enden sie mit „Fehler“.
+
 **Definition of Done (00-Start-hier.md), Punkt für Punkt:**
 
 | Punkt | Stand |

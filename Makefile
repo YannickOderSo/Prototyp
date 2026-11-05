@@ -1,5 +1,5 @@
 # Häufige Kommandos. Voraussetzung: uv (https://docs.astral.sh/uv/) und für "dev" Docker Compose.
-.PHONY: dev down test test-cov lint format typecheck migrations-check e2e check
+.PHONY: dev down demo test test-cov lint format typecheck migrations-check e2e check
 
 UV ?= uv
 
@@ -8,6 +8,9 @@ dev:            ## Postgres, Web, Worker und Mailpit lokal starten
 
 down:
 	docker compose down
+
+demo:           ## Demo-Daten in den laufenden Stack laden (nach "make dev", einmalig)
+	docker compose exec web python manage.py demo_daten
 
 test:           ## Alle Tests außer Playwright
 	$(UV) run pytest -m "not e2e"
