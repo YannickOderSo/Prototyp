@@ -17,4 +17,6 @@ AUSNAHMEN: dict[str, str] = {
 
 def beispielmodelle() -> list[tuple[type, Callable]]:
     """Modelle mit FirmaManager und je eine Fabrik (für den Manager-Test)."""
-    return []
+    from connectors.models import Verbindung
+
+    return [(Verbindung, lambda firma: Verbindung.objects.create(firma=firma))]

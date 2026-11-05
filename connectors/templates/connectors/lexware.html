@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titel %}Lexware verbinden{% endblock %}
+{% block inhalt %}
+<h1>Lexware Office</h1>
+{% if verbindung and verbindung.aktiv %}
+<div class="karte">
+  <p><span class="marke-status gut">verbunden</span> mit <strong>{{ verbindung.firmenname_extern }}</strong></p>
+  <p class="leise">
+    {% if verbindung.erstimport_fertig %}Letzter Abgleich: {{ verbindung.letzter_abgleich|date:"d.m.Y H:i" }} Uhr
+    {% else %}Der Erstimport läuft. Ihre offenen Posten erscheinen in wenigen Minuten im Cockpit.{% endif %}
+  </p>
+  {% if verbindung.fehler %}<p class="meldung warnung">{{ verbindung.fehler }}</p>{% endif %}
+  <form method="post" action="{% url 'connectors:lexware_trennen' %}">
+    {% csrf_token %}
+    <button type="submit" class="zweitrangig" data-bestaetigen="Verbindung zu Lexware wirklich trennen?">Verbindung trennen</button>
+  </form>
+</div>
+<h2>Schlüssel erneuern</h2>
+{% elif verbindung and verbindung.status == "getrennt" %}
+<p class="meldung warnung">Die Verbindung ist getrennt{% if verbindung.fehler %} ({{ verbindung.fehler }}){% endif %}. Bitte hinterlegen Sie einen neuen Schlüssel.</p>
+{% else %}
+<p>Verbinden Sie das Cockpit mit Ihrem Lexware-Office-Konto. Das Cockpit liest offene Rechnungen, Kontakte und Artikel und legt in Lexware nur Entwürfe an. Rechnungen schließen Sie wie gewohnt in Lexware ab.</p>
+{% endif %}
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Schlüssel prüfen und speichern</button></div>
+</form>
+{% endblock %}

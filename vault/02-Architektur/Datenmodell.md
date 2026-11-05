@@ -14,7 +14,7 @@ Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich �
 
 ## Anbindung
 
-- **Verbindung**: firma, typ (`lexware` | `sevdesk`), schluessel_verschluesselt, status, letzter_abgleich, webhook_ids[], fehler
+- **Verbindung**: firma, typ (`lexware` | `sevdesk`), schluessel_verschluesselt, status, letzter_abgleich, webhook_ids[], fehler (umgesetzt in M1-06, ergänzt um firmenname_extern, organisation_id, steuerart, kleinunternehmer aus `/v1/profile`, erstimport_fertig, webhook_token für die Callback-URL, getrennt_am; eine Verbindung je Firma und Typ; ein Schlüssel eines anderen Lexware-Kontos wird abgelehnt, solange die alte Verbindung besteht)
 - **WebhookEreignis**: verbindung, event_typ, resource_id, empfangen_am, verarbeitet_am, rohdaten (JSON) — für Idempotenz eindeutig auf (verbindung, event_id oder resource_id+zeitstempel)
 
 ## Spiegel (aus dem Bestandstool, schreibgeschützt in der App)

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titel %}Einstellungen{% endblock %}
+{% block inhalt %}
+<h1>Einstellungen</h1>
+<ul class="liste">
+  {% if ist_inhaber %}
+  <li><a href="{% url 'connectors:lexware' %}"><strong>Lexware Office</strong></a><span class="neben">API-Schlüssel, Abgleich</span></li>
+  <li><a href="{% url 'accounts:team' %}"><strong>Team</strong></a><span class="neben">Inhaber, Freigeber, Mitarbeiter</span></li>
+  {% endif %}
+  <li><a href="{% url 'accounts:sicherheit' %}"><strong>Sicherheit</strong></a><span class="neben">Zwei-Faktor-Anmeldung, Wiederherstellungscodes</span></li>
+</ul>
+{% if form %}
+<h2>Firmendaten für Erinnerungen und Mahnungen</h2>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Speichern</button></div>
+</form>
+{% endif %}
+<form method="post" action="{% url 'accounts:logout' %}" class="knopfreihe">
+  {% csrf_token %}<button type="submit" class="zweitrangig">Abmelden</button>
+</form>
+{% endblock %}

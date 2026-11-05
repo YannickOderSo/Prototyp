@@ -6,5 +6,6 @@ app_name = "web"
 
 urlpatterns = [
     path("", views.start, name="start"),
+    path("einstellungen/", views.einstellungen, name="einstellungen"),
     path("rechtliches/<slug:slug>/", views.rechtstext, name="rechtstext"),
 ]
