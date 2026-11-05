@@ -38,6 +38,13 @@ Implementiere als reine Funktion `verzugsbeginn(beleg, kontakt, versaende) -> da
 
 Kalendermäßig bestimmte Zahlungstermine (§ 286 Abs. 2 Nr. 1) werden **nicht** automatisch angenommen, weil ein einseitig auf die Rechnung gedrucktes Datum dafür in der Regel nicht reicht.
 
+**Umsetzung (M2-02, `dunning/recht.py`), Auslegungen zugunsten des Schuldners:**
+- Die 30 Tage nach § 286 Abs. 3 laufen ab dem späteren Datum aus Fälligkeit und Zugang (Belegdatum + 3 Tage). Bei üblichen Zahlungszielen ist das die Fälligkeit, bei sofort fälligen Rechnungen der Zugang.
+- Zeile 4 wird wörtlich gelesen: „Zugang Stufe 0 + 1 Tag“ = Versanddatum + 2 Tage (einen Tag später als Zeile 3).
+- Beim Privatkunden mit Verzugshinweis zählt eine frühere Erinnerung nicht (die Tabelle nennt dafür keine Zeile).
+- Ein Schreiben am Fälligkeitstag ist keine Mahnung „nach Fälligkeit“.
+- Zinsen laufen ab dem Tag **nach** dem Verzugsbeginn bis einschließlich Stichtag (§ 187 Abs. 1 BGB entsprechend). Pauschale ebenfalls erst ab dem Folgetag.
+
 ## Verzugszinsen (§ 288 BGB)
 
 - Satz: Basiszins + **5** Prozentpunkte bei Privatkunden, + **9** Prozentpunkte bei Unternehmern (Entgeltforderung).
@@ -45,6 +52,7 @@ Kalendermäßig bestimmte Zahlungstermine (§ 286 Abs. 2 Nr. 1) werden **nicht**
 - Zinsen werden in der Mahnung **ausgewiesen**, aber nicht auf die Rechnung gebucht.
 - Zinsen unter 1,00 € werden nicht ausgewiesen.
 - Firma kann Zinsen abschalten (viele Handwerker wollen Kunden nicht verärgern). Standard: Stufe 1 und 2 an, Stufe 0 immer aus.
+- Umsetzung (M2-02): Abschnitte je Basiszins-Halbjahr und Kalenderjahr, jeder Abschnitt auf Cent gerundet (ROUND_HALF_UP), Summe der Abschnitte ist der ausgewiesene Betrag; die Zeilen erscheinen als Berechnungsgrundlage in Mail und Lexware-Mahnung. Teilzahlungen: Zinsen auf den aktuell offenen Betrag für den ganzen Zeitraum (nie mehr als geschuldet). Ein Basiszins gilt höchstens bis zum nächsten 1.1. bzw. 1.7.; ist der Folgewert nicht gepflegt, gibt es keine Zinsen und einen Hinweis.
 
 ### Basiszins-Tabelle (Startwerte, vor Go-live mit Bundesbank abgleichen)
 
@@ -60,7 +68,7 @@ Quelle für den aktuellen Wert: Bundesbank-Pressemitteilung vom 30.06.2026. Die 
 ## Pauschale (§ 288 Abs. 5 BGB)
 
 - 40 € **nur** bei Unternehmern und nur wenn Verzug besteht.
-- Einmal je Forderung, nicht je Mahnstufe.
+- Einmal je Forderung, nicht je Mahnstufe. Umsetzung: Die Pauschale steht in der ersten Mahnung, bei der Verzug besteht; spätere Stufen weisen sie nicht erneut aus (Hinweis im Vorschlag).
 - Auch bei Abschlagsrechnungen zulässig.
 - Bei Privatkunden **nie** eine Pauschale und keine pauschalen "Mahngebühren".
 
