@@ -20,6 +20,8 @@ Regeln: ADR-007. Übernommene Stellen tragen im Code den Vermerk
 | CSV-Zeiterfassung (`capture/aufbereitung.py`) | **teilweise übernommen** | Aus `belegfluss/quellen.py` nur die Zuordnung der Spaltennamen gängiger Exporte (Clockify, Toggl, Harvest), mit Vermerk im Code. Begründung nach ADR-007: klar abgegrenzt, Fachwissen über Exportformate, passt ohne Umbau, vorher eigene Tests (`tests/capture/test_aufbereitung.py`). Parser (Dezimalkomma, hh:mm:ss, fehlerhafte Zeilen), Summen und Zeitraum sind neu gebaut |
 | Regel-Engine Erfassung (`capture/rules.py`) | neu gebaut, Belegfluss gelesen | `belegfluss/regeln.py` arbeitet mit einer Preisliste aus einer Konfigurationsdatei und übernimmt genannte Preise aus Quellen; beides widerspricht E4/E5 und passt nicht zum Spiegel. Gelesen für die Idee „Mehraufwand gegenüber Angebot“ und den Abgleich mit der Zeiterfassung; Code neu |
 | Layout und CSS | neu gebaut | Eigene mobile Oberfläche; Landingpages und Styles aus Belegfluss werden nicht übernommen |
+| Betrieb: Produktions-Compose, Sicherung, Ausrollen, Health, Löschfristen | neu gebaut | ADR-007 schließt die Deploy-Skripte aus Belegfluss aus; Caddy-Stack, App-Rolle ohne TRUNCATE, restic-Skripte, Release per Tag, `/healthz` und Löschjob sind eigene Arbeit nach Sicherheit-Datenschutz-Betrieb.md |
+| Wochenbericht, Export, Onboarding | neu gebaut | Kein Gegenstück in Belegfluss |
 
 ## Berichte
 
@@ -82,3 +84,100 @@ Regeln: ADR-007. Übernommene Stellen tragen im Code den Vermerk
 **Belegfluss:** Aus `belegfluss/quellen.py` ist die Zuordnung der Spaltennamen von Zeiterfassungs-Exporten übernommen (Vermerk im Code und Commit, vorher eigene Tests). `regeln.py`, `extraktion.py` und `lexware.py` wurden nur gelesen; der Belegfluss-Pfad zur Anthropic-API außerhalb der EU und die Übernahme genannter Preise aus Quellen wurden bewusst **nicht** übernommen (ADR-005, E4).
 
 **Neue offene Fragen:** EU-Profil-ID auf Bedrock Mantle; Mailserver und authserv-id für das Belegpostfach; Alignment ohne Public-Suffix-Liste; möglicher zweiter Lexware-Entwurf, wenn eine Antwort verloren geht.
+
+### Bericht M4 Bericht, Onboarding, Härtung (5. November 2026)
+
+**Fertig:**
+- M4-01 Wochenbericht in der Sammelmail und Seite „Berichte“.
+- M4-02 Export je Firma als ZIP mit CSV-Injection-Schutz, auch als `manage.py firma_export`.
+- M4-03 Einrichtungs-Assistent mit vier Schritten und Probelauf ohne Speichern und ohne Versand.
+- M4-04 Täglicher Löschjob nach allen Fristen, dazu `manage.py firma_loeschen`.
+- M4-05 Produktions-Stack:
+  - Caddy mit HTTPS,
+  - App-Rolle ohne TRUNCATE, ohne DDL und ohne UPDATE auf das Protokoll,
+  - restic-Sicherung, Restore-Probe und Wiederherstellung,
+  - `/healthz`, Fehlererfassung nur in der EU,
+  - Smoke-Test des kompletten Stacks in der CI, Release per Tag.
+- M4-06 Betriebshandbuch, dazu `basiszins_setzen`, `schluessel_rotieren` und `DJANGO_SECRET_KEY_FALLBACKS`.
+- M4-07 Prüfliste für das Team, dazu Systemcheck `cockpit.W001` gegen Platzhalter-Rechtstexte.
+- Außerdem: Playwright-Tests der drei Hauptabläufe auf 390 × 844.
+
+**Tests:**
+- 643 Tests, davon 3 Playwright-Tests.
+- Abdeckung: gesamt 95 %, `dunning` 95,3 %, `capture/rules.py` 98,7 % (Vorgabe jeweils 90 %).
+- Neu abgedeckt:
+  - Löschfristen mit Mandantentrennung und Protokoll nach 8 Jahren gegen den echten Trigger.
+  - Rechte der App-Rolle gegen echtes Postgres: TRUNCATE, DDL und UPDATE auf das Protokoll werden abgewiesen.
+  - Sicherung, Restore-Probe und Wiederherstellung gegen echtes Postgres mit nachgebautem restic.
+  - Health-Endpoint, darunter der Worker-Ausfall binnen 5 Minuten.
+  - Bereinigung der Fehlerereignisse, EU-Systemcheck für die Fehlererfassung, Rotation der Fernet-Schlüssel, Pflege des Basiszinses.
+- Die Playwright-Tests melden sich über die Oberfläche mit TOTP an und prüfen auf jeder Seite, dass es kein horizontales Scrollen gibt.
+- `scripts/prod_smoke.sh` startet das Produktions-Compose mit dem gebauten Image. Er lief lokal und in der CI grün. Geprüft werden:
+  - Rollen-Init, Migration als Eigentümer, Betrieb als App-Rolle,
+  - HTTPS über Caddy, Sicherheitsheader, Formular-POST mit CSRF hinter dem Proxy,
+  - kein TRUNCATE für die App-Rolle,
+  - Sicherung und Restore-Probe mit **echtem** restic in ein lokales Repository.
+
+**Nur gegen Mocks oder lokal getestet, Echtlauf nötig:**
+- Die drei Playwright-Abläufe laufen gegen nachgebautes Lexware, Mistral und Bedrock. Die Jobs führt der Test aus, nicht ein eigener Worker-Prozess.
+- Der Produktions-Stack lief nur lokal und in der CI, nicht auf einem Hetzner-Server:
+  - Caddy nutzte die interne Zertifizierungsstelle für `localhost`, nicht Let's Encrypt.
+  - restic sicherte in ein lokales Repository, nicht auf die Storage Box per SFTP.
+  - Der Deploy-Job per SSH in `release.yml` lief noch nie.
+- Fehlererfassung: Die Bereinigung ist getestet, ein echtes Senden an GlitchTip oder Sentry nicht.
+- Der Uptime-Check von außen ist nicht eingerichtet.
+
+**Belegfluss:** In M4 nichts übernommen. Deploy-Skripte und Landingpages aus Belegfluss sind nach ADR-007 ausgeschlossen. Betrieb, Löschfristen, Export, Wochenbericht und Onboarding sind neu gebaut.
+
+**Neue offene Fragen:**
+- Werden Mahnvorschläge und Versände mit den Spiegeldaten gelöscht? Annahme: ja.
+- Fristen für technische Reste (Jobs, Webhook-Ereignisse, Postfach-Eingänge).
+- Nutzer nach der Löschung einer Firma: deaktiviert, bleiben als Bezug des Protokolls.
+- Teilzahlungen im Wochenbericht.
+- Eine Sammelaktion „Firmenkunden als Unternehmer markieren“ wurde verworfen. Mahnlogik-und-Recht.md verbietet, den Lexware-Hinweis Firma/Person zu übernehmen.
+
+## Abschluss MVP M0–M4 (5. November 2026)
+
+Alle Tickets M0-01 bis M4-07 sind abgehakt. Die CI prüft:
+- Ruff, mypy und Migrations-Check,
+- `check --deploy`,
+- pytest mit Postgres und Mailpit, Abdeckungsgrenzen,
+- Playwright,
+- Docker-Build und Smoke-Test des Produktions-Stacks.
+
+Das Betriebshandbuch liegt in [[Betriebshandbuch]], die Prüfliste für das Team in [[Pruefliste-Team]].
+
+**Definition of Done (00-Start-hier.md), Punkt für Punkt:**
+
+| Punkt | Stand |
+| --- | --- |
+| Pilot mit Lexware Office XL kann sich anmelden | erfüllt: Einladung, Registrierung und Pflicht-2FA mit Tests; die Anmeldung mit TOTP-Code läuft auch in allen drei Playwright-Tests |
+| hinterlegt seinen Lexware-Schlüssel | erfüllt gegen nachgebaute API; **offen für Echtlauf** |
+| sieht binnen 2 Minuten seine offenen Posten nach Alter | erfüllt gegen nachgebaute API (Erstimport, Altersstruktur); Dauer mit echtem Konto **offen für Echtlauf** |
+| gibt montags die Vorschläge frei | erfüllt: Vorschlagslauf 5 Uhr, Sammelmail montags 7 Uhr, Freigabe nur angemeldet mit 2FA durch Inhaber/Freigeber |
+| Mails gehen korrekt mit PDF an die Kunden | erfüllt gegen nachgebaute Lexware-PDFs, locmem und Mailpit; echter SMTP-Anbieter **offen für Echtlauf** |
+| Sprachmemo aufnehmen → Rechnungsentwurf in Lexware | erfüllt mit Fake-Mikrofon, nachgebautem Mistral, Bedrock und Lexware; **offen für Echtlauf** |
+| alles ist protokolliert | erfüllt: Protokoll mit Datenbank-Trigger, jeder Schritt mit Außenwirkung, Export |
+| läuft auf einem Server in Deutschland | Stack fertig und lokal und in der CI geprüft; Server **offen für Echtlauf** |
+| mit automatischen Tests abgedeckt | erfüllt: 643 Tests, Abdeckung 95 % |
+
+**Offen für Echtlauf** (Details und Reihenfolge im Betriebshandbuch, Abschnitt 10):
+1. Hetzner-Server und Storage Box, Domain und Let's Encrypt. Erste echte Sicherung und Restore-Probe auf dem Server. Deploy-Job per Tag mit hinterlegten Zugangsdaten.
+2. Lexware Office XL eines Piloten. Prüfen:
+   - Erstimport unter 2 Minuten mit echten Datenmengen,
+   - Webhook-Zustellung und Signatur,
+   - Nachtabgleich,
+   - Annahme der Mahnung mit nur einer Textposition,
+   - Entwürfe bleiben Entwurf (`finalize` wird nie gesendet; die Tests prüfen das für alle Anfragen).
+3. Amazon Bedrock in `eu-central-1`:
+   - Modellzugang und genaue ID des EU-Inferenzprofils klären,
+   - `manage.py ki_testfaelle` mit echten Schlüsseln laufen lassen.
+4. Mistral-Transkription mit echten Sprachmemos (Dialekt, Zahlen).
+5. EU-SMTP-Anbieter auswählen (ADR), SPF, DKIM und DMARC einrichten. Adapter für dessen Bounce-Format schreiben.
+6. Mailanbieter für das Belegpostfach mit Plus-Adressen und authserv-id.
+7. Fehlererfassung (GlitchTip oder Sentry EU) und Uptime-Check von außen.
+8. Die Prüfliste für das Team abarbeiten:
+   - Rechtstexte statt Platzhaltern,
+   - AVV und Verträge mit Unterauftragsverarbeitern,
+   - Prüfung von Mahntexten und Zinslogik durch Anwalt und Steuerberater,
+   - Versicherung.
