@@ -99,8 +99,8 @@ Rückmeldung von Lukas, Umfang am 5. November 2026 von Yannick entschieden: Die 
 Wunsch von Lukas, Entscheidung von Yannick am 5. November 2026: Live-Gespräch, im Pilot für alle einschaltbar. Echte Anrufe erst nach SIP-Trunk, Asterisk-Installation und rechtlicher Prüfung (ADR-010).
 
 - [x] **M8-01** Spezifikation J1–J8, ADR-010, Tickets.
-- [ ] **M8-02** Modelle und Gesprächsführung mit Pflichtansage, Grenzen, Ausfallbetrieb und Rückruf-Notiz (J1–J4).
-- [ ] **M8-03** Rückruf-Notizen, Einstellungen, Benachrichtigung, Navigation, Löschfristen (J5, J8).
-- [ ] **M8-04** Testanruf im Browser (J6).
+- [x] **M8-02** Modelle und Gesprächsführung mit Pflichtansage, Grenzen, Ausfallbetrieb und Rückruf-Notiz (J1–J4).
+- [x] **M8-03** Rückruf-Notizen, Einstellungen, Benachrichtigung, Navigation, Löschfristen (J5, J8).
+- [x] **M8-04** Testanruf im Browser (J6).
 - [ ] **M8-05** Telefonie: Anmeldung durch Asterisk, AudioSocket-Dienst, Spracherkennung und Sprachausgabe, Betriebshandbuch (J7).
 - [ ] **M8-06** Kostenkalkulation Telefonassistent, Vault, Demo, Go-Live-Checkliste.

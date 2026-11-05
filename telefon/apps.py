@@ -1,0 +1,7 @@
+from django.apps import AppConfig
+
+
+class TelefonConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "telefon"
+    verbose_name = "KI-Telefonassistent"

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "capture",
     "reports",
     "datenimport",
+    "telefon",
     "web",
 ]
 
@@ -178,6 +179,13 @@ MISTRAL_MODELL = env.str("MISTRAL_MODELL", default="voxtral-mini-latest")
 BEDROCK_REGION = env.str("BEDROCK_REGION", default="eu-central-1")
 # EU-Inferenzprofil (Präfix "eu."): Routing nur innerhalb der EU. "global." und "us." blockiert ein Systemcheck.
 BEDROCK_MODELL = env.str("BEDROCK_MODELL", default="eu.anthropic.claude-sonnet-5-5")
+# KI-Telefonassistent (ADR-010): eigenes Modell möglich (schnellere Antworten); leer = BEDROCK_MODELL
+TELEFON_MODELL = env.str("TELEFON_MODELL", default="")
+TELEFON_ASTERISK_TOKEN = env.str("TELEFON_ASTERISK_TOKEN", default="")
+TELEFON_AUDIOSOCKET_HOST = env.str("TELEFON_AUDIOSOCKET_HOST", default="127.0.0.1")
+TELEFON_AUDIOSOCKET_PORT = env.int("TELEFON_AUDIOSOCKET_PORT", default=9092)
+PIPER_BEFEHL = env.str("PIPER_BEFEHL", default="piper")
+PIPER_MODELL = env.str("PIPER_MODELL", default="")
 
 # Belegpostfach (E2): Sammelpostfach mit Plus-Adressen je Firma, Abruf per IMAP (TLS)
 BELEGPOSTFACH_ADRESSE = env.str("BELEGPOSTFACH_ADRESSE", default="")  # z. B. belege@cockpit.example

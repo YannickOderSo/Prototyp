@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Rückruf{% endblock %}
+{% block inhalt %}
+<p><a href="{% url 'telefon:rueckrufe' %}">← Rückrufe</a></p>
+<h1>{{ r.name|default:"Unbekannter Anrufer" }}</h1>
+<p class="leise">{% if r.gespraech %}{{ r.gespraech.get_kanal_display }}{% else %}Anruf{% endif %} vom {{ r.erstellt|date:"d.m.Y" }} um {{ r.erstellt|date:"H:i" }} Uhr{% if r.test %} · <span class="marke-status">Test</span>{% endif %} · <span class="marke-status{% if r.status == 'erledigt' %} gut{% endif %}">{{ r.get_status_display }}</span></p>
+<section class="kennzahlen">
+  <div class="kennzahl"><div class="label">Rückrufnummer</div><div class="wert">{% if r.rueckrufnummer %}<a href="tel:{{ r.rueckrufnummer }}">{{ r.rueckrufnummer }}</a>{% else %}–{% endif %}</div></div>
+  <div class="kennzahl{% if r.dringlichkeit == 'dringend' %} schlecht{% endif %}"><div class="label">Dringlichkeit</div><div class="wert">{{ r.get_dringlichkeit_display }}</div></div>
+  <div class="kennzahl"><div class="label">Beste Zeit</div><div class="wert">{{ r.beste_zeit|default:"–" }}</div></div>
+  <div class="kennzahl"><div class="label">Kunde in Lexware</div><div class="wert">{% if r.kontakt %}<a href="{% url 'ledger:kunde' r.kontakt.pk %}">{{ r.kontakt.name }}</a>{% else %}–{% endif %}</div></div>
+</section>
+<section class="karte"><h2>Anliegen</h2><p>{{ r.anliegen|linebreaksbr }}</p>
+  {% if r.gespraech.ausfallbetrieb %}<p class="hilfe">Ohne KI aufgenommen (Ausfallbetrieb): Das Anliegen steht im Wortlaut des Anrufers da.</p>{% endif %}</section>
+{% if r.gespraech and r.gespraech.verlauf %}
+<details class="karte"><summary>Gesprächsverlauf ({{ r.gespraech.verlauf|length }} Beiträge)</summary>
+  <ul class="liste">{% for e in r.gespraech.verlauf %}<li><div class="neben">{% if e.rolle == "assistent" %}Assistent{% else %}Anrufer{% endif %}</div><div>{{ e.text }}</div></li>{% endfor %}</ul>
+  <p class="hilfe">Der Verlauf wird 90 Tage nach dem Gespräch gelöscht. Audio wird nie gespeichert.</p>
+</details>
+{% endif %}
+<form method="post" action="{% url 'telefon:erledigt' r.pk %}" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe">{% if r.status == "offen" %}<button type="submit">{% icon "circle-check" %}Als erledigt markieren</button>{% else %}<button type="submit" name="aktion" value="wieder_oeffnen" class="zweitrangig">Wieder öffnen</button>{% endif %}</div>
+</form>
+{% endblock %}

@@ -16,6 +16,7 @@ NAVIGATION = [
     ("ledger:posten", "Offene Posten", "Posten", "receipt-text", False),
     ("ledger:kunden", "Kunden", "Kunden", "users", False),
     ("dunning:freigabe", "Mahnungen", "Mahnungen", "send", True),
+    ("telefon:rueckrufe", "Rückrufe", "Rückrufe", "phone-incoming", False),
     ("reports:uebersicht", "Statistik", "Statistik", "chart-column", True),
     ("web:einstellungen", "Einstellungen", "Einstellungen", "settings", False),
 ]
@@ -30,7 +31,12 @@ def _zaehler(request: HttpRequest, darf_freigeben: bool) -> dict[str, int]:
     from dunning.models import Mahnvorschlag
 
     firma = request.firma  # type: ignore[attr-defined]
-    zaehler = {"capture:liste": Erfassung.objects.fuer(firma).filter(status=Erfassung.Status.PRUEFUNG).count()}
+    from telefon.models import Rueckruf
+
+    zaehler = {
+        "capture:liste": Erfassung.objects.fuer(firma).filter(status=Erfassung.Status.PRUEFUNG).count(),
+        "telefon:rueckrufe": Rueckruf.objects.fuer(firma).filter(status=Rueckruf.Status.OFFEN, test=False).count(),
+    }
     if darf_freigeben:
         from dunning.models import Angebotserinnerung
 

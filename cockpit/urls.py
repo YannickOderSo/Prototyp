@@ -12,5 +12,6 @@ urlpatterns = [
     path("erfassen/", include("capture.urls")),
     path("berichte/", include("reports.urls")),
     path("import/", include("datenimport.urls")),
+    path("telefon/", include("telefon.urls")),
     path("", include("web.urls")),
 ]

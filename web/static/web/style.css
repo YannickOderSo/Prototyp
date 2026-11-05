@@ -530,6 +530,13 @@ details.meldung > summary { min-height: 0; padding: 0; color: var(--grau-800); f
 details.meldung[open] > summary { margin-bottom: 8px; }
 details.meldung p, details.meldung ul { margin: 0 0 8px; }
 
+/* Testanruf: Gesprächsverlauf als Sprechblasen */
+.chat { list-style: none; margin: 8px 0 16px; padding: 0; display: grid; gap: 8px; }
+.chat li { max-width: 85%; padding: 10px 14px; border-radius: 14px; line-height: 1.45; font-size: 0.9375rem; }
+.chat-assistent { background: var(--primaer-50); border: 1px solid var(--primaer-100); justify-self: start; border-bottom-left-radius: 4px; }
+.chat-anrufer { background: var(--grau-100); justify-self: end; border-bottom-right-radius: 4px; }
+.ta-eingabe input[type="text"] { flex: 1 1 200px; width: auto; }
+
 /* Großer Einstieg „Neu erstellen“ */
 .einstieg { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
 .einstieg h2 { margin: 0 0 4px; }

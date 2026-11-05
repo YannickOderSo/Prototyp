@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Rückrufe{% endblock %}
+{% block inhalt %}
+<h1>Rückrufe</h1>
+<p>Anrufe, die der Telefonassistent für Sie angenommen hat. Wer zurückgerufen hat, markiert den Rückruf als erledigt.</p>
+{% if not einstellung or not einstellung.aktiv %}
+<div class="meldung warnung">Der Telefonassistent ist noch nicht eingeschaltet.
+  {% if request.mitgliedschaft.ist_inhaber %}<a class="knopf" href="{% url 'telefon:einstellungen' %}">Einrichten</a>{% endif %}
+  <a class="knopf zweitrangig" href="{% url 'telefon:testanruf' %}">Testanruf im Browser</a></div>
+{% endif %}
+<h2>Offen ({{ offen|length }})</h2>
+<ul class="liste">
+  {% for r in offen %}
+  <li><div class="zeile"><strong><a href="{% url 'telefon:rueckruf' r.pk %}">{{ r.name|default:"Unbekannter Anrufer" }}</a></strong>
+      <span>{% if r.test %}<span class="marke-status">Test</span> {% endif %}<span class="marke-status{% if r.dringlichkeit == 'dringend' %} schlecht{% elif r.dringlichkeit == 'normal' %} warnung{% endif %}">{{ r.get_dringlichkeit_display }}</span></span></div>
+    <div class="neben">{{ r.anliegen|truncatechars:120 }}</div>
+    <div class="zeile neben"><span>{% if r.rueckrufnummer %}<a href="tel:{{ r.rueckrufnummer }}">{% icon "phone" %} {{ r.rueckrufnummer }}</a>{% else %}keine Nummer{% endif %}{% if r.beste_zeit %} · am besten {{ r.beste_zeit }}{% endif %}</span><span>{{ r.erstellt|date:"d.m.Y H:i" }}</span></div></li>
+  {% empty %}<li class="neben">Keine offenen Rückrufe.</li>{% endfor %}
+</ul>
+{% if erledigt %}
+<h2>Zuletzt erledigt</h2>
+<ul class="liste">
+  {% for r in erledigt %}
+  <li><div class="zeile"><a href="{% url 'telefon:rueckruf' r.pk %}">{{ r.name|default:r.rueckrufnummer|default:"Anrufer" }}</a><span class="neben">{{ r.erledigt_am|date:"d.m.Y" }}{% if r.erledigt_von %} · {{ r.erledigt_von.anzeigename }}{% endif %}</span></div></li>
+  {% endfor %}
+</ul>
+{% endif %}
+<p class="knopfreihe"><a class="knopf zweitrangig" href="{% url 'telefon:testanruf' %}">{% icon "phone-call" %}Testanruf im Browser</a>{% if request.mitgliedschaft.ist_inhaber %}<a class="knopf zweitrangig" href="{% url 'telefon:einstellungen' %}">{% icon "settings" %}Einstellungen</a>{% endif %}</p>
+{% endblock %}

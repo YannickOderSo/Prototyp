@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Telefonassistent{% endblock %}
+{% block inhalt %}
+<h1>KI-Telefonassistent</h1>
+<p>Verpasste Anrufe nimmt ein digitaler Assistent an. Er fragt Name, Anliegen, Rückrufnummer und Dringlichkeit ab und legt eine Rückruf-Notiz an. Er sagt keine Termine zu und nennt keine Preise.</p>
+<div class="meldung warnung"><strong>Pilot:</strong> Echte Anrufe sind möglich, sobald das Belegfluss-Team Ihnen eine Rufnummer zugeteilt hat. Bis dahin können Sie den Assistenten im Browser testen. <a class="knopf" href="{% url 'telefon:testanruf' %}">Testanruf</a></div>
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <div class="knopfreihe"><button type="submit">Speichern</button></div>
+</form>
+<section class="karte">
+  <h2>So meldet sich der Assistent</h2>
+  <div class="mailtext">{{ ansage }}</div>
+  <p class="hilfe">Der Hinweis auf den digitalen Assistenten, die Umwandlung in Text und die 112 gehört immer dazu und lässt sich nicht entfernen.</p>
+</section>
+<section class="karte">
+  <h2>Rufumleitung einrichten</h2>
+  {% if einstellung.rufnummer %}
+  <p>Ihre Assistenten-Nummer: <strong>{{ einstellung.rufnummer }}</strong></p>
+  <ol>
+    <li>Richten Sie an Ihrem Telefon oder Ihrer Telefonanlage eine <strong>Rufumleitung bei Nichtannahme</strong> (z. B. nach 20 Sekunden) und <strong>bei besetzt</strong> auf diese Nummer ein.</li>
+    <li>Fritz!Box: Telefonie → Rufbehandlung → Rufumleitung. Telekom: *61*Nummer# (bei Nichtannahme) und *67*Nummer# (bei besetzt).</li>
+    <li>Rufen Sie einmal selbst an und lassen Sie es klingeln, um die Umleitung zu prüfen.</li>
+  </ol>
+  {% else %}<p>Noch keine Nummer zugeteilt. Das Belegfluss-Team meldet sich bei Ihnen.</p>{% endif %}
+  <p class="hilfe">Die Kosten der umgeleiteten Verbindung trägt Ihr Telefonanschluss; in Festnetz-Flatrates ist das meist enthalten.</p>
+</section>
+{% endblock %}

@@ -6,6 +6,8 @@ Täglich um 3:30 Uhr (nach dem Nachtabgleich, vor dem Vorschlagslauf):
   Transkription; der Datensatz (Name, Größe, Hash) bleibt als Nachweis.
 - Gelesene Zeilen und Vorschau eines Excel-Imports 7 Tage nach dem Hochladen (`ImportVorgang.loeschen_ab`, H9);
   Anzahlen und Ergebnis bleiben als Nachweis. Ein Import, der noch läuft, wird erst nach seinem Ende geleert.
+- KI-Telefonassistent (ADR-010): Gesprächsverlauf 90 Tage nach dem Gespräch, Rückruf-Notizen 90 Tage nach
+  „erledigt“, offene spätestens nach 12 Monaten.
 - Erfassungen samt Transkript, KI-Ergebnis und Entwurf 12 Monate nach dem Anlegen (`Erfassung.loeschen_ab`).
 - Spiegeldaten (Kontakte, Artikel, Belege) 30 Tage nach dem Trennen der Verbindung, sofern die Firma nicht wieder
   verbunden ist. Mahnvorschläge und Versände hängen an den Belegen und werden mit gelöscht (Offene-Fragen.md);
@@ -24,7 +26,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
-from django.db import connection, transaction
+from django.db import connection, models, transaction
 from django.utils import timezone
 
 from accounts.models import Firma
@@ -35,6 +37,7 @@ from datenimport.models import ImportVorgang
 from dunning.models import Mahnvorschlag, Sammelmail, Versand
 from jobs.models import Job, ZeitplanLauf
 from ledger.models import Artikel, Beleg, Kontakt
+from telefon.models import Gespraech, Rueckruf
 
 from .services import protokolliere
 
@@ -89,6 +92,24 @@ def importzeilen(jetzt: datetime, bericht: Bericht) -> None:
             vorgang.status = ImportVorgang.Status.VERWORFEN  # ohne Zeilen nicht mehr freigebbar
         vorgang.save(update_fields=["ergebnis", "zeilen", "vorschau", "zeilen_geloescht_am", "status"])
         bericht.zaehlen(vorgang.firma_id, "importzeilen")
+
+
+TELEFON_NOTIZ_NACH_ERLEDIGT = timedelta(days=90)
+TELEFON_NOTIZ_HOECHSTENS = timedelta(days=365)
+
+
+def telefon(jetzt: datetime, bericht: Bericht) -> None:
+    """ADR-010: Gesprächsverlauf nach 90 Tagen, Rückruf-Notizen 90 Tage nach Erledigung bzw. nach 12 Monaten."""
+    for g in Gespraech.objects.filter(loeschen_ab__lte=jetzt).only("pk", "firma_id").iterator():
+        bericht.zaehlen(g.firma_id, "telefon_gespraeche")
+    Gespraech.objects.filter(loeschen_ab__lte=jetzt).delete()
+    faellig = Rueckruf.objects.filter(
+        models.Q(status=Rueckruf.Status.ERLEDIGT, erledigt_am__lte=jetzt - TELEFON_NOTIZ_NACH_ERLEDIGT)
+        | models.Q(erstellt__lte=jetzt - TELEFON_NOTIZ_HOECHSTENS)
+    )
+    for r in faellig.only("pk", "firma_id").iterator():
+        bericht.zaehlen(r.firma_id, "rueckrufe")
+    faellig.delete()
 
 
 def erfassungen(jetzt: datetime, bericht: Bericht) -> None:
@@ -164,6 +185,7 @@ def ausfuehren(jetzt: datetime | None = None) -> Bericht:
     bericht = Bericht()
     rohdateien(jetzt, bericht)
     importzeilen(jetzt, bericht)
+    telefon(jetzt, bericht)
     erfassungen(jetzt, bericht)
     spiegel_nach_trennung(jetzt, bericht)
     protokoll(bericht)
@@ -210,6 +232,8 @@ def firma_loeschen(firma: Firma) -> dict[str, int]:
             ("team_einladungen", TeamEinladung.objects.filter(firma=firma)),
             ("jobs", Job.objects.filter(firma=firma)),
             ("importe", ImportVorgang.objects.fuer(firma)),
+            ("rueckrufe", Rueckruf.objects.fuer(firma)),
+            ("gespraeche", Gespraech.objects.fuer(firma)),
         ):
             anzahlen[name] = queryset.delete()[0]
         nutzer_ids = list(Mitgliedschaft.objects.filter(firma=firma).values_list("nutzer_id", flat=True))

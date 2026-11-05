@@ -56,7 +56,23 @@ def _angebotserinnerung(firma, nutzer=None):
     return {"pk": Angebotserinnerung.objects.create(firma=firma, beleg=b).pk}
 
 
+def _rueckruf(firma, nutzer=None):
+    from telefon.models import Rueckruf
+
+    return {"pk": Rueckruf.objects.create(firma=firma, name="IDOR").pk}
+
+
+def _testgespraech(firma, nutzer=None):
+    from telefon.models import Gespraech
+
+    return {"kennung": str(Gespraech.objects.create(firma=firma, kanal="test").uuid)}
+
+
 FAELLE: dict[str, Fabrik] = {
+    "telefon:rueckruf": _rueckruf,
+    "telefon:erledigt": _rueckruf,
+    "telefon:test_nachricht": _testgespraech,
+    "telefon:test_ende": _testgespraech,
     "dunning:angebot_verwerfen": _angebotserinnerung,
     "dunning:angebot_vorschau": _angebotserinnerung,
     "datenimport:vorgang": _import,

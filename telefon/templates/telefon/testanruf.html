@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static cockpit %}
+{% block titel %}Testanruf{% endblock %}
+{% block inhalt %}
+<h1>Testanruf im Browser</h1>
+<p>Probieren Sie den Telefonassistenten aus, als wären Sie ein Anrufer. Antworten Sie per Mikrofon oder Text. Es entsteht eine Rückruf-Notiz mit dem Kennzeichen „Test“; Ihr Team wird nicht benachrichtigt.</p>
+<section class="karte testanruf" id="testanruf" data-start="{% url 'telefon:test_start' %}" data-basis="/telefon/test/">
+  {% csrf_token %}
+  <div class="knopfreihe" id="ta-start-reihe">
+    <div class="feld"><label for="ta-nummer">Ihre Nummer (simuliert die übertragene Nummer, optional)</label><input type="tel" id="ta-nummer" placeholder="z. B. 0151 2345678"></div>
+    <button type="button" id="ta-start">{% icon "phone-call" %}Anruf starten</button>
+  </div>
+  <ul class="chat" id="ta-verlauf" aria-live="polite"></ul>
+  <div class="ta-eingabe versteckt" id="ta-eingabe">
+    <div class="knopfreihe">
+      <button type="button" id="ta-mikro" class="zweitrangig">{% icon "mic" %}<span>Sprechen</span></button>
+      <input type="text" id="ta-text" placeholder="oder hier tippen …" aria-label="Antwort tippen">
+      <button type="button" id="ta-senden">Senden</button>
+      <button type="button" id="ta-auflegen" class="gefahr">{% icon "phone-missed" %}Auflegen</button>
+    </div>
+    <div class="checkbox"><input type="checkbox" id="ta-vorlesen" checked> <label for="ta-vorlesen">Antworten vorlesen (lokale Stimme Ihres Browsers)</label></div>
+    <p class="hilfe" id="ta-status" role="status"></p>
+  </div>
+  <p id="ta-ergebnis" class="versteckt"></p>
+</section>
+<script src="{% static 'telefon/testanruf.js' %}" defer></script>
+{% endblock %}
