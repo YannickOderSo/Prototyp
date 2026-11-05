@@ -34,6 +34,8 @@ Die API beschreibt **keinen E-Mail-Versand** von Rechnungen oder Mahnungen. Die 
 - Payload: `organizationId`, `eventType`, `resourceId`, `eventDate`. `POST /v1/event-subscriptions` antwortet mit `id` (Abo-ID). Lexware erwartet binnen 5000 ms 200/201/202/204, sonst Wiederholungen; 404 oder 410 löschen das Abo. Daher: sofort quittieren, Arbeit in die Job-Queue.
 - Webhook-Payload enthält nur die Resource-ID: immer nachladen, nie dem Payload vertrauen.
 - Idempotent verarbeiten; `token.revoked` setzt die Verbindung auf "getrennt" und benachrichtigt den Inhaber.
+- Umgesetzt (M1-08, `connectors/webhooks.py`): Rate-Limit 600 je 15 Minuten und Token → Signatur (Test mit dem offiziellen Doku-Beispiel) → `organizationId` muss zur Verbindung passen → `WebhookEreignis` eindeutig auf (Verbindung, Typ, Ressource, Zeitpunkt), Duplikate werden mit 200 quittiert → Job (`ledger.beleg_abgleichen`, `ledger.kontakt_abgleichen`, `ledger.artikel_abgleichen`, `connectors.token_widerrufen`) mit Schlüssel je Ressource, damit ein Ereignissturm nur einen Abgleich auslöst → 202. Die Abos registriert ein Job nach dem Erstimport, nur bei HTTPS-Basis-URL (`COCKPIT_BASIS_URL`).
+- B3 „spätestens 5 Minuten“: Der Worker fragt jede Sekunde nach Jobs; der Abgleich eines Belegs braucht zwei Lexware-Aufrufe. Gegen Lexware selbst ist das noch nicht gemessen (Echtlauf).
 
 ## Abgleich-Strategie
 

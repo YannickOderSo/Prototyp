@@ -20,7 +20,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 - [x] **M1-05** `connectors`: Protokoll `AccountingConnector`, `LexwareConnector` mit Token-Bucket (2/s), Retry auf 429/5xx, Fehlerklassen. Tests mit aufgezeichneten Antworten.
 - [x] **M1-06** Verbindung anlegen, Schlüssel verschlüsselt speichern, Test-Aufruf (B1).
 - [x] **M1-07** Erstimport und nächtlicher Abgleich in den Spiegel (B2, B3 Teil Abgleich). Abnahme: Summen stimmen mit Lexware-Testkonto.
-- [ ] **M1-08** Webhooks registrieren und empfangen, Signaturprüfung, idempotente Verarbeitung (B3).
+- [x] **M1-08** Webhooks registrieren und empfangen, Signaturprüfung, idempotente Verarbeitung (B3).
 - [ ] **M1-09** Cockpit-Startseite: Kennzahlen und Altersstruktur (C1), Liste offener Posten mit Filtern (C2), Kundenansicht (C3), Prognose 4 Wochen (C4), mobil (C5).
 - [ ] **M1-10** Kundentyp pflegen: Liste "Kundentyp fehlt" mit Schnellauswahl Privat/Unternehmer (Voraussetzung für D3).
 

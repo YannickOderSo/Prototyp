@@ -1,7 +1,10 @@
 """Jobs des Spiegels: Erstimport, Zahlungshistorie, nächtlicher Abgleich, Einzelbeleg."""
 
+from django.utils import timezone
+
+from connectors.base import AccountingConnector
 from connectors.jobs import mit_connector
-from connectors.models import Verbindung
+from connectors.models import Verbindung, WebhookEreignis
 from jobs.models import Job
 from jobs.queue import enqueue
 from jobs.registry import job, zeitplan
@@ -22,6 +25,9 @@ def erstimport_einplanen(verbindung: Verbindung) -> Job:
 def _erstimport(j: Job) -> None:
     mit_connector(j, abgleich.erstimport)
     enqueue("ledger.zahlungshistorie", j.payload, firma=j.firma, eindeutig=f"historie:{j.payload['verbindung_id']}")
+    enqueue(
+        "connectors.webhooks_registrieren", j.payload, firma=j.firma, eindeutig=f"webhooks:{j.payload['verbindung_id']}"
+    )
 
 
 @job("ledger.zahlungshistorie")
@@ -34,9 +40,32 @@ def _nachtabgleich(j: Job) -> None:
     mit_connector(j, abgleich.nachtabgleich)
 
 
+def _ereignis_erledigt(j: Job) -> None:
+    if j.payload.get("ereignis_id"):
+        WebhookEreignis.objects.filter(pk=j.payload["ereignis_id"]).update(verarbeitet_am=timezone.now())
+
+
 @job("ledger.beleg_abgleichen")
 def _beleg(j: Job) -> None:
     mit_connector(j, lambda v, c: abgleich.beleg_abgleichen(v, c, str(j.payload["extern_id"])))
+    _ereignis_erledigt(j)
+
+
+@job("ledger.kontakt_abgleichen")
+def _kontakt(j: Job) -> None:
+    def arbeit(v: Verbindung, c: AccountingConnector) -> None:
+        kontakt = c.get_contact(str(j.payload["extern_id"]))
+        if kontakt is not None:
+            abgleich.kontakt_speichern(v.firma, kontakt)
+
+    mit_connector(j, arbeit)
+    _ereignis_erledigt(j)
+
+
+@job("ledger.artikel_abgleichen")
+def _artikel(j: Job) -> None:
+    mit_connector(j, lambda v, c: abgleich.artikel_abgleichen(v.firma, c.list_articles()))
+    _ereignis_erledigt(j)
 
 
 @job("ledger.nachtabgleich_alle")

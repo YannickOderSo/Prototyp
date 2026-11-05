@@ -47,3 +47,25 @@ class Verbindung(FirmaModel):
     @property
     def aktiv(self) -> bool:
         return self.status == self.Status.AKTIV and bool(self.schluessel_verschluesselt)
+
+
+class WebhookEreignis(models.Model):
+    """Empfangene Lexware-Ereignisse. Eindeutig je Verbindung, Typ, Ressource und Zeitpunkt (Idempotenz)."""
+
+    verbindung = models.ForeignKey(Verbindung, on_delete=models.CASCADE, related_name="ereignisse")
+    event_typ = models.CharField(max_length=100)
+    resource_id = models.CharField(max_length=100)
+    event_zeit = models.CharField(max_length=40)
+    empfangen_am = models.DateTimeField(default=timezone.now)
+    verarbeitet_am = models.DateTimeField(null=True, blank=True)
+    rohdaten = models.JSONField(default=dict)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["verbindung", "event_typ", "resource_id", "event_zeit"], name="webhook_einmal"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.event_typ} {self.resource_id}"

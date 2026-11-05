@@ -12,6 +12,7 @@ AUSNAHMEN: dict[str, str] = {
     "web:rechtstext": "öffentliche Rechtstexte, Slug statt ID",
     "accounts:team_annehmen": "geheimes Einladungs-Token, gilt nur für die eingeladene E-Mail-Adresse",
     "accounts:password_reset_confirm": "Django-Token für Passwort-Reset, an Nutzer gebunden",
+    "hooks:lexware": "Webhook ohne Login; geheimes Token je Verbindung plus RSA-Signatur und Organisations-ID",
 }
 
 
