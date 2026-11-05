@@ -41,3 +41,26 @@ class Nutzer(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return self.email
+
+
+class Firma(models.Model):
+    """Mandant. Alle fachlichen Daten hängen an genau einer Firma."""
+
+    name = models.CharField("Firmenname", max_length=200)
+    strasse = models.CharField("Straße", max_length=200, blank=True)
+    plz = models.CharField("PLZ", max_length=10, blank=True)
+    ort = models.CharField("Ort", max_length=100, blank=True)
+    email_absender = models.CharField("Absendername für Mails", max_length=200, blank=True)
+    reply_to = models.EmailField("Antwortadresse (Reply-To)", blank=True)
+    mahn_signatur = models.TextField("Signatur unter Erinnerungen und Mahnungen", blank=True)
+    bankverbindung = models.TextField("Bankverbindung für Mahnungen", blank=True)
+    zeitzone = models.CharField(max_length=50, default="Europe/Berlin")
+    aktiv = models.BooleanField(default=True)
+    erstellt = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "Firma"
+        verbose_name_plural = "Firmen"
+
+    def __str__(self) -> str:
+        return self.name

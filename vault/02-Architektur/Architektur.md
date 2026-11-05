@@ -57,3 +57,12 @@ flowchart LR
 ## Warum ein Monolith
 
 Ein Entwickler, ein Server, wenige hundert Kunden im ersten Jahr. Microservices würden nur Betriebslast erzeugen. Die Adapter-Schnittstelle trennt das Bestandstool sauber, das genügt.
+
+## Job-Queue (umgesetzt in M0-04)
+
+- Tabelle `Job` (typ, payload, firma, status `wartet`/`laeuft`/`erledigt`/`fehler`, versuche, naechster_versuch, gesperrt_bis). Ein `eindeutig_schluessel` ist nur unter aktiven Jobs eindeutig (partieller Unique-Index), damit z. B. ein Webhook-Sturm nur einen Abgleich je Beleg auslöst.
+- Worker (`manage.py worker`) holt Jobs mit `SELECT … FOR UPDATE SKIP LOCKED`, sperrt sie für eine Sperrzeit (Standard 300 s) und bricht zu lange Jobs per SIGALRM ab. Hängende Jobs (Sperre abgelaufen, z. B. nach Absturz) werden wieder freigegeben und zählen als Versuch.
+- Fehler: exponentieller Backoff 30 s, 60 s, 120 s … höchstens 1 h, plus bis zu 10 % Jitter; `JobAbbruch` beendet ohne Wiederholung.
+- Apps melden Jobs in `<app>/aufgaben.py` mit `@job("typ")` an, Zeitplan-Einträge mit `zeitplan(name, cron, typ)`. Cron-Ausdrücke gelten in Europe/Berlin. Je Termin wird genau einmal eingeplant (`ZeitplanLauf`, eindeutig auf Name und Termin), auch bei mehreren Workern. Nach einem Neustart wird nur der jeweils letzte verpasste Termin nachgeholt.
+- SIGTERM/SIGINT: der laufende Job wird zu Ende geführt, danach beendet sich der Worker.
+- Lebenszeichen in `WorkerLebenszeichen` alle 30 s, ausgewertet vom Health-Endpoint (F4).

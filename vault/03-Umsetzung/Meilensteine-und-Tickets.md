@@ -7,7 +7,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 - [x] **M0-01** Django-Projekt `cockpit` mit Python 3.12, Django 5.2 LTS, Postgres 16, `uv`-Lockfile, Einstellungen über Umgebungsvariablen (`django-environ`), Apps laut `02-Architektur/Architektur.md` anlegen.
 - [x] **M0-02** `docker-compose.yml` für lokal (web, worker, db) und `Dockerfile` (Non-Root). `make dev`, `make test`.
 - [x] **M0-03** CI (GitHub Actions): ruff, mypy, pytest mit Postgres-Service, `makemigrations --check`.
-- [ ] **M0-04** Job-Queue `jobs`: Modell, `enqueue()`, Worker-Kommando mit `SKIP LOCKED`, Retries mit Backoff, Zeitplan (cron-artige Einträge in Code), SIGTERM-sauber, hängende Jobs nach Timeout freigeben. Tests.
+- [x] **M0-04** Job-Queue `jobs`: Modell, `enqueue()`, Worker-Kommando mit `SKIP LOCKED`, Retries mit Backoff, Zeitplan (cron-artige Einträge in Code), SIGTERM-sauber, hängende Jobs nach Timeout freigeben. Tests.
 - [ ] **M0-05** `audit`: Protokollmodell plus Postgres-Trigger gegen UPDATE/DELETE, Hilfsfunktion `protokolliere()`. Test, dass Update scheitert.
 - [ ] **M0-06** Basis-Layout mit HTMX, mobile first, Footer mit Rechtstext-Platzhaltern (F5).
 
