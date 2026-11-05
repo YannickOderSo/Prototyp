@@ -205,6 +205,9 @@ def _ki(g: Gespraech) -> dict[str, Any]:
         )
     except anthropic.APIError as fehler:
         raise _KiAusfall(type(fehler).__name__) from fehler
+    except Exception as fehler:  # z. B. fehlende AWS-Zugangsdaten: am Telefon nie abbrechen, sondern Ausfallbetrieb
+        log.exception("Telefonassistent: KI-Aufruf fehlgeschlagen")
+        raise _KiAusfall(type(fehler).__name__) from fehler
     nutzung = getattr(antwort, "usage", None)
     extraktion.verbrauch_buchen(
         g.firma, int(getattr(nutzung, "input_tokens", 0) or 0), int(getattr(nutzung, "output_tokens", 0) or 0)

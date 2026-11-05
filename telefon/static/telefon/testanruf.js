@@ -28,7 +28,15 @@
     window.speechSynthesis.speak(a);
   }
 
+  var beschaeftigt = false;
+  function sperren(an) {
+    beschaeftigt = an;
+    ["ta-senden", "ta-mikro", "ta-text"].forEach(function (id) { document.getElementById(id).disabled = an; });
+  }
+
   function senden(url, daten) {
+    if (beschaeftigt) return Promise.resolve();
+    sperren(true);
     daten.append("csrfmiddlewaretoken", csrf);
     status.textContent = "Der Assistent denkt nach …";
     return fetch(url, { method: "POST", body: daten, credentials: "same-origin" })
@@ -41,7 +49,8 @@
         if (e.j.ausfallbetrieb) status.textContent = "Hinweis: KI nicht erreichbar, der Assistent arbeitet mit festen Fragen.";
         if (e.j.beendet) ende(e.j.rueckruf);
       })
-      .catch(function () { status.textContent = "Verbindung fehlgeschlagen."; });
+      .catch(function () { status.textContent = "Verbindung fehlgeschlagen."; })
+      .then(function () { sperren(false); });
   }
 
   function ende(link) {
@@ -79,7 +88,7 @@
 
   document.getElementById("ta-senden").addEventListener("click", function () {
     var feld = document.getElementById("ta-text");
-    if (!kennung || !feld.value.trim()) return;
+    if (!kennung || beschaeftigt || !feld.value.trim()) return;
     var d = new FormData();
     d.append("text", feld.value);
     zeile("anrufer", feld.value);

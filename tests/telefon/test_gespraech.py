@@ -193,3 +193,14 @@ def test_loeschfristen(firma):
     assert set(Rueckruf.objects.values_list("pk", flat=True)) == {erledigt_neu.pk, offen_neu.pk}
     assert not Rueckruf.objects.filter(pk__in=[erledigt_alt.pk, offen_alt.pk]).exists()
     assert bericht.gesamt["telefon_gespraeche"] == 1 and bericht.gesamt["rueckrufe"] == 2
+
+
+def test_unerwarteter_ki_fehler_fuehrt_in_den_ausfallbetrieb(firma, monkeypatch):
+    import capture.extraktion
+
+    def kaputt():
+        raise RuntimeError("keine AWS-Zugangsdaten")
+
+    monkeypatch.setattr(capture.extraktion, "client_fabrik", kaputt)
+    g, _ = fuehrung.starten(firma)
+    assert "Unter welcher Nummer" in fuehrung.antworten(g, "Hier Meier, Dachrinne").text

@@ -9,6 +9,7 @@ import uuid as uuidlib
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_not_required
+from django.db import transaction
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -154,7 +155,9 @@ def test_nachricht(request: FirmaRequest, kennung: str) -> JsonResponse:
             return JsonResponse({"fehler": str(fehler)}, status=503)
     if not text.strip():
         return JsonResponse({"fehler": "Es wurde nichts verstanden. Bitte noch einmal."}, status=400)
-    antwort = fuehrung.antworten(g, text)
+    with transaction.atomic():  # eine Runde nach der anderen, auch bei doppeltem Absenden
+        g = Gespraech.objects.select_for_update().get(pk=g.pk)
+        antwort = fuehrung.antworten(g, text)
     antwort_json = _ergebnis(g, antwort)
     daten = json.loads(antwort_json.content)
     if gehoert:
