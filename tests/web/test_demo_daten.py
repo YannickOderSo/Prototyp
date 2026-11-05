@@ -55,7 +55,13 @@ def test_statische_demo(settings, tmp_path):
     assert (ziel / "static" / "web" / "style.css").exists() and (ziel / "static" / "demo" / "demo.js").exists()
     assert (ziel / "import" / "vorlage" / "kunden.csv").exists()
     assert (ziel / "static" / "web" / "fonts" / "inter-latin-wght-normal.woff2").exists()
-    assert not (ziel / "konto").exists() and not (ziel / "einstellungen" / "verbindung").exists()
+    assert not (ziel / "konto" / "sicherheit").exists() and not (ziel / "einstellungen" / "verbindung").exists()
+    assert (ziel / "konto" / "profil" / "index.html").exists()
+    # Cockpit-Reiter und Zeiträume der Statistik als eigene Seiten, Links umgeschrieben
+    assert (ziel / "index-ansicht-angebote.html").exists() and (
+        ziel / "berichte" / "index-zeitraum-monat.html"
+    ).exists()
+    assert 'href="index-ansicht-angebote.html"' in (ziel / "index.html").read_text()
     posten = (ziel / "posten" / "index.html").read_text()
     assert 'href="../static/web/style.css"' in posten
 

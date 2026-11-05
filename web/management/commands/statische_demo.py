@@ -40,11 +40,14 @@ START = [
 ]
 # Nicht in die Demo: Anmeldung, Webhooks, Downloads mit Kundendaten und Seiten mit Geheimnissen
 AUSGESCHLOSSEN = ("/konto/", "/hooks/", "/healthz", "/einstellungen/verbindung/", "/mahnungen/smtp/")
+TROTZDEM = ("/konto/profil/", "/konto/team/")  # unbedenklich, zeigen Avatare und Team
+# Reiter und Zeiträume sind Links mit Parametern; nur diese werden als eigene Seiten abgelegt
+ERLAUBTE_PARAMETER = {"ansicht", "zeitraum"}
 ERLAUBTE_DATEIEN = (".csv", ".xlsx")
 MAX_SEITEN = 400
 STATIC = "/" + settings.STATIC_URL.strip("/") + "/"
 
-LINK = re.compile(r'(?P<attr>\b(?:href|src|action|hx-get))="(?P<url>/[^"]*)"')
+LINK = re.compile(r'(?P<attr>\b(?:href|src|action|hx-get))="(?P<url>[/?][^"]*)"')
 
 BANNER = (
     '<div class="demo-banner" role="note"><strong>Klick-Demo</strong> mit erfundenen Daten: '
@@ -86,11 +89,27 @@ DEMO_JS = """// Klick-Demo: Formulare und Knöpfe zeigen nur einen Hinweis, es g
 """
 
 
+def _schluessel(url: str, seite: str = "/") -> str | None:
+    """Normalisierte Seiten-Adresse: Pfad, bei erlaubten Parametern mit Query. None: nicht in die Demo."""
+    teile = urlsplit(url)
+    pfad = teile.path or urlsplit(seite).path
+    if not teile.query:
+        return pfad
+    paare = [p.split("=", 1) for p in teile.query.split("&") if p]
+    if not paare or any(len(p) != 2 or p[0] not in ERLAUBTE_PARAMETER for p in paare):
+        return None
+    return pfad + "?" + "&".join(f"{k}={v}" for k, v in sorted(paare))
+
+
 def _datei(pfad: str) -> str:
-    """URL-Pfad → Dateipfad in der Demo ("/posten/" → "posten/index.html")."""
-    pfad = pfad.split("?", 1)[0].split("#", 1)[0]
+    """Seiten-Adresse → Dateipfad: "/posten/" → "posten/index.html", "/?ansicht=x" → "index-ansicht-x.html"."""
+    pfad, _, query = pfad.split("#", 1)[0].partition("?")
+    zusatz = "".join(
+        f"-{re.sub(r'[^a-z0-9]', '', k)}-{re.sub(r'[^a-z0-9]', '', v)}"
+        for k, v in (p.split("=", 1) for p in query.split("&") if "=" in p)
+    )
     if pfad.endswith("/"):
-        return pfad.lstrip("/") + "index.html"
+        return pfad.lstrip("/") + f"index{zusatz}.html"
     return pfad.lstrip("/")
 
 
@@ -140,12 +159,12 @@ class Command(BaseCommand):
             html = antwort.content.decode()
             seiten[pfad] = html
             for treffer in LINK.finditer(html):
-                url = treffer.group("url")
-                teile = urlsplit(url)
-                kandidat = teile.path
-                if teile.query or kandidat in gesehen or kandidat.startswith(STATIC):
+                kandidat = _schluessel(treffer.group("url"), pfad)
+                if kandidat is None or kandidat in gesehen or kandidat.startswith(STATIC):
                     continue
-                if kandidat.startswith(AUSGESCHLOSSEN) or treffer.group("attr") == "action":
+                if treffer.group("attr") == "action":
+                    continue
+                if kandidat.startswith(AUSGESCHLOSSEN) and not kandidat.startswith(TROTZDEM):
                     continue
                 gesehen.add(kandidat)
                 warteschlange.append(kandidat)
@@ -153,7 +172,7 @@ class Command(BaseCommand):
         statisch: set[str] = set()
         for pfad, html in seiten.items():
             datei = _datei(pfad)
-            html = self._umschreiben(html, datei, set(seiten) | set(dateien), statisch)
+            html = self._umschreiben(html, datei, set(seiten) | set(dateien), statisch, pfad)
             (ziel / datei).parent.mkdir(parents=True, exist_ok=True)
             (ziel / datei).write_text(html, encoding="utf-8")
         for pfad, inhalt in dateien.items():
@@ -177,7 +196,7 @@ class Command(BaseCommand):
         (ziel / ".nojekyll").write_text("", encoding="utf-8")
         self.stdout.write(f"{len(seiten)} Seiten und {len(dateien)} Dateien nach {ziel} geschrieben.")
 
-    def _umschreiben(self, html: str, datei: str, vorhanden: set[str], statisch: set[str]) -> str:
+    def _umschreiben(self, html: str, datei: str, vorhanden: set[str], statisch: set[str], seite: str = "/") -> str:
         # Kein CSRF-Token und kein htmx in der statischen Demo
         html = re.sub(r'<input type="hidden" name="csrfmiddlewaretoken" value="[^"]*">', "", html)
         html = re.sub(r"\s+hx-headers='[^']*'", "", html)
@@ -194,12 +213,13 @@ class Command(BaseCommand):
                 return f'{attr}="{_relativ(datei, "static/" + name)}"'
             if attr == "action":
                 return 'action="#"'
+            ziel = _schluessel(url, seite)
             if attr == "hx-get":
-                if pfad in vorhanden and not urlsplit(url).query:
-                    return f'data-demo-href="{_relativ(datei, _datei(pfad))}"'
+                if ziel in vorhanden:
+                    return f'data-demo-href="{_relativ(datei, _datei(ziel))}"'
                 return ""
-            if pfad in vorhanden and not urlsplit(url).query:
-                return f'{attr}="{_relativ(datei, _datei(pfad))}"'
+            if ziel in vorhanden and ziel is not None:
+                return f'{attr}="{_relativ(datei, _datei(ziel))}"'
             return f'{attr}="#" data-demo-aus="1"'
 
         html = LINK.sub(ersetzen, html)
