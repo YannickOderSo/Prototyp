@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titel %}Kunden{% endblock %}
+{% block inhalt %}
+<h1>Kunden</h1>
+<p>{% url 'ledger:kundentyp' as kundentyp_url %}{% if kundentyp_url %}<a href="{{ kundentyp_url }}">Kundentyp festlegen</a>{% endif %}</p>
+<ul class="liste">
+  {% for k in kontakte %}
+  <li><div class="zeile"><a href="{% url 'ledger:kunde' k.pk %}"><strong>{{ k.name }}</strong></a><span class="marke-status{% if k.kundentyp == 'unbekannt' %} warnung{% endif %}">{{ k.get_kundentyp_display }}</span></div>
+    <div class="neben">{{ k.kundennummer }}{% if k.email %} · {{ k.email }}{% endif %}</div></li>
+  {% empty %}
+  <li>Noch keine Kunden. Nach dem Erstimport aus Lexware erscheinen sie hier.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

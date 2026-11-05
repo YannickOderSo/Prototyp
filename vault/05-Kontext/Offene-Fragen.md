@@ -13,3 +13,5 @@ Agenten tragen hier ein, was sie nicht aus dem Vault beantworten können, mit Da
 | 2026-11-05 | Produktname und Domain | Arbeitstitel "Cockpit", Paketname `cockpit` | Team |
 | 2026-11-05 | Mahntexte und Zinslogik rechtlich geprüft? | nein; vor erstem Pilot durch Anwalt/Steuerberater (M4-07) | Team |
 | 2026-11-05 | Der Token-Bucket (2 Anfragen/s) gilt je Prozess. Web (nur Schlüsseltest) und Worker teilen ihn nicht. Reicht das? | Ja für einen Worker-Prozess; 429 werden zusätzlich mit Backoff wiederholt. Bei mehreren Workern Bucket in Postgres verlagern | Entwickler |
+| 2026-11-05 | Bezieht sich die Altersstruktur (C1) auf Tage seit Rechnungsdatum oder Tage überfällig? | Tage überfällig (ab Fälligkeit), nicht fällige Posten getrennt; das ist die übliche Forderungs-Altersstruktur | Yannick |
+| 2026-11-05 | Prognose (C4): Wie mit Posten umgehen, deren erwarteter Termin schon vorbei ist? | Nicht in die Wochen einrechnen, sondern getrennt als „Termin unsicher“ zeigen (vorsichtige Liquiditätsplanung) | Yannick |

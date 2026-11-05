@@ -11,8 +11,18 @@ from .forms import FirmendatenForm
 from .rechtstexte import rechtstext as finde_rechtstext
 
 
-def start(request: HttpRequest) -> HttpResponse:
-    return render(request, "web/start.html")
+def start(request: FirmaRequest) -> HttpResponse:
+    if request.firma is None:
+        return render(request, "web/start.html")
+    from django.utils import timezone
+
+    from connectors.models import Verbindung
+    from ledger.services import cockpit
+
+    verbindung = Verbindung.objects.fuer(request.firma).exclude(status=Verbindung.Status.GETRENNT).first()
+    return render(
+        request, "web/start.html", {"c": cockpit(request.firma, timezone.localdate()), "verbindung": verbindung}
+    )
 
 
 @login_not_required

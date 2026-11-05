@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}{{ kontakt.name }}{% endblock %}
+{% block inhalt %}
+<h1>{{ kontakt.name }}</h1>
+<section class="kennzahlen">
+  <div class="kennzahl"><div class="label">Offen</div><div class="wert">{{ summe_offen|euro }}</div></div>
+  <div class="kennzahl"><div class="label">Ø Zahlungsdauer</div><div class="wert" data-kennzahl="zahlungsdauer">{% if zahlungsdauer is None %}–{% else %}{{ zahlungsdauer|zahl }} Tage{% endif %}</div><div class="label">ab Rechnungsdatum, {{ anzahl_zahlungen }} Zahlungen in 12 Monaten</div></div>
+  <div class="kennzahl"><div class="label">Ø Verzug</div><div class="wert">{% if verzug is None %}–{% else %}{{ verzug|zahl }} Tage{% endif %}</div><div class="label">ab Fälligkeit</div></div>
+  <div class="kennzahl"><div class="label">Kundentyp</div><div class="wert">{{ kontakt.get_kundentyp_display }}</div></div>
+</section>
+{% include "ledger/_kontakt_einstellungen.html" %}
+<h2>Offene Posten</h2>
+<ul class="liste">
+  {% for b in offene %}
+  <li><div class="zeile"><span>{{ b.nummer }} vom {{ b.belegdatum|datum }}</span><strong>{{ b.offen|euro }}</strong></div>
+    <div class="neben">fällig {{ b.faellig_am|datum }}{% if b.mahnstufe %} · Mahnstufe {{ b.mahnstufe }}{% endif %}</div></li>
+  {% empty %}<li>Keine offenen Posten.</li>{% endfor %}
+</ul>
+<h2>Zahlungshistorie</h2>
+<ul class="liste">
+  {% for b in bezahlt %}
+  <li><div class="zeile"><span>{{ b.nummer }}</span><strong>{{ b.brutto|euro }}</strong></div>
+    <div class="neben">bezahlt am {{ b.bezahlt_am|datum }}{% if b.faellig_am %} · {% with d=b.faellig_am|tage_seit:b.bezahlt_am %}{% if d > 0 %}{{ d }} Tage nach Fälligkeit{% else %}pünktlich{% endif %}{% endwith %}{% endif %}</div></li>
+  {% empty %}<li>Keine bezahlten Rechnungen in den letzten 12 Monaten.</li>{% endfor %}
+</ul>
+{% endblock %}

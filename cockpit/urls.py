@@ -4,5 +4,6 @@ urlpatterns = [
     path("konto/", include("accounts.urls")),
     path("einstellungen/verbindung/", include("connectors.urls")),
     path("hooks/", include("connectors.hooks_urls")),
+    path("posten/", include("ledger.urls")),
     path("", include("web.urls")),
 ]

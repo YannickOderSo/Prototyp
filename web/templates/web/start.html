@@ -1,8 +1,81 @@
 {% extends "base.html" %}
+{% load cockpit %}
 {% block titel %}Cockpit{% endblock %}
 {% block inhalt %}
 <h1>Forderungs-Cockpit</h1>
 {% if not request.firma %}
 <div class="karte"><p>Ihr Konto gehört noch zu keiner Firma. Bitte lassen Sie sich vom Inhaber einladen.</p></div>
+{% else %}
+{% if not verbindung %}
+<div class="meldung warnung">
+  Noch keine Verbindung zu Lexware Office.
+  {% if request.mitgliedschaft.ist_inhaber %}<a href="{% url 'connectors:lexware' %}">Jetzt verbinden</a>{% else %}Bitte den Inhaber bitten, Lexware zu verbinden.{% endif %}
+</div>
+{% elif not verbindung.erstimport_fertig %}
+<div class="meldung">Der Erstimport aus Lexware läuft. Die Zahlen erscheinen in wenigen Minuten.</div>
+{% endif %}
+
+<section class="kennzahlen" aria-label="Kennzahlen">
+  <div class="kennzahl"><div class="label">Offen gesamt</div><div class="wert" data-kennzahl="summe_offen">{{ c.kennzahlen.summe_offen|euro }}</div><div class="label">{{ c.kennzahlen.anzahl_offen }} Posten</div></div>
+  <div class="kennzahl schlecht"><div class="label">Überfällig</div><div class="wert" data-kennzahl="summe_ueberfaellig">{{ c.kennzahlen.summe_ueberfaellig|euro }}</div><div class="label"><span data-kennzahl="anzahl_ueberfaellig">{{ c.kennzahlen.anzahl_ueberfaellig }}</span> Posten</div></div>
+  <div class="kennzahl"><div class="label">Noch nicht fällig</div><div class="wert">{{ c.kennzahlen.summe_nicht_faellig|euro }}</div></div>
+  <div class="kennzahl"><div class="label">Erwartet in 4 Wochen</div><div class="wert" data-kennzahl="prognose">{{ c.prognose.summe|euro }}</div></div>
+</section>
+
+{% if c.ohne_kundentyp %}
+<p class="meldung warnung">Bei {{ c.ohne_kundentyp }} Kunde{{ c.ohne_kundentyp|pluralize:"n" }} mit offenen Posten fehlt der Kundentyp. Ohne Kundentyp wird nicht gemahnt. {% url 'ledger:kundentyp' as kundentyp_url %}{% if kundentyp_url %}<a href="{{ kundentyp_url }}">Kundentyp festlegen</a>{% endif %}</p>
+{% endif %}
+
+<section class="karte" aria-labelledby="alter">
+  <h2 id="alter">Altersstruktur der überfälligen Posten</h2>
+  <ul class="liste">
+    {% for k in c.kennzahlen.klassen %}
+    <li>
+      <div class="zeile"><span>{{ k.name }} überfällig</span><strong>{{ k.summe|euro }}</strong></div>
+      <div class="balken" role="img" aria-label="{{ k.anteil }} Prozent"><span class="anteil-{{ k.anteil }}"></span></div>
+      <div class="neben">{{ k.anzahl }} Posten</div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="karte" aria-labelledby="prognose">
+  <h2 id="prognose">Erwarteter Geldeingang</h2>
+  <p class="hilfe">Nach Fälligkeit, verschoben um den durchschnittlichen Zahlungsverzug des Kunden in den letzten 12 Monaten.</p>
+  <ul class="liste">
+    {% for w in c.prognose.wochen %}
+    <li><div class="zeile"><span>{{ w.beginn|date:"d.m." }}–{{ w.ende|date:"d.m.Y" }}</span><strong>{{ w.summe|euro }}</strong></div><div class="neben">{{ w.anzahl }} Posten</div></li>
+    {% endfor %}
+    {% if c.prognose.anzahl_unsicher %}
+    <li><div class="zeile"><span>Überfällig, Termin unsicher</span><strong>{{ c.prognose.unsicher|euro }}</strong></div><div class="neben">{{ c.prognose.anzahl_unsicher }} Posten, nicht in der Prognose</div></li>
+    {% endif %}
+  </ul>
+</section>
+
+{% if c.dringend %}
+<section aria-labelledby="dringend">
+  <h2 id="dringend">Am längsten überfällig</h2>
+  <ul class="liste">
+    {% for b in c.dringend %}
+    <li>
+      <div class="zeile"><strong>{{ b.kontakt_name|default:"(ohne Kunde)" }}</strong><strong>{{ b.offen|euro }}</strong></div>
+      <div class="zeile neben"><span>{{ b.nummer }}</span><span>fällig {{ b.faellig_am|datum }}</span></div>
+    </li>
+    {% endfor %}
+  </ul>
+  <p><a href="{% url 'ledger:posten' %}?faelligkeit=ueberfaellig">Alle überfälligen Posten</a></p>
+</section>
+{% endif %}
+
+<section class="karte" aria-labelledby="verzug">
+  <h2 id="verzug">Tage von Fälligkeit bis Zahlung</h2>
+  <ul class="liste">
+    {% for m in c.verzug_monate %}
+    <li><div class="zeile"><span>{{ m.monat|date:"F Y" }}</span><strong>{% if m.tage is None %}–{% else %}{{ m.tage|zahl }} Tage{% endif %}</strong></div>
+      {% if m.tage is not None %}<div class="balken"><span class="anteil-{{ m.anteil }}"></span></div>{% endif %}
+      <div class="neben">{{ m.anzahl }} Zahlung{{ m.anzahl|pluralize:"en" }}</div></li>
+    {% endfor %}
+  </ul>
+</section>
 {% endif %}
 {% endblock %}

@@ -43,3 +43,13 @@ Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich �
 ## Jobs
 
 - **Job**: typ, payload (JSON), firma, status, versuche, naechster_versuch, gesperrt_bis, fehler, eindeutig_schluessel (optional, für Idempotenz)
+
+## Auswertung im Cockpit (umgesetzt in M1-09, `ledger/auswertung.py`)
+
+- **Offen:** Status offen oder überfällig und offener Betrag > 0; Angebote zählen nie.
+- **Überfällig:** Fälligkeit vor heute. Fehlt die Fälligkeit, gilt das Belegdatum.
+- **Altersstruktur:** Tage überfällig in den Klassen 1–30, 31–60, 61–90, über 90; noch nicht fällige Posten getrennt.
+- **Zahlungsdauer (C3):** Durchschnitt der Tage von Belegdatum bis Zahlung, bezahlte Rechnungen der letzten 12 Monate. Zusätzlich angezeigt: Verzug = Tage von Fälligkeit bis Zahlung.
+- **Prognose (C4):** erwarteter Eingang = Fälligkeit + durchschnittlicher Verzug des Kunden (kaufmännisch auf Tage gerundet, nie früher als die Fälligkeit). Vier Wochen ab heute. Liegt der erwartete Termin schon in der Vergangenheit, zählt der Posten als „überfällig, Termin unsicher“ und nicht in die Wochen.
+- **C6 (SOLL, umgesetzt):** Tage von Fälligkeit bis Zahlung je Zahlungsmonat, letzte 6 Monate, als Balken.
+- **Beleg.mahnstufe:** höchste versendete Stufe; in der App gepflegt (vom Versand gesetzt), für den Filter in C2.

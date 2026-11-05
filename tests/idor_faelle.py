@@ -5,7 +5,17 @@ from collections.abc import Callable
 
 Fabrik = Callable[..., dict]
 
-FAELLE: dict[str, Fabrik] = {}
+
+def _kontakt(firma, nutzer=None):
+    from ledger.models import Kontakt
+
+    k = Kontakt.objects.create(firma=firma, extern_id=f"idor-{firma.pk}-{Kontakt.objects.count()}", name="IDOR-Test")
+    return {"pk": k.pk}
+
+
+FAELLE: dict[str, Fabrik] = {
+    "ledger:kunde": _kontakt,
+}
 
 # URLs mit Parametern, die keine Objekt-IDs einer Firma sind (mit Begründung)
 AUSNAHMEN: dict[str, str] = {
@@ -19,5 +29,10 @@ AUSNAHMEN: dict[str, str] = {
 def beispielmodelle() -> list[tuple[type, Callable]]:
     """Modelle mit FirmaManager und je eine Fabrik (für den Manager-Test)."""
     from connectors.models import Verbindung
+    from ledger.models import Beleg, Kontakt
 
-    return [(Verbindung, lambda firma: Verbindung.objects.create(firma=firma))]
+    return [
+        (Verbindung, lambda firma: Verbindung.objects.create(firma=firma)),
+        (Kontakt, lambda firma: Kontakt.objects.create(firma=firma, extern_id=f"m{firma.pk}", name="M")),
+        (Beleg, lambda firma: Beleg.objects.create(firma=firma, extern_id=f"b{firma.pk}")),
+    ]

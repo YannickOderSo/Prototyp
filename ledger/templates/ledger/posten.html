@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block titel %}Offene Posten{% endblock %}
+{% block inhalt %}
+<h1>Offene Posten</h1>
+<form method="get" class="karte filter" hx-get="{% url 'ledger:posten' %}" hx-target="#postenliste" hx-push-url="true" hx-trigger="change, submit, keyup changed delay:400ms from:input[name=kunde]">
+  <details{% if request.GET %} open{% endif %}>
+    <summary>Filter und Sortierung</summary>
+    {% include "web/_formular.html" %}
+    <div class="knopfreihe"><button type="submit">Anwenden</button><a class="knopf zweitrangig" href="{% url 'ledger:posten' %}">Zurücksetzen</a></div>
+  </details>
+</form>
+<div id="postenliste">{% include "ledger/_posten_liste.html" %}</div>
+{% endblock %}

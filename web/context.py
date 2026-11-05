@@ -9,6 +9,7 @@ from .rechtstexte import RECHTSTEXTE
 NAVIGATION = [
     ("web:start", "Cockpit", False),
     ("ledger:posten", "Offene Posten", False),
+    ("ledger:kunden", "Kunden", False),
     ("dunning:freigabe", "Mahnungen", True),
     ("capture:liste", "Erfassen", False),
     ("web:einstellungen", "Einstellungen", False),
@@ -16,7 +17,7 @@ NAVIGATION = [
 
 
 def seite(request: HttpRequest) -> dict[str, object]:
-    punkte = []
+    punkte: list[dict[str, str | bool]] = []
     if getattr(request, "user", None) is not None and request.user.is_authenticated and getattr(request, "firma", None):
         darf_freigeben = getattr(request, "darf_freigeben", False)
         for name, titel, nur_freigabe in NAVIGATION:
@@ -26,6 +27,13 @@ def seite(request: HttpRequest) -> dict[str, object]:
                 url = reverse(name)
             except NoReverseMatch:
                 continue
-            aktiv = request.path == url if url == "/" else request.path.startswith(url)
-            punkte.append({"url": url, "titel": titel, "aktiv": aktiv})
+            punkte.append({"url": url, "titel": titel, "aktiv": False})
+        # aktiv ist der Punkt mit dem längsten passenden Pfad-Präfix
+        passend = [
+            p
+            for p in punkte
+            if request.path == p["url"] or (p["url"] != "/" and request.path.startswith(str(p["url"])))
+        ]
+        if passend:
+            max(passend, key=lambda p: len(str(p["url"])))["aktiv"] = True
     return {"navigation": punkte, "rechtstexte": RECHTSTEXTE}

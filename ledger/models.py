@@ -93,6 +93,7 @@ class Beleg(FirmaModel):
         null=True, blank=True, help_text="Leer: Firmeneinstellung gilt. Ja/Nein: manuell für diesen Beleg"
     )
     mahnpause_bis = models.DateField(null=True, blank=True)
+    mahnstufe = models.PositiveSmallIntegerField(default=0, help_text="Höchste versendete Stufe (0 = keine)")
 
     class Meta:
         verbose_name_plural = "Belege"
