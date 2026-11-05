@@ -27,6 +27,7 @@ HERKUNFT_TEXT = {
     "mail": "aus Mail",
     "zeiterfassung": "aus Zeiterfassung",
     "notiz": "aus Notiz",
+    "nutzer": "vom Nutzer ergänzt",
 }
 
 # Anweisungen in Quellen, die wie ein Versuch aussehen, die Verarbeitung zu steuern (E9)

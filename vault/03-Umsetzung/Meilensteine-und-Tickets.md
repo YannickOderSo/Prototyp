@@ -47,7 +47,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 - [x] **M3-04** Textaufbereitung: PDF-Text, CSV-Zeiterfassung (Eigenbau; `belegfluss/quellen.py` als Orientierung, Übernahme nur nach ADR-007), Mail-Parsing.
 - [x] **M3-05** Extraktion über Bedrock Frankfurt mit JSON-Schema, Bild-Input für Fotos, Stammdaten-Reduktion, Kostenlimit (E4, E9).
 - [x] **M3-06** Regel-Engine `capture/rules.py` (E4, E5, E10). Eigenbau gegen die Spiegel-Artikel; `belegfluss/regeln.py` als Orientierung, Übernahme nur nach ADR-007.
-- [ ] **M3-07** Prüfansicht mit Herkunft, Hinweisen, Blockern, Bearbeiten (E6).
+- [x] **M3-07** Prüfansicht mit Herkunft, Hinweisen, Blockern, Bearbeiten (E6).
 - [ ] **M3-08** Übertragung als Entwurf in Lexware (E7, B5). Test, dass nie `finalize` gesendet wird.
 - [ ] **M3-09** Belegpostfach: IMAP-Abruf eines Sammelpostfachs mit Plus-Adressen je Firma (`belege+<token>@…`), Whitelist und DKIM/SPF-Prüfung über `Authentication-Results` (E2). IMAP mit Timeout, jede Firma isoliert.
 - [ ] **M3-10** KI-Testfälle und Kommando `ki_testfaelle` (siehe KI-Pipeline).

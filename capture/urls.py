@@ -11,4 +11,7 @@ urlpatterns = [
     path("<int:pk>/", views.detail, name="detail"),
     path("<int:pk>/neuversuch/", views.neuversuch, name="neuversuch"),
     path("<int:pk>/transkript/", views.transkript, name="transkript"),
+    path("<int:pk>/pruefen/", views.pruefen, name="pruefen"),
+    path("<int:pk>/verwerfen/", views.verwerfen, name="verwerfen"),
+    path("<int:pk>/freigeben/", views.freigeben, name="freigeben"),
 ]

@@ -48,8 +48,44 @@ def hochladen(request: FirmaRequest) -> HttpResponse:
 
 @firma_erforderlich
 def detail(request: FirmaRequest, pk: int) -> HttpResponse:
+    from .pruefung import ansicht
+
     erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
-    return render(request, "capture/detail.html", {"e": erfassung})
+    kontext: dict[str, object] = {"e": erfassung}
+    if erfassung.status in (Erfassung.Status.PRUEFUNG, Erfassung.Status.FREIGEGEBEN, Erfassung.Status.UEBERTRAGEN):
+        kontext.update(ansicht(erfassung))
+    return render(request, "capture/detail.html", kontext)
+
+
+@require_POST
+@firma_erforderlich
+def pruefen(request: FirmaRequest, pk: int) -> HttpResponse:
+    from .pruefung import aenderungen_uebernehmen
+
+    erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
+    try:
+        aenderungen_uebernehmen(erfassung, request.user, request.POST)
+    except ValueError as fehler:
+        messages.error(request, str(fehler))
+    else:
+        messages.success(request, "Änderungen übernommen und neu geprüft.")
+    return redirect("capture:detail", pk=erfassung.pk)
+
+
+@require_POST
+@firma_erforderlich
+def verwerfen(request: FirmaRequest, pk: int) -> HttpResponse:
+    from audit.services import protokolliere
+
+    erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
+    if erfassung.status in (Erfassung.Status.UEBERTRAGEN, Erfassung.Status.FREIGEGEBEN):
+        messages.error(request, "Bereits freigegebene Erfassungen können hier nicht verworfen werden.")
+    else:
+        erfassung.status = Erfassung.Status.VERWORFEN
+        erfassung.save(update_fields=["status"])
+        protokolliere(request.firma, "erfassung.verworfen", nutzer=request.user, objekt=erfassung)
+        messages.info(request, "Erfassung verworfen.")
+    return redirect("capture:liste")
 
 
 @require_POST
@@ -80,4 +116,13 @@ def transkript(request: FirmaRequest, pk: int) -> HttpResponse:
         messages.error(request, str(fehler))
     else:
         messages.success(request, "Der Entwurf wird erzeugt." if erzeugen else "Text gespeichert.")
+    return redirect("capture:detail", pk=erfassung.pk)
+
+
+@require_POST
+@firma_erforderlich
+def freigeben(request: FirmaRequest, pk: int) -> HttpResponse:
+    """Freigabe und Übertragung als Entwurf nach Lexware: siehe M3-08."""
+    erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
+    messages.error(request, "Die Übertragung nach Lexware ist noch nicht verfügbar.")
     return redirect("capture:detail", pk=erfassung.pk)
