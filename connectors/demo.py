@@ -26,6 +26,7 @@ from .base import (
     InvoiceDraft,
     PaymentStatus,
     QuotationDraft,
+    QuotationInfo,
     Receivable,
 )
 
@@ -150,15 +151,27 @@ class DemoConnector:
         return ExternalRef("dunning", f"demo-mahnung-{uuid.uuid4().hex[:8]}")
 
     def get_pdf(self, ref: ExternalRef) -> bytes:
-        titel = {"dunning": "Mahnung", "invoice": "Rechnung", "downpaymentinvoice": "Abschlagsrechnung"}.get(
-            ref.art, "Beleg"
-        )
+        titel = {
+            "dunning": "Mahnung",
+            "invoice": "Rechnung",
+            "downpaymentinvoice": "Abschlagsrechnung",
+            "quotation": "Angebot",
+        }.get(ref.art, "Beleg")
         return demo_pdf(f"{titel} {ref.extern_id}")
 
-    def list_open_quotations(self) -> Iterable[Receivable]:
+    def list_quotations(self, seit: date) -> Iterable[Receivable]:
+        stati = (Beleg.Status.OFFEN, Beleg.Status.ANGENOMMEN, Beleg.Status.ABGELEHNT)
         return [
-            self._posten(b) for b in self._belege() if b.art == Beleg.Art.ANGEBOT and b.status in Beleg.OFFENE_STATUS
+            self._posten(b)
+            for b in self._belege()
+            if b.art == Beleg.Art.ANGEBOT and b.status in stati and (b.belegdatum is None or b.belegdatum >= seit)
         ]
+
+    def get_quotation(self, quotation_id: str) -> QuotationInfo | None:
+        beleg = Beleg.objects.fuer(self.firma).filter(art=Beleg.Art.ANGEBOT, extern_id=quotation_id).first()
+        if beleg is None:
+            return None
+        return QuotationInfo(status=beleg.status, gueltig_bis=beleg.gueltig_bis)
 
     def get_quotation_positions(self, quotation_id: str) -> list[tuple[str, Decimal]]:
         return []

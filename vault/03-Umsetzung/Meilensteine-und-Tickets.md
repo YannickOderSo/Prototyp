@@ -87,7 +87,7 @@ Grundlage: ADR-008, Anforderungen H1–H9. Entschieden am 5. November 2026.
 Rückmeldung von Lukas, Umfang am 5. November 2026 von Yannick entschieden: Die schnellen Punkte werden gebaut, die großen als Konzept festgehalten.
 
 - [x] **M7-01** Spezifikation (I1–I7), ADR-009, Konzept für Abo-Verwaltung, Team-Chat, KI-Hilfe-Chat und KI-Telefonassistent.
-- [ ] **M7-02** Angebote im Spiegel: Ablaufdatum, Status „angenommen“ und „abgelehnt“, Abgleich der letzten 12 Monate.
+- [x] **M7-02** Angebote im Spiegel: Ablaufdatum, Status „angenommen“ und „abgelehnt“, Abgleich der letzten 12 Monate.
 - [ ] **M7-03** „Angebote & Rechnungen“ statt „Erfassen“; Cockpit mit Reitern Überblick, Rechnungen, Angebote, Mahnungen (I1, I2).
 - [ ] **M7-04** Statistik Woche und Monat inklusive Angebote (I3).
 - [ ] **M7-05** Angebots-Erinnerung an den Endkunden nach Freigabe (I4, ADR-009).

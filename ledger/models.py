@@ -74,6 +74,9 @@ class Beleg(FirmaModel):
         UEBERFAELLIG = "ueberfaellig", "überfällig"
         BEZAHLT = "bezahlt", "bezahlt"
         STORNIERT = "storniert", "storniert"
+        # nur Angebote (M7-02)
+        ANGENOMMEN = "angenommen", "angenommen"
+        ABGELEHNT = "abgelehnt", "abgelehnt"
 
     OFFENE_STATUS = (Status.OFFEN, Status.UEBERFAELLIG)
 
@@ -86,6 +89,7 @@ class Beleg(FirmaModel):
     nummer = models.CharField(max_length=50, blank=True)
     belegdatum = models.DateField(null=True, blank=True)
     faellig_am = models.DateField(null=True, blank=True)
+    gueltig_bis = models.DateField(null=True, blank=True, help_text="Nur Angebote: Ablaufdatum aus Lexware")
     kontakt = models.ForeignKey(Kontakt, null=True, blank=True, on_delete=models.SET_NULL, related_name="belege")
     kontakt_name = models.CharField(max_length=250, blank=True)
     brutto = geldfeld(default=Decimal("0.00"))

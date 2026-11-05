@@ -37,6 +37,7 @@ from .base import (
     InvoiceDraft,
     PaymentStatus,
     QuotationDraft,
+    QuotationInfo,
     Receivable,
     geld,
 )
@@ -79,6 +80,8 @@ _STATUS = {
     "paid": "bezahlt",
     "paidoff": "bezahlt",
     "voided": "storniert",
+    "accepted": "angenommen",
+    "rejected": "abgelehnt",
 }
 _ART = {"invoice": "rechnung", "downpaymentinvoice": "abschlag", "quotation": "angebot"}
 _PFAD = {
@@ -284,12 +287,24 @@ class LexwareConnector:
                     gesehen.add(posten.extern_id)
                     yield posten
 
-    def list_open_quotations(self) -> Iterable[Receivable]:
-        """Offene und angenommene Angebote (für den Abgleich Rechnung gegen Angebot, E10)."""
-        params = {"voucherType": "quotation", "voucherStatus": "open,accepted"}
+    def list_quotations(self, seit: date) -> Iterable[Receivable]:
+        """Angebote ab `seit`: offen, angenommen, abgelehnt (E10, Statistik I3, Erinnerung ADR-009)."""
+        params = {
+            "voucherType": "quotation",
+            "voucherStatus": "open,accepted,rejected",
+            "voucherDateFrom": seit.isoformat(),
+        }
         for eintrag in self._seiten("/v1/voucherlist", params):
-            posten = self._receivable({**eintrag, "voucherStatus": "open"})
+            posten = self._receivable(eintrag)
             yield Receivable(**{**posten.__dict__, "art": "angebot", "offen": Decimal("0.00")})
+
+    def get_quotation(self, quotation_id: str) -> QuotationInfo | None:
+        try:
+            daten = self._json("GET", f"/v1/quotations/{quotation_id}")
+        except NichtGefunden:
+            return None
+        status: BelegStatus = _STATUS.get(daten.get("voucherStatus", ""), "offen")  # type: ignore[assignment]
+        return QuotationInfo(status=status, gueltig_bis=_datum(daten.get("expirationDate")))
 
     def get_quotation_positions(self, quotation_id: str) -> list[tuple[str, Decimal]]:
         """Artikel-IDs und Mengen eines Angebots; Positionen ohne Artikel werden übergangen."""

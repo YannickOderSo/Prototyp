@@ -164,14 +164,30 @@ def _offene_liste_abgleichen(verbindung: Verbindung, connector: AccountingConnec
         ergebnis.nachgeladen += 1
 
 
+ANGEBOTE_ZEITRAUM = timedelta(days=365)
+
+
 def angebote_abgleichen(verbindung: Verbindung, connector: AccountingConnector) -> int:
-    """Offene und angenommene Angebote spiegeln (für den Abgleich mit Rechnungsentwürfen, E10)."""
+    """Angebote der letzten 12 Monate spiegeln: offen, angenommen, abgelehnt (E10, I3, ADR-009).
+
+    Das Ablaufdatum steht nicht in der Belegliste; es wird für offene Angebote einzeln geladen, wenn es fehlt
+    oder sich das Angebot in Lexware geändert hat.
+    """
     firma = verbindung.firma
+    seit = timezone.localdate() - ANGEBOTE_ZEITRAUM
     gesehen = set()
-    for angebot in connector.list_open_quotations():
-        beleg_speichern(firma, angebot, connector)
+    for angebot in connector.list_quotations(seit):
+        vorher = Beleg.objects.fuer(firma).filter(extern_id=angebot.extern_id).values("aktualisiert_extern").first()
+        beleg = beleg_speichern(firma, angebot, connector)
         gesehen.add(angebot.extern_id)
-    Beleg.objects.fuer(firma).filter(art=Beleg.Art.ANGEBOT, status=Beleg.Status.OFFEN).exclude(
+        geaendert = vorher is None or vorher["aktualisiert_extern"] != angebot.aktualisiert_extern
+        if beleg.status == Beleg.Status.OFFEN and (beleg.gueltig_bis is None or geaendert):
+            info = connector.get_quotation(angebot.extern_id)
+            if info is not None and info.gueltig_bis != beleg.gueltig_bis:
+                beleg.gueltig_bis = info.gueltig_bis
+                beleg.save(update_fields=["gueltig_bis"])
+    # Offene Angebote im Zeitraum, die Lexware nicht mehr liefert, sind gelöscht oder storniert
+    Beleg.objects.fuer(firma).filter(art=Beleg.Art.ANGEBOT, status=Beleg.Status.OFFEN, belegdatum__gte=seit).exclude(
         extern_id__in=gesehen
     ).update(status=Beleg.Status.STORNIERT)
     return len(gesehen)

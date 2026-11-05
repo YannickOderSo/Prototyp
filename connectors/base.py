@@ -16,7 +16,7 @@ from typing import Literal, Protocol
 CENT = Decimal("0.01")
 
 BelegArt = Literal["rechnung", "abschlag", "angebot"]
-BelegStatus = Literal["entwurf", "offen", "ueberfaellig", "bezahlt", "storniert"]
+BelegStatus = Literal["entwurf", "offen", "ueberfaellig", "bezahlt", "storniert", "angenommen", "abgelehnt"]
 
 
 def geld(wert: object) -> Decimal:
@@ -50,6 +50,14 @@ class Receivable:
     offen: Decimal
     status: BelegStatus
     aktualisiert_extern: datetime | None = None
+
+
+@dataclass(frozen=True)
+class QuotationInfo:
+    """Stand eines Angebots im Bestandstool (ADR-009: Ablauf und Frische-Check der Angebots-Erinnerung)."""
+
+    status: BelegStatus
+    gueltig_bis: date | None
 
 
 @dataclass(frozen=True)
@@ -218,7 +226,11 @@ class AccountingConnector(Protocol):
 
     def get_pdf(self, ref: ExternalRef) -> bytes: ...
 
-    def list_open_quotations(self) -> Iterable[Receivable]: ...
+    def list_quotations(self, seit: date) -> Iterable[Receivable]:
+        """Angebote ab Angebotsdatum `seit` mit Status offen, angenommen oder abgelehnt (ohne Entwürfe)."""
+        ...
+
+    def get_quotation(self, quotation_id: str) -> QuotationInfo | None: ...
 
     def get_quotation_positions(self, quotation_id: str) -> list[tuple[str, Decimal]]: ...
 

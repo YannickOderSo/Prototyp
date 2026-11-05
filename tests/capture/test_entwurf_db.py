@@ -149,7 +149,7 @@ def test_angebote_werden_gespiegelt(firma, verbindung, lexware_api, ohne_warten,
     assert (angebot.art, angebot.nummer, angebot.status, angebot.offen) == (
         "angebot",
         "AN-2026-7",
-        "offen",
+        "angenommen",  # Lexware-Status „accepted“ (M7-02)
         Decimal("0.00"),
     )
     # Angebote zählen nicht als offene Forderung

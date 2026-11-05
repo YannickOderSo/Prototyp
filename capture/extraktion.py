@@ -112,7 +112,7 @@ def stammdaten(firma: Firma, suchtext: str) -> dict[str, Any]:
     angebote = [
         {"nummer": b.nummer, "kunde": b.kontakt_name}
         for b in Beleg.objects.fuer(firma)
-        .filter(art=Beleg.Art.ANGEBOT, status=Beleg.Status.OFFEN)
+        .filter(art=Beleg.Art.ANGEBOT, status__in=[Beleg.Status.OFFEN, Beleg.Status.ANGENOMMEN])
         .order_by("-belegdatum")[:50]
     ]
     return {
