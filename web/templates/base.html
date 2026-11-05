@@ -1,0 +1,38 @@
+{% load static %}<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="htmx-config" content='{"includeIndicatorStyles": false, "allowEval": false, "allowScriptTags": false}'>
+  <title>{% block titel %}Cockpit{% endblock %} · Forderungs-Cockpit</title>
+  <link rel="stylesheet" href="{% static 'web/style.css' %}">
+  <script src="{% static 'web/htmx-2.0.4.min.js' %}" defer></script>
+  <script src="{% static 'web/app.js' %}" defer></script>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <header class="kopf">
+    <a class="marke" href="{% url 'web:start' %}">Forderungs-Cockpit</a>
+    {% if request.firma %}<span class="firmenwahl">{{ request.firma.name }}</span>{% endif %}
+    {% if navigation %}
+    <nav class="navigation" aria-label="Hauptnavigation">
+      {% for punkt in navigation %}
+        <a href="{{ punkt.url }}"{% if punkt.aktiv %} aria-current="page"{% endif %}>{{ punkt.titel }}</a>
+      {% endfor %}
+    </nav>
+    {% endif %}
+  </header>
+  <main id="inhalt">
+    {% if messages %}
+    <ul class="meldungen" role="status">
+      {% for meldung in messages %}<li class="{{ meldung.tags }}">{{ meldung }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% block inhalt %}{% endblock %}
+  </main>
+  <footer class="fuss">
+    <nav aria-label="Rechtliches">
+      {% for text in rechtstexte %}<a href="{% url 'web:rechtstext' text.slug %}">{{ text.titel }}</a>{% endfor %}
+    </nav>
+  </footer>
+</body>
+</html>

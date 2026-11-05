@@ -71,7 +71,7 @@ markers = [
     "mailpit: Test gegen einen laufenden Mailpit-Server (MAILPIT_URL)",
     "e2e: Playwright-Ende-zu-Ende-Test",
 ]
-filterwarnings = ["ignore::DeprecationWarning:environ.*"]
+filterwarnings = ["ignore::DeprecationWarning:environ.*", "ignore:No directory at:UserWarning"]
 
 [tool.coverage.run]
 branch = true

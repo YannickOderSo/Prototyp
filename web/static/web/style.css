@@ -1,0 +1,196 @@
+/* Cockpit: mobil zuerst, ohne Framework. Breakpoint ab 720 px für Tablet/Desktop. */
+:root {
+  --text: #1c2430;
+  --text-leise: #5b6676;
+  --hintergrund: #f4f6f8;
+  --flaeche: #ffffff;
+  --rand: #d9dee5;
+  --primaer: #1f5fa8;
+  --primaer-dunkel: #174a83;
+  --gut: #1e7a46;
+  --warnung: #9a6200;
+  --schlecht: #b3261e;
+  --radius: 10px;
+  --abstand: 16px;
+  font-size: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--text);
+  background: var(--hintergrund);
+  line-height: 1.45;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+a { color: var(--primaer); }
+
+h1 { font-size: 1.4rem; margin: 0 0 var(--abstand); }
+h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; }
+h3 { font-size: 1rem; margin: 1rem 0 0.5rem; }
+
+/* Kopf und Navigation */
+.kopf {
+  background: var(--primaer);
+  color: #fff;
+  padding: 10px var(--abstand);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+.kopf a { color: #fff; text-decoration: none; }
+.kopf .marke { font-weight: 700; font-size: 1.05rem; margin-right: auto; }
+.navigation { display: flex; flex-wrap: wrap; gap: 4px 14px; width: 100%; }
+.navigation a { padding: 6px 0; border-bottom: 2px solid transparent; }
+.navigation a[aria-current="page"] { border-bottom-color: #fff; }
+.firmenwahl { font-size: 0.9rem; opacity: 0.9; }
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--abstand);
+}
+
+/* Fuß mit Rechtstexten (F5) */
+.fuss {
+  padding: var(--abstand);
+  font-size: 0.85rem;
+  color: var(--text-leise);
+  border-top: 1px solid var(--rand);
+  background: var(--flaeche);
+}
+.fuss nav { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+
+/* Karten und Kennzahlen */
+.karte {
+  background: var(--flaeche);
+  border: 1px solid var(--rand);
+  border-radius: var(--radius);
+  padding: var(--abstand);
+  margin-bottom: var(--abstand);
+}
+.kennzahlen {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: var(--abstand);
+}
+.kennzahl {
+  background: var(--flaeche);
+  border: 1px solid var(--rand);
+  border-radius: var(--radius);
+  padding: 12px;
+  min-width: 0;
+}
+.kennzahl .wert { font-size: 1.3rem; font-weight: 700; overflow-wrap: anywhere; }
+.kennzahl .label { font-size: 0.85rem; color: var(--text-leise); }
+.kennzahl.schlecht .wert { color: var(--schlecht); }
+
+.balken { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--rand); }
+.balken span { display: block; height: 100%; }
+
+/* Listen statt breiter Tabellen auf dem Handy */
+.liste { list-style: none; margin: 0; padding: 0; }
+.liste > li {
+  background: var(--flaeche);
+  border: 1px solid var(--rand);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 8px;
+  display: grid;
+  gap: 4px;
+}
+.liste .zeile { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.liste .neben { color: var(--text-leise); font-size: 0.9rem; }
+
+table { width: 100%; border-collapse: collapse; background: var(--flaeche); }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--rand); vertical-align: top; }
+td.betrag, th.betrag { text-align: right; white-space: nowrap; }
+.tabelle-huelle { width: 100%; overflow-x: auto; }
+
+/* Formulare */
+form p, .feld { margin: 0 0 12px; }
+label { display: block; font-weight: 600; margin-bottom: 4px; }
+input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"],
+input[type="search"], input[type="url"], select, textarea {
+  width: 100%;
+  max-width: 100%;
+  font: inherit;
+  padding: 10px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: #fff;
+}
+textarea { min-height: 8rem; }
+input[type="checkbox"] { width: 1.2rem; height: 1.2rem; vertical-align: middle; }
+.checkbox label { display: inline; font-weight: normal; }
+.hilfe { font-size: 0.85rem; color: var(--text-leise); }
+.errorlist { color: var(--schlecht); padding-left: 1rem; margin: 4px 0; }
+
+.knopf, button {
+  display: inline-block;
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 16px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--primaer);
+  background: var(--primaer);
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+.knopf:hover, button:hover { background: var(--primaer-dunkel); }
+.knopf.zweitrangig, button.zweitrangig { background: #fff; color: var(--primaer); }
+.knopf.gefahr, button.gefahr { background: var(--schlecht); border-color: var(--schlecht); }
+.knopfreihe { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+button[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+/* Hinweise */
+.meldungen { list-style: none; padding: 0; margin: 0 0 var(--abstand); }
+.meldung, .meldungen li {
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: #e8f0fb;
+  border: 1px solid #c3d6f2;
+}
+.meldungen li.error, .meldung.fehler { background: #fbeaea; border-color: #f0c2bf; }
+.meldungen li.success, .meldung.erfolg { background: #e7f5ec; border-color: #bfe3cb; }
+.meldungen li.warning, .meldung.warnung { background: #fff4e0; border-color: #f2d7a6; }
+
+.marke-status {
+  display: inline-block;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--rand);
+  white-space: nowrap;
+}
+.marke-status.schlecht { background: #fbeaea; color: var(--schlecht); }
+.marke-status.gut { background: #e7f5ec; color: var(--gut); }
+.marke-status.warnung { background: #fff4e0; color: var(--warnung); }
+
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline; }
+
+.leise { color: var(--text-leise); }
+.versteckt { display: none !important; }
+pre, code { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+@media (min-width: 720px) {
+  .navigation { width: auto; }
+  .kennzahlen { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  h1 { font-size: 1.6rem; }
+}
