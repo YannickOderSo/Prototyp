@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.mandant import hole_oder_404
-from accounts.rechte import firma_erforderlich, freigabe_berechtigt
+from accounts.rechte import firma_erforderlich, freigabe_berechtigt, nur_inhaber
 from accounts.typen import FirmaRequest
 
 from .dateien import MAX_AUFNAHME_SEKUNDEN, DateiAbgelehnt
@@ -133,3 +133,34 @@ def freigeben(request: FirmaRequest, pk: int) -> HttpResponse:
     else:
         messages.success(request, "Freigegeben. Der Entwurf wird in Lexware angelegt.")
     return redirect("capture:detail", pk=erfassung.pk)
+
+
+@nur_inhaber
+def postfach(request: FirmaRequest) -> HttpResponse:
+    from audit.services import protokolliere
+
+    from .models import Belegpostfach
+    from .postfach import adresse
+
+    eintrag, _ = Belegpostfach.objects.get_or_create(firma=request.firma)
+    if request.method == "POST":
+        if request.POST.get("aktion") == "neue_adresse":
+            from .models import _postfach_token
+
+            eintrag.token = _postfach_token()
+            messages.info(request, "Neue Belegadresse erzeugt. Die alte nimmt keine Mails mehr an.")
+        else:
+            zeilen = [z.strip().lower() for z in request.POST.get("absender", "").splitlines() if z.strip()]
+            eintrag.absender = [z for z in zeilen if "@" in z][:200]
+            eintrag.aktiv = bool(request.POST.get("aktiv"))
+            messages.success(request, "Belegpostfach gespeichert.")
+        eintrag.save()
+        protokolliere(
+            request.firma,
+            "einstellung.belegpostfach",
+            nutzer=request.user,
+            objekt=eintrag,
+            daten={"aktiv": eintrag.aktiv, "anzahl_absender": len(eintrag.absender)},
+        )
+        return redirect("capture:postfach")
+    return render(request, "capture/postfach.html", {"postfach": eintrag, "adresse": adresse(eintrag)})

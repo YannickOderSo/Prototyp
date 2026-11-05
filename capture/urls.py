@@ -7,6 +7,7 @@ app_name = "capture"
 urlpatterns = [
     path("", views.liste, name="liste"),
     path("neu/", views.neu, name="neu"),
+    path("postfach/", views.postfach, name="postfach"),
     path("hochladen/", views.hochladen, name="hochladen"),
     path("<int:pk>/", views.detail, name="detail"),
     path("<int:pk>/neuversuch/", views.neuversuch, name="neuversuch"),

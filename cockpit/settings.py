@@ -175,6 +175,16 @@ BEDROCK_REGION = env.str("BEDROCK_REGION", default="eu-central-1")
 # EU-Inferenzprofil (Präfix "eu."): Routing nur innerhalb der EU. "global." und "us." blockiert ein Systemcheck.
 BEDROCK_MODELL = env.str("BEDROCK_MODELL", default="eu.anthropic.claude-sonnet-5-5")
 
+# Belegpostfach (E2): Sammelpostfach mit Plus-Adressen je Firma, Abruf per IMAP (TLS)
+BELEGPOSTFACH_ADRESSE = env.str("BELEGPOSTFACH_ADRESSE", default="")  # z. B. belege@cockpit.example
+BELEGPOSTFACH_IMAP_HOST = env.str("BELEGPOSTFACH_IMAP_HOST", default="")
+BELEGPOSTFACH_IMAP_PORT = env.int("BELEGPOSTFACH_IMAP_PORT", default=993)
+BELEGPOSTFACH_IMAP_BENUTZER = env.str("BELEGPOSTFACH_IMAP_BENUTZER", default="")
+BELEGPOSTFACH_IMAP_PASSWORT = env.str("BELEGPOSTFACH_IMAP_PASSWORT", default="")
+BELEGPOSTFACH_IMAP_ORDNER = env.str("BELEGPOSTFACH_IMAP_ORDNER", default="INBOX")
+# authserv-id des eigenen Mailservers: nur dessen Authentication-Results zählen
+BELEGPOSTFACH_AUTHSERV_ID = env.str("BELEGPOSTFACH_AUTHSERV_ID", default="")
+
 # Kostenlimit der KI je Firma und Monat
 KI_LIMIT_VORGAENGE_MONAT = env.int("KI_LIMIT_VORGAENGE_MONAT", default=300)
 KI_LIMIT_TOKENS_MONAT = env.int("KI_LIMIT_TOKENS_MONAT", default=3_000_000)

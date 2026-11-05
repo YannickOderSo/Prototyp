@@ -120,3 +120,39 @@ class KiVerbrauch(FirmaModel):
 
     def __str__(self) -> str:
         return f"KI {self.monat}: {self.vorgaenge}"
+
+
+def _postfach_token() -> str:
+    import secrets
+
+    return secrets.token_hex(8)
+
+
+class Belegpostfach(FirmaModel):
+    """Plus-Adresse je Firma im Sammelpostfach (E2): belege+<token>@domain. Nur Absender aus der Whitelist."""
+
+    token = models.CharField(max_length=32, unique=True, default=_postfach_token)
+    aktiv = models.BooleanField(default=True)
+    absender = models.JSONField(default=list, blank=True, help_text="Erlaubte Absender: Adressen oder @domain")
+    erstellt = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name_plural = "Belegpostfächer"
+        constraints = [models.UniqueConstraint(fields=["firma"], name="belegpostfach_je_firma")]
+
+    def __str__(self) -> str:
+        return f"Belegpostfach {self.firma_id}"
+
+
+class PostfachEingang(models.Model):
+    """Jede abgerufene Mail einmal (Message-ID), auch abgelehnte: kein Doppelverarbeiten."""
+
+    message_id = models.CharField(max_length=300, unique=True)
+    firma = models.ForeignKey("accounts.Firma", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    ergebnis = models.CharField(max_length=30)
+    grund = models.CharField(max_length=300, blank=True)
+    erfassung = models.ForeignKey(Erfassung, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    zeit = models.DateTimeField(default=timezone.now)
+
+    def __str__(self) -> str:
+        return f"{self.ergebnis} {self.message_id[:30]}"

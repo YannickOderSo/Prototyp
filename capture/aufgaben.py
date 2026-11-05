@@ -1,7 +1,7 @@
 """Jobs der Erfassung."""
 
 from jobs.models import Job
-from jobs.registry import job
+from jobs.registry import job, zeitplan
 from jobs.worker import JobAbbruch
 
 from .entwurf import regeln_anwenden
@@ -32,6 +32,13 @@ def _aufbereiten(j: Job) -> None:
             fehlgeschlagen(erfassung, str(fehler))
             raise JobAbbruch(str(fehler)) from fehler
         raise
+    if erfassung.kanal == Erfassung.Kanal.MAIL and (erfassung.quellen or erfassung.transkript):
+        # Belegpostfach: niemand prüft den Text vorab; geprüft wird in der Prüfansicht vor der Freigabe
+        from .services import extraktion_einplanen
+
+        erfassung.status = Erfassung.Status.EXTRAHIERT
+        erfassung.save(update_fields=["status"])
+        extraktion_einplanen(erfassung)
 
 
 def entwurf_bilden(erfassung: Erfassung, ergebnis: dict[str, object], hinweise: list[str]) -> None:
@@ -75,3 +82,13 @@ def _uebertragen(j: Job) -> None:
     except ValueError as fehler:
         zurueck_zur_pruefung(erfassung, str(fehler))
         raise JobAbbruch(str(fehler)) from fehler
+
+
+@job("capture.postfach_abrufen")
+def _postfach(j: Job) -> None:
+    from .postfach import abrufen
+
+    abrufen()
+
+
+zeitplan("belegpostfach", "*/5 * * * *", "capture.postfach_abrufen", max_versuche=1)

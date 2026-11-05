@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titel %}Belegpostfach{% endblock %}
+{% block inhalt %}
+<h1>Belegpostfach</h1>
+<div class="karte">
+  {% if adresse %}
+  <p>Leiten Sie Mails mit Aufträgen, Stundenlisten oder Fotos an diese Adresse weiter:</p>
+  <p><code>{{ adresse }}</code></p>
+  {% else %}<p class="meldung warnung">Das Belegpostfach ist auf diesem Server noch nicht eingerichtet.</p>{% endif %}
+  <p class="hilfe">Angenommen werden nur Mails von freigegebenen Absendern, deren Mailserver die Herkunft bestätigt (DKIM oder SPF). Alles andere wird verworfen und protokolliert. Aus jeder Mail entsteht ein Entwurf, den Sie prüfen und freigeben.</p>
+</div>
+<form method="post" class="karte">
+  {% csrf_token %}
+  <div class="feld checkbox"><input type="checkbox" id="aktiv" name="aktiv" value="1"{% if postfach.aktiv %} checked{% endif %}> <label for="aktiv">Belegpostfach aktiv</label></div>
+  <div class="feld"><label for="absender">Erlaubte Absender (eine Adresse je Zeile, oder @domain.de für eine ganze Domain)</label>
+    <textarea id="absender" name="absender" rows="6">{% for a in postfach.absender %}{{ a }}
+{% endfor %}</textarea></div>
+  <div class="knopfreihe"><button type="submit">Speichern</button>
+    <button type="submit" name="aktion" value="neue_adresse" class="zweitrangig" data-bestaetigen="Neue Adresse erzeugen? Die alte nimmt dann keine Mails mehr an.">Neue Adresse erzeugen</button></div>
+</form>
+{% endblock %}
