@@ -65,3 +65,19 @@ def neuversuch(request: FirmaRequest, pk: int) -> HttpResponse:
         aufbereitung_einplanen(erfassung)
         messages.info(request, "Neuer Versuch gestartet.")
     return redirect("capture:detail", pk=erfassung.pk)
+
+
+@require_POST
+@firma_erforderlich
+def transkript(request: FirmaRequest, pk: int) -> HttpResponse:
+    from .services import transkript_speichern
+
+    erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
+    erzeugen = request.POST.get("aktion") == "erzeugen"
+    try:
+        transkript_speichern(erfassung, request.user, request.POST.get("transkript", ""), erzeugen)
+    except ValueError as fehler:
+        messages.error(request, str(fehler))
+    else:
+        messages.success(request, "Der Entwurf wird erzeugt." if erzeugen else "Text gespeichert.")
+    return redirect("capture:detail", pk=erfassung.pk)

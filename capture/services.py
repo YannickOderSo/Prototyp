@@ -60,3 +60,39 @@ def anlegen(
         )
         aufbereitung_einplanen(erfassung)
     return erfassung
+
+
+BEARBEITBAR = (Erfassung.Status.TRANSKRIBIERT, Erfassung.Status.PRUEFUNG, Erfassung.Status.FEHLER)
+
+
+def extraktion_einplanen(erfassung: Erfassung) -> Job:
+    return enqueue(
+        "capture.extrahieren",
+        {"erfassung_id": erfassung.pk},
+        firma=erfassung.firma,
+        eindeutig=f"extrahieren:{erfassung.pk}",
+        max_versuche=3,
+    )
+
+
+def transkript_speichern(erfassung: Erfassung, nutzer: Nutzer, text: str, erzeugen: bool) -> None:
+    """E3: Text vor der Extraktion prüfen und ändern; auf Wunsch (neu) einen Entwurf erzeugen lassen."""
+    if erfassung.status not in BEARBEITBAR:
+        raise ValueError("Diese Erfassung kann nicht mehr bearbeitet werden.")
+    text = text.strip()[:30000]
+    if text != erfassung.transkript:
+        erfassung.transkript = text
+        erfassung.transkript_bearbeitet = True
+        protokolliere(erfassung.firma, "erfassung.transkript_bearbeitet", nutzer=nutzer, objekt=erfassung)
+    if erzeugen:
+        if (
+            not (erfassung.transkript or erfassung.quelltext or erfassung.notiz)
+            and not Datei.objects.filter(erfassung=erfassung, art=Datei.Art.BILD, geloescht_am__isnull=True).exists()
+        ):
+            raise ValueError("Es gibt keinen Text und kein Foto, aus dem ein Entwurf entstehen könnte.")
+        erfassung.status = Erfassung.Status.EXTRAHIERT
+        erfassung.fehler = ""
+        erfassung.save()
+        extraktion_einplanen(erfassung)
+    else:
+        erfassung.save()

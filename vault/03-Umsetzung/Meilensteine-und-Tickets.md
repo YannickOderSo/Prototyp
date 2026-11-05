@@ -43,7 +43,7 @@ Reihenfolge ist verbindlich. Ein Ticket ist fertig, wenn Code, Tests und die bet
 
 - [x] **M3-01** `capture`: Modelle, Upload und Browser-Aufnahme (E1), Dateilimits, Speicherung außerhalb des Webroots.
 - [x] **M3-02** Transkription mit Mistral (E3 Vorbereitung), Audio danach löschen (E8).
-- [ ] **M3-03** Transkript-Vorschau und Bearbeiten (E3).
+- [x] **M3-03** Transkript-Vorschau und Bearbeiten (E3).
 - [ ] **M3-04** Textaufbereitung: PDF-Text, CSV-Zeiterfassung (Eigenbau; `belegfluss/quellen.py` als Orientierung, Übernahme nur nach ADR-007), Mail-Parsing.
 - [ ] **M3-05** Extraktion über Bedrock Frankfurt mit JSON-Schema, Bild-Input für Fotos, Stammdaten-Reduktion, Kostenlimit (E4, E9).
 - [ ] **M3-06** Regel-Engine `capture/rules.py` (E4, E5, E10). Eigenbau gegen die Spiegel-Artikel; `belegfluss/regeln.py` als Orientierung, Übernahme nur nach ADR-007.
