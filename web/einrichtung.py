@@ -81,19 +81,26 @@ def schritte(firma: Firma) -> list[Schritt]:
     verbunden = bool(verbindung and verbindung.aktiv)
     importiert = bool(verbunden and verbindung and verbindung.erstimport_fertig)
     offen = kontakte_ohne_kundentyp(firma).count()
-    return [
-        Schritt(
+    from quellen.kopien import arbeitet_mit_kopien
+
+    mit_kopien = not verbunden and arbeitet_mit_kopien(firma)
+    if mit_kopien:
+        erster = Schritt(1, "Rechnungen anbinden", True, "Ohne Lexware: Belegfluss liest Kopien Ihrer Rechnungen.")
+    else:
+        erster = Schritt(
             1,
             "Lexware verbinden",
             importiert,
             "Verbunden, Daten importiert."
             if importiert
             else ("Verbunden, der Erstimport läuft." if verbunden else "API-Schlüssel hinterlegen."),
-        ),
+        )
+    return [
+        erster,
         Schritt(
             2,
             "Kundentypen setzen",
-            importiert and offen == 0,
+            erster.erledigt and offen == 0,
             f"Bei {offen} Kunden mit offenen Posten fehlt der Kundentyp."
             if offen
             else "Alle Kunden mit offenen Posten haben einen Kundentyp.",

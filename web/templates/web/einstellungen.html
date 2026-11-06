@@ -12,6 +12,7 @@
   <li><a href="{% url 'accounts:team' %}"><strong>Team</strong></a><span class="neben">Inhaber, Freigeber, Mitarbeiter</span></li>
   {% endif %}
   {% if ist_inhaber %}<li><a href="{% url 'telefon:einstellungen' %}"><strong>KI-Telefonassistent</strong></a><span class="neben">verpasste Anrufe annehmen, Rückruf-Notizen</span></li>{% endif %}
+  {% if request.darf_freigeben %}<li><a href="{% url 'quellen:uebersicht' %}"><strong>Ohne Lexware: Rechnungskopien und Kontoauszüge</strong></a><span class="neben">für Rechnungsprogramme ohne Schnittstelle</span></li>{% endif %}
   {% if request.darf_freigeben %}<li><a href="{% url 'datenimport:uebersicht' %}"><strong>Import aus Excel</strong></a><span class="neben">Kunden, Artikel und offene Rechnungen übernehmen</span></li>{% endif %}
   <li><a href="{% url 'accounts:sicherheit' %}"><strong>Sicherheit</strong></a><span class="neben">Zwei-Faktor-Anmeldung, Wiederherstellungscodes</span></li>
 </ul>

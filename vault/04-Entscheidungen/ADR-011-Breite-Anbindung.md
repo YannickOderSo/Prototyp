@@ -25,3 +25,7 @@ Eine Pilotkundin „nutzt DATEV“. Belegfluss soll möglichst viele Betriebe er
 - Für Betriebe ohne Lexware legt Belegfluss Kunden im Cockpit an (Name, E-Mail, Anschrift aus der E-Rechnung). Das erweitert ADR-008 Punkt 1 und H6 nur für diesen Weg; der Excel-Import bleibt unverändert.
 - Zahlungen aus Kontoauszügen ändern den Zahlstatus erst nach Bestätigung durch einen Menschen. Gespeichert werden nur Gutschriften, keine Abbuchungen.
 - Die Kopie-Dateien selbst werden nicht aufbewahrt, nur die gelesenen Felder (Archiv bleibt beim Bestandstool, ADR-001).
+- Stand 6. November 2026: A (E-Rechnungs-Kopien), A2 (PDF per KI, Mensch bestätigt) und B1 (Kontoauszug camt.053/camt.052/CSV) sind gebaut (M9-02 bis M9-07). B2 (Kontoabruf über finAPI) folgt erst nach einem Vertrag mit finAPI.
+- Posten aus Kopien sind keine Spiegeldaten: Sie bleiben beim Trennen von Lexware erhalten. Ihre Kunden ebenfalls, auch wenn sie aus Lexware stammen.
+- Eine noch nicht zugeordnete Zahlung, die zu einem Posten passt, sperrt den Versand der Mahnung zu diesem Posten (zusätzlicher Frische-Check).
+- Grenzen: Der Excel-Import (ADR-008) setzt weiter Lexware voraus. Erfasste Angebote und Rechnungen (Sprachmemo, Fotos) lassen sich ohne Lexware nicht übertragen; Stufe 1 („Positionsliste zum Abtippen“) ist noch nicht gebaut.

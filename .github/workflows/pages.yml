@@ -38,6 +38,7 @@ jobs:
       COCKPIT_FERNET_KEYS: RGVtby1udXItZnVlci1QYWdlcy1rZWluLUdlaGVpbSE=
       DJANGO_ALLOWED_HOSTS: localhost
       EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+      BELEGPOSTFACH_ADRESSE: belege@belegfluss.example  # nur Anzeige in der Klick-Demo, kein echtes Postfach
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5

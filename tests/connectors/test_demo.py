@@ -52,9 +52,12 @@ def test_demo_lokal_durchspielen_ohne_anfrage_nach_aussen(settings, worker, mail
         enqueue("ledger.nachtabgleich_alle", {})
         alle_jobs_ausfuehren(worker)
         assert router.calls.call_count == 0
-    status = set(Mahnvorschlag.objects.fuer(firma).filter(pk__in=ids).values_list("status", flat=True))
-    assert status == {"versendet"}
-    assert len(mailoutbox) == len(ids)
+    vorschlaege = Mahnvorschlag.objects.fuer(firma).filter(pk__in=ids)
+    assert set(vorschlaege.exclude(beleg__quelle="kopie").values_list("status", flat=True)) == {"versendet"}
+    # Rechnungskopie: Zahlung aus dem Kontoauszug noch nicht zugeordnet, daher kein Versand (K8)
+    gesperrt = vorschlaege.filter(beleg__quelle="kopie")
+    assert gesperrt.count() == 1 and gesperrt.get().status == "vorgeschlagen"
+    assert len(mailoutbox) == len(ids) - 1
     assert all(name.endswith(".pdf") for m in mailoutbox for name, *_ in m.attachments)
     assert not Job.objects.filter(status="fehler").exists()
     assert Beleg.objects.fuer(firma).filter(status__in=Beleg.OFFENE_STATUS).count() == offen_vorher

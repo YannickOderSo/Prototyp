@@ -16,6 +16,7 @@ NAVIGATION = [
     ("ledger:posten", "Offene Posten", "Posten", "receipt-text", False),
     ("ledger:kunden", "Kunden", "Kunden", "users", False),
     ("dunning:freigabe", "Mahnungen", "Mahnungen", "send", True),
+    ("quellen:uebersicht", "Abgleich", "Abgleich", "wallet", True),
     ("telefon:rueckrufe", "Rückrufe", "Rückrufe", "phone-incoming", False),
     ("reports:uebersicht", "Statistik", "Statistik", "chart-column", True),
     ("web:einstellungen", "Einstellungen", "Einstellungen", "settings", False),
@@ -39,7 +40,12 @@ def _zaehler(request: HttpRequest, darf_freigeben: bool) -> dict[str, int]:
     }
     if darf_freigeben:
         from dunning.models import Angebotserinnerung
+        from quellen.models import Rechnungskopie, Zahlung
 
+        zaehler["quellen:uebersicht"] = (
+            Rechnungskopie.objects.fuer(firma).filter(status=Rechnungskopie.Status.PRUEFUNG).count()
+            + Zahlung.objects.fuer(firma).filter(status=Zahlung.Status.NEU).count()
+        )
         zaehler["dunning:freigabe"] = (
             Mahnvorschlag.objects.fuer(firma).filter(status=Mahnvorschlag.Status.VORGESCHLAGEN).count()
             + Angebotserinnerung.objects.fuer(firma).filter(status=Angebotserinnerung.Status.VORGESCHLAGEN).count()

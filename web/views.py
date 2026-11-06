@@ -45,14 +45,9 @@ def start(request: FirmaRequest) -> HttpResponse:
 
 
 def _arbeitet_mit_kopien(firma: Firma) -> bool:
-    """K10: Firma ohne Lexware, die über Rechnungskopien arbeitet (Adresse eingerichtet oder Posten vorhanden)."""
-    from ledger.models import Beleg
-    from quellen.models import Kopieadresse
+    from quellen.kopien import arbeitet_mit_kopien
 
-    return (
-        Kopieadresse.objects.fuer(firma).filter(aktiv=True).exists()
-        or Beleg.objects.fuer(firma).filter(quelle=Beleg.Quelle.KOPIE).exists()
-    )
+    return arbeitet_mit_kopien(firma)
 
 
 def reiter_daten(firma: Firma, ansicht: str, heute: date) -> dict[str, object]:

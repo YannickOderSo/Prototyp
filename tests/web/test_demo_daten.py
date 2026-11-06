@@ -20,7 +20,13 @@ def test_nur_mit_debug(settings):
 def test_demo_daten(settings, client, mailoutbox):
     settings.DEBUG = True
     call_command("demo_daten")
-    assert Beleg.objects.filter(status__in=Beleg.OFFENE_STATUS).exclude(art="angebot").count() == 10
+    assert Beleg.objects.filter(status__in=Beleg.OFFENE_STATUS).exclude(art="angebot").count() == 11
+    # Abgleich (ADR-011 Stufe 3): Erinnerung zur Rechnungskopie mit Hinweis auf die passende Zahlung
+    from quellen.models import Zahlung
+
+    kopie = Mahnvorschlag.objects.get(beleg__nummer="AR-2026-0312", status="vorgeschlagen")
+    assert any("1428.00 € eingegangen" in h for h in kopie.hinweise)
+    assert Zahlung.objects.filter(status="neu").count() == 2
     assert Beleg.objects.filter(art="angebot").count() == 6
     stufen = set(Mahnvorschlag.objects.filter(status="vorgeschlagen").values_list("stufe", flat=True))
     assert stufen == {0, 1}

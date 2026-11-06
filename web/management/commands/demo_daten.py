@@ -241,6 +241,7 @@ class Command(BaseCommand):
                     freigegeben_von=nutzer,
                     freigegeben_am=am_tag(vor, 7, 40),
                 )
+        _abgleich(firma, nutzer, heute, am_tag)  # vor dem Vorschlagslauf: zeigt die Sperre bei offener Zahlung
         vorschlagslauf(firma, heute)
         from dunning.angebote import vorschlaege_erzeugen
 
@@ -399,6 +400,108 @@ class Command(BaseCommand):
             )
         vorgang = datenimport.hochladen(firma, nutzer, "posten", "alte-rechnungen.csv", alte)
         datenimport.zuordnung_speichern(vorgang, vorgang.zuordnung, {}, kundentyp_uebernehmen=False)
+
+
+def _abgleich(firma: Firma, nutzer: Nutzer, heute: Any, am_tag: Any) -> None:
+    """ADR-011 Stufe 3: alte Rechnung aus dem Vorgängerprogramm als Kopie, eine PDF-Kopie zur Prüfung, Kontoauszug."""
+    from quellen.models import Kontoauszug, Kopieadresse, Rechnungskopie, Zahlung
+
+    Kopieadresse.objects.create(firma=firma, absender=["rechnung@muster.example"])
+    berger = Kontakt.objects.create(
+        firma=firma,
+        extern_id="lokal-demo-berger",
+        name="Hausverwaltung Berger",
+        email="buchhaltung@berger-hv.example",
+        kundentyp="unternehmer",
+        ist_unternehmen_extern=True,
+        adresse="Hausverwaltung Berger\nLindenstraße 8\n12345 Musterstadt",
+    )
+    faellig = heute - timedelta(days=12)
+    beleg = Beleg.objects.create(
+        firma=firma,
+        extern_id="kopie-demo-0312",
+        nummer="AR-2026-0312",
+        kontakt=berger,
+        kontakt_name=berger.name,
+        belegdatum=faellig - timedelta(days=14),
+        faellig_am=faellig,
+        brutto=D("1428.00"),
+        offen=D("1428.00"),
+        status=Beleg.Status.UEBERFAELLIG,
+        quelle=Beleg.Quelle.KOPIE,
+    )
+    Rechnungskopie.objects.create(
+        firma=firma,
+        weg=Rechnungskopie.Weg.MAIL,
+        dateiname="AR-2026-0312.pdf",
+        format="zugferd",
+        status=Rechnungskopie.Status.ANGELEGT,
+        daten={"nummer": "AR-2026-0312", "kaeufer_name": berger.name, "zahlbetrag": "1428.00"},
+        beleg=beleg,
+        erstellt=am_tag(26, 17, 2),
+    )
+    Rechnungskopie.objects.create(
+        firma=firma,
+        weg=Rechnungskopie.Weg.UPLOAD,
+        dateiname="Rechnung_AR-2026-0318.pdf",
+        format="pdf",
+        status=Rechnungskopie.Status.PRUEFUNG,
+        ki_gelesen=True,
+        erstellt=am_tag(0, 8, 12),
+        erstellt_von=nutzer,
+        daten={
+            "art": "rechnung",
+            "nummer": "AR-2026-0318",
+            "belegdatum": (heute - timedelta(days=3)).isoformat(),
+            "faellig_am": (heute + timedelta(days=11)).isoformat(),
+            "faelligkeit_aus": "Zahlungsziel 14 Tage",
+            "waehrung": "EUR",
+            "verkaeufer": "Malerbetrieb Muster GmbH",
+            "kaeufer_name": "Wohnbau Nord eG",
+            "kaeufer_email": "",
+            "kaeufer_anschrift": "Wohnbau Nord eG\nHafenweg 3\n12345 Musterstadt",
+            "brutto": "3570.00",
+            "zahlbetrag": "3570.00",
+            "ki": "fertig",
+        },
+        grund="Keine E-Rechnung: Die Werte hat die KI aus dem PDF gelesen. Bitte prüfen und bestätigen. "
+        "Fälligkeit aus dem Zahlungsziel berechnet: Rechnungsdatum plus 14 Tage.",
+    )
+    auszug = Kontoauszug.objects.create(
+        firma=firma,
+        dateiname="Umsaetze_Girokonto.xml",
+        format="camt053",
+        konto="DE12 •••• 7890",
+        von=heute - timedelta(days=3),
+        bis=heute - timedelta(days=1),
+        gutschriften=2,
+        neu=2,
+        hochgeladen_von=nutzer,
+        erstellt=am_tag(0, 7, 55),
+    )
+    Zahlung.objects.create(
+        firma=firma,
+        kontoauszug=auszug,
+        schluessel="demo-1",
+        buchungsdatum=heute - timedelta(days=1),
+        betrag=D("1428.00"),
+        zahler="Hausverwaltung Berger",
+        zahler_konto="DE44 •••• 1020",
+        verwendungszweck="AR-2026-0312 Treppenhaus Lindenstr. 8",
+        vorschlag=beleg,
+        vorschlag_grund="Rechnungsnummer und Betrag passen.",
+    )
+    Zahlung.objects.create(
+        firma=firma,
+        kontoauszug=auszug,
+        schluessel="demo-2",
+        buchungsdatum=heute - timedelta(days=2),
+        betrag=D("250.00"),
+        zahler="M. Schulz",
+        zahler_konto="DE71 •••• 4410",
+        verwendungszweck="Anzahlung Gartenzaun",
+        vorschlag_grund="Keine passende offene Rechnung gefunden.",
+    )
 
 
 def _pos(artikel_id: str, beschreibung: str, menge: int, einheit: str) -> dict[str, object]:

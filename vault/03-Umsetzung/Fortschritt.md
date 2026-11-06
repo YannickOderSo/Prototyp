@@ -324,3 +324,26 @@ Wunsch von Lukas (Punkt 10). Yannick hat entschieden: Live-Gespräch mit KI, im 
 - Mahnungen: „Verwerfen“ sieht aus wie ein Knopf. Belegseite und Rückruf: Namen in Kacheln brechen nur an Wortgrenzen um.
 - Demo-Daten: Firmenname ohne „(Demo)“, Einrichtung abgeschlossen, Zahlungseingänge und versendete Mahnungen in dieser Woche, ein angenommenes Angebot, ein Posten 61–90 Tage überfällig, Uhrzeiten zur Bürozeit, keine Rechnung mehr mit Datum in der Zukunft. Rückruf „Familie Weber“ mit dem Gesprächsverlauf aus dem Pitch-Video.
 - Geprüft: 57 Seiten auf Desktop und Handy ohne Fehler und ohne waagerechtes Scrollen, 1.970 Links ohne Fehler, alle Tests grün.
+
+## Bericht M9 Rechnungskopien und Kontoauszüge, ADR-011 Stufe 3 (6. November 2026)
+
+Anlass: Die Pilotkundin nutzt DATEV. Damit Betriebe ohne Lexware (oder mit einem Rechnungsprogramm ohne Schnittstelle) Belegfluss nutzen können, liest Belegfluss Kopien ihrer Rechnungen und ihre Kontoauszüge. Entscheidung: [[ADR-011-Breite-Anbindung]], Anforderungen K1–K10.
+
+**Gebaut (App `quellen`, Seite „Abgleich“):**
+- M9-02: E-Rechnungen lesen: ZUGFeRD/Factur-X (PDF mit XML), XRechnung CII und UBL; abgesicherter XML-Parser (keine DTD, keine Entitäten).
+- M9-03: Kopie-Adresse `belege+r<token>@…` mit Absenderliste und DKIM/SPF-Prüfung, Hochladen. Eindeutige E-Rechnungen werden offene Posten (Quelle „Rechnungskopie“), Kunden werden gefunden oder im Cockpit angelegt (Kundentyp „unbekannt“). Prüfung durch Menschen bei fremdem Verkäufer, anderer Währung, Korrektur, fehlender Fälligkeit, Gutschrift ohne Rechnung. Dubletten über die Nummer, Gutschriften mindern den Posten. Mahnwesen und Tageslauf auch ohne Lexware-Verbindung.
+- M9-04: PDF ohne E-Rechnung: Die KI (Bedrock EU) liest Nummer, Daten, Kunde und Beträge vor, rechnet nichts. Gegenprobe am PDF-Text; die Kopie bleibt immer in der Prüfung, bis ein Mensch bestätigt.
+- M9-05/06: Kontoauszug camt.053, camt.052 und CSV. Nur gebuchte Gutschriften, IBANs gekürzt, Schutz gegen doppeltes Hochladen. Vorschlag per Regel (Nummer im Verwendungszweck, Betrag, Name); Bestätigen, andere Rechnung, Ignorieren mit Protokoll. Freigabe zeigt den Stand des letzten Kontoauszugs. Eine passende, noch nicht zugeordnete Zahlung sperrt den Versand der Mahnung.
+- M9-07: Navigation „Abgleich“ mit Zähler, Einrichtung und Einstellungen mit dem Weg ohne Lexware, Löschfristen (12 Monate, PDF-Text spätestens nach 7 Tagen), Firma löschen, IDOR-Fälle, Demo-Daten.
+
+**Tests:** 884 Tests grün, davon 62 neu in M9 (vor M9: 822).
+
+**Nur mit Beispieldateien oder nachgebildeten Diensten getestet:**
+- Keine echte Bankdatei: camt- und CSV-Beispiele sind nach öffentlich bekannten Formaten nachgebaut. Vor dem Pilot einen echten Export der Bank der Pilotkundin durchlaufen lassen.
+- Kein echter KI-Aufruf für PDF-Kopien (Bedrock nachgebildet); Qualität der Werte bei echten PDFs ungemessen.
+- Keine echte Mail an die Kopie-Adresse: Das Sammelpostfach ist noch nicht eingerichtet (Offene-Fragen.md).
+- Keine echte DATEV-Rechnung: Ob DATEV Auftragswesen next ZUGFeRD mit eingebettetem XML erzeugt, ist zu prüfen.
+
+**Richtigstellung:** In einer früheren Antwort hieß es, Betriebe ohne Lexware könnten den Excel-Import nutzen. Das stimmt nicht: Der Excel-Import legt Kunden und Artikel in Lexware an und setzt für offene Posten einen Lexware-Kunden voraus (ADR-008, H6). Ohne Lexware führt der Weg über Rechnungskopien.
+
+**Noch nicht gebaut:** Stufe 1 („Positionsliste zum Abtippen“ für Erfassungen ohne Schnittstelle); Kontoabruf über finAPI (B2, erst nach Vertrag); Aufteilen von Sammelzahlungen.

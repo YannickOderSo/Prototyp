@@ -37,6 +37,16 @@ class KopieFehler(ValueError):
     pass
 
 
+def arbeitet_mit_kopien(firma: Firma) -> bool:
+    """K10: Firma arbeitet über Rechnungskopien (Adresse aktiv oder Posten aus Kopien vorhanden)."""
+    from .models import Kopieadresse
+
+    return (
+        Kopieadresse.objects.fuer(firma).filter(aktiv=True).exists()
+        or Beleg.objects.fuer(firma).filter(quelle=Beleg.Quelle.KOPIE).exists()
+    )
+
+
 # ------------------------------------------------------------------ Einlesen
 
 

@@ -297,3 +297,23 @@ Vor dem ersten Pilotbetrieb, in dieser Reihenfolge. Alles hier ist bisher nur mi
 - Testanrufe aus mehreren Netzen: Kommen gewählte Nummer und Nummer des Anrufers bei der Umleitung an?
 - Lasttest mit mehreren gleichzeitigen Gesprächen.
 - Notrufhinweis in der Ansage, das ist der Pflichtteil. Belegfluss vermittelt keine Notrufe.
+
+## 12. Rechnungskopien und Kontoauszüge (ADR-011 Stufe 3)
+
+**Status:** Gebaut und mit Beispieldateien getestet (XRechnung CII/UBL, ZUGFeRD, camt.053, camt.052, CSV von Sparkasse, DKB und Deutscher Bank nach öffentlich bekannten Formaten). **Nicht** getestet: echte Kontoauszüge einer Pilotbank, echte Mails an die Kopie-Adresse, ein echter KI-Aufruf für PDF-Kopien.
+
+**Kopie-Adresse:** nutzt dasselbe Sammelpostfach wie das Belegpostfach (`BELEGPOSTFACH_ADRESSE`, `BELEGPOSTFACH_AUTHSERV_ID`, Abschnitt Belegpostfach). Token mit `r` am Anfang gehen an die Rechnungskopien, alle anderen an die Erfassung. Ohne konfiguriertes Sammelpostfach zeigt die Seite „Abgleich“ einen Hinweis; Hochladen geht immer.
+
+**Neuen Betrieb ohne Lexware einrichten**
+1. Inhaber legt das Konto an, Einrichtung → „Kein Lexware?“ → Abgleich.
+2. Kopie-Adresse einrichten und die Absenderadresse des Rechnungsprogramms eintragen (oder `@domain`). Im Rechnungsprogramm diese Adresse als BCC für Rechnungsmails eintragen.
+3. Alte offene Rechnungen als PDF oder E-Rechnung hochladen (bis 20 Dateien je Vorgang). PDF-Werte prüfen und bestätigen.
+4. Unter „Kunden“ den Kundentyp der neuen Kunden setzen; vorher wird nicht gemahnt.
+5. Mahnplan wählen, Probelauf ansehen.
+6. Täglich oder vor jeder Mahnfreigabe einen Kontoauszug hochladen (camt.053 bevorzugt). Die Freigabe warnt, wenn der letzte Auszug älter als 2 Tage ist.
+
+**Störungen**
+- *„Kein Kontoauszug im camt-Format“ / „Spalten Buchungstag und Betrag fehlen“:* Datei im Online-Banking als camt.053 oder als CSV-Umsatzliste exportieren. Neues CSV-Format: Kopfzeile an Entwickler; Synonyme stehen in `quellen/bank.py` (`SPALTEN`).
+- *Zahlung bekommt keinen Vorschlag:* Rechnungsnummer fehlt im Verwendungszweck und Betrag passt zu keiner oder mehreren Rechnungen. Unter „Andere Rechnung“ von Hand wählen.
+- *Mahnung bleibt nach Freigabe auf „vorgeschlagen“:* Eine passende Zahlung ist noch nicht zugeordnet (Protokoll `mahnung.frischecheck_zahlung`). Zahlung bestätigen oder ignorieren, dann erneut freigeben.
+- *PDF-Kopie bleibt ohne Werte:* KI-Limit erreicht, kein Text im PDF (Scan) oder Bedrock nicht erreichbar; Hinweis an der Kopie. Werte von Hand eintragen.

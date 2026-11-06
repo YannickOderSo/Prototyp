@@ -9,6 +9,9 @@ Täglich um 3:30 Uhr (nach dem Nachtabgleich, vor dem Vorschlagslauf):
 - KI-Telefonassistent (ADR-010): Gesprächsverlauf 90 Tage nach dem Gespräch, Rückruf-Notizen 90 Tage nach
   „erledigt“, offene spätestens nach 12 Monaten.
 - Erfassungen samt Transkript, KI-Ergebnis und Entwurf 12 Monate nach dem Anlegen (`Erfassung.loeschen_ab`).
+- Rechnungskopien, Kontoauszüge und Zahlungen 12 Monate nach dem Eingang (K9, `loeschen_ab`). Der PDF-Text einer
+  Kopie wird nach dem Lesen durch die KI geleert, spätestens nach 7 Tagen. Posten aus Kopien sind keine Spiegeldaten
+  und bleiben beim Trennen von Lexware erhalten.
 - Spiegeldaten (Kontakte, Artikel, Belege) 30 Tage nach dem Trennen der Verbindung, sofern die Firma nicht wieder
   verbunden ist. Mahnvorschläge und Versände hängen an den Belegen und werden mit gelöscht (Offene-Fragen.md);
   das Protokoll bleibt als Nachweis.
@@ -121,13 +124,23 @@ def erfassungen(jetzt: datetime, bericht: Bericht) -> None:
         bericht.zaehlen(erfassung.firma_id, "erfassungen")
 
 
-def spiegel_loeschen(firma: Firma, bericht: Bericht | None = None) -> dict[str, int]:
-    """Löscht Spiegeldaten einer Firma samt daran hängender Mahnvorschläge und Versände."""
+def spiegel_loeschen(firma: Firma, bericht: Bericht | None = None, *, alles: bool = False) -> dict[str, int]:
+    """Löscht Spiegeldaten einer Firma samt daran hängender Mahnvorschläge und Versände.
+
+    Posten aus Rechnungskopien und deren Kunden sind keine Spiegeldaten (ADR-011) und bleiben, außer bei `alles`."""
+    belege = Beleg.objects.fuer(firma)
+    kontakte = Kontakt.objects.fuer(firma)
+    if not alles:
+        belege = belege.exclude(quelle=Beleg.Quelle.KOPIE)
+        kopie_kunden = Beleg.objects.fuer(firma).filter(quelle=Beleg.Quelle.KOPIE).values("kontakt_id")
+        kontakte = kontakte.exclude(pk__in=kopie_kunden).exclude(extern_id__startswith="lokal-")
     anzahlen = {
-        "versaende": Versand.objects.fuer(firma).delete()[0],
-        "mahnvorschlaege": Mahnvorschlag.objects.fuer(firma).delete()[0],
-        "belege": Beleg.objects.fuer(firma).delete()[0],
-        "kontakte": Kontakt.objects.fuer(firma).delete()[0],
+        "versaende": Versand.objects.fuer(firma)
+        .filter(models.Q(vorschlag__beleg__in=belege) | models.Q(vorschlag__isnull=True))
+        .delete()[0],
+        "mahnvorschlaege": Mahnvorschlag.objects.fuer(firma).filter(beleg__in=belege).delete()[0],
+        "belege": belege.delete()[0],
+        "kontakte": kontakte.delete()[0],
         "artikel": Artikel.objects.fuer(firma).delete()[0],
     }
     for verbindung in Verbindung.objects.fuer(firma):
@@ -153,6 +166,24 @@ def spiegel_nach_trennung(jetzt: datetime, bericht: Bericht) -> None:
                 Verbindung.objects.filter(pk=verbindung.pk).update(
                     organisation_id="", firmenname_extern="", erstimport_fertig=None, letzter_abgleich=None
                 )
+
+
+QUELLEN_TEXT = timedelta(days=7)
+
+
+def quellen(jetzt: datetime, bericht: Bericht) -> None:
+    """K9: Rechnungskopien, Kontoauszüge und Zahlungen nach 12 Monaten; PDF-Text spätestens nach 7 Tagen."""
+    from quellen.models import Kontoauszug, Rechnungskopie, Zahlung
+
+    for art, modell in (("rechnungskopien", Rechnungskopie), ("zahlungen", Zahlung), ("kontoauszuege", Kontoauszug)):
+        faellig = modell.objects.filter(loeschen_ab__lte=jetzt)
+        for eintrag in faellig.only("pk", "firma_id").iterator():
+            bericht.zaehlen(eintrag.firma_id, art)
+        faellig.delete()
+    alt = Rechnungskopie.objects.filter(erstellt__lte=jetzt - QUELLEN_TEXT).exclude(text="")
+    for eintrag in alt.only("pk", "firma_id").iterator():
+        bericht.zaehlen(eintrag.firma_id, "kopie_texte")
+    alt.update(text="")
 
 
 def protokoll(bericht: Bericht) -> None:
@@ -187,6 +218,7 @@ def ausfuehren(jetzt: datetime | None = None) -> Bericht:
     importzeilen(jetzt, bericht)
     telefon(jetzt, bericht)
     erfassungen(jetzt, bericht)
+    quellen(jetzt, bericht)
     spiegel_nach_trennung(jetzt, bericht)
     protokoll(bericht)
     technik(jetzt, bericht)
@@ -220,7 +252,13 @@ def firma_loeschen(firma: Firma) -> dict[str, int]:
             for datei in Datei.objects.filter(erfassung=erfassung, geloescht_am__isnull=True):
                 datei_loeschen(datei)
         anzahlen["erfassungen"] = Erfassung.objects.fuer(firma).delete()[0]
-        anzahlen.update(spiegel_loeschen(firma))
+        from quellen.models import Kontoauszug, Kopieadresse, Rechnungskopie, Zahlung
+
+        anzahlen["zahlungen"] = Zahlung.objects.fuer(firma).delete()[0]
+        anzahlen["kontoauszuege"] = Kontoauszug.objects.fuer(firma).delete()[0]
+        anzahlen["rechnungskopien"] = Rechnungskopie.objects.fuer(firma).delete()[0]
+        anzahlen["kopieadresse"] = Kopieadresse.objects.fuer(firma).delete()[0]
+        anzahlen.update(spiegel_loeschen(firma, alles=True))
         for name, queryset in (
             ("verbindungen", Verbindung.objects.fuer(firma)),
             ("belegpostfach", Belegpostfach.objects.fuer(firma)),

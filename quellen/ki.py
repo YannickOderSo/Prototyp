@@ -257,7 +257,8 @@ def lesen(kopie: Rechnungskopie) -> None:
             ]
         )[:2000]
         kopie.ki_gelesen = True
-        kopie.save(update_fields=["daten", "grund", "ki_gelesen"])
+        kopie.text = ""  # wird nach dem Lesen nicht mehr gebraucht (Datenminimierung, K9)
+        kopie.save(update_fields=["daten", "grund", "ki_gelesen", "text"])
     protokolliere(
         kopie.firma,
         "rechnungskopie.ki_gelesen",
@@ -269,5 +270,6 @@ def lesen(kopie: Rechnungskopie) -> None:
 def fehlgeschlagen(kopie: Rechnungskopie, meldung: str) -> None:
     kopie.daten = {**kopie.daten, "ki": "fehler"}
     kopie.grund = f"Die KI konnte das PDF nicht lesen ({meldung}) Bitte die Werte selbst eintragen."[:2000]
-    kopie.save(update_fields=["daten", "grund"])
+    kopie.text = ""
+    kopie.save(update_fields=["daten", "grund", "text"])
     protokolliere(kopie.firma, "rechnungskopie.ki_fehler", objekt=kopie, daten={"meldung": meldung[:300]})
