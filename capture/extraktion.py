@@ -228,22 +228,29 @@ def _pruefen(daten: Any) -> dict[str, Any]:
     return daten
 
 
-def extrahieren(erfassung: Erfassung) -> tuple[dict[str, Any], list[str]]:
-    """Ruft das Modell und liefert das strukturierte Ergebnis und Hinweise. Wirft ExtraktionFehler."""
+def json_anfrage(
+    firma: Firma,
+    *,
+    system: str,
+    messages: list[dict[str, Any]],
+    schema: dict[str, Any],
+    max_tokens: int = 16000,
+    effort: str = "medium",
+    bei_ablehnung: str = "Die KI hat die Anfrage abgelehnt.",
+) -> Any:
+    """Ein Aufruf mit JSON-Schema über Bedrock EU. Bucht den Verbrauch und wirft ExtraktionFehler.
+
+    Das Kostenlimit prüft der Aufrufer vorher mit `kostenlimit_pruefen`."""
     import anthropic
 
-    kostenlimit_pruefen(erfassung.firma)
-    e = eingabe(erfassung)
-    if not e.text and not e.bilder:
-        raise ExtraktionFehler("Es gibt keinen Text und kein auswertbares Foto.")
     client = client_fabrik()
     try:
         antwort = client.messages.create(
             model=settings.BEDROCK_MODELL,
-            max_tokens=16000,
-            system=SYSTEM,
-            messages=nachricht(erfassung.firma, e, timezone.localdate().isoformat()),
-            output_config={"effort": "medium", "format": {"type": "json_schema", "schema": SCHEMA}},
+            max_tokens=max_tokens,
+            system=system,
+            messages=messages,
+            output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
         )
     except (anthropic.APIConnectionError, anthropic.RateLimitError, anthropic.InternalServerError) as fehler:
         raise ExtraktionFehler("Der KI-Dienst ist gerade nicht erreichbar.", wiederholbar=True) from fehler
@@ -251,15 +258,30 @@ def extrahieren(erfassung: Erfassung) -> tuple[dict[str, Any], list[str]]:
         raise ExtraktionFehler(f"Der KI-Dienst hat die Anfrage abgelehnt (HTTP {fehler.status_code}).") from fehler
     nutzung = getattr(antwort, "usage", None)
     verbrauch_buchen(
-        erfassung.firma, int(getattr(nutzung, "input_tokens", 0) or 0), int(getattr(nutzung, "output_tokens", 0) or 0)
+        firma, int(getattr(nutzung, "input_tokens", 0) or 0), int(getattr(nutzung, "output_tokens", 0) or 0)
     )
     if antwort.stop_reason == "refusal":
-        raise ExtraktionFehler("Die KI hat die Anfrage abgelehnt. Bitte legen Sie den Beleg direkt in Lexware an.")
+        raise ExtraktionFehler(bei_ablehnung)
     if antwort.stop_reason == "max_tokens":
         raise ExtraktionFehler("Die Antwort der KI war zu lang. Bitte weniger Quellen auf einmal senden.")
     text = next((b.text for b in antwort.content if getattr(b, "type", "") == "text"), "")
     try:
-        daten = json.loads(text)
+        return json.loads(text)
     except ValueError as fehler:
         raise ExtraktionFehler("Die Antwort der KI war kein gültiges JSON.") from fehler
+
+
+def extrahieren(erfassung: Erfassung) -> tuple[dict[str, Any], list[str]]:
+    """Ruft das Modell und liefert das strukturierte Ergebnis und Hinweise. Wirft ExtraktionFehler."""
+    kostenlimit_pruefen(erfassung.firma)
+    e = eingabe(erfassung)
+    if not e.text and not e.bilder:
+        raise ExtraktionFehler("Es gibt keinen Text und kein auswertbares Foto.")
+    daten = json_anfrage(
+        erfassung.firma,
+        system=SYSTEM,
+        messages=nachricht(erfassung.firma, e, timezone.localdate().isoformat()),
+        schema=SCHEMA,
+        bei_ablehnung="Die KI hat die Anfrage abgelehnt. Bitte legen Sie den Beleg direkt in Lexware an.",
+    )
     return _pruefen(daten), e.hinweise

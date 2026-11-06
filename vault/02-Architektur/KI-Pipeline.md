@@ -73,3 +73,14 @@ Nur: Kundennamen, Aliase, Kundennummern, Artikel-ID, Bezeichnung, Einheit, offen
 - Modell lehnt ab oder bricht ab: Erfassung auf `fehler` mit verständlicher Meldung, Neuversuch-Knopf.
 - Transkription leer: Hinweis "Keine Sprache erkannt".
 - Bedrock nicht erreichbar: Job mit Backoff wiederholen, nach 3 Versuchen Fehler anzeigen.
+
+## Zweiter Einsatz: PDF-Rechnungskopien vorlesen (K5, M9-04)
+
+Betriebe ohne Lexware schicken Kopien ihrer Ausgangsrechnungen (ADR-011, Stufe 3). Hat ein PDF keine eingebettete E-Rechnung, liest die KI die Werte vor. Code: `quellen/ki.py`, Job `quellen.ki_lesen`.
+
+- Gleicher Weg wie die Erfassung: Bedrock in eu-central-1, EU-Inferenzprofil, Modell `BEDROCK_MODELL`, JSON-Schema, gemeinsamer Helfer `capture.extraktion.json_anfrage`. Das KI-Kostenlimit zählt jeden Lesevorgang als einen Vorgang.
+- Gesendet wird nur der PDF-Text (höchstens 20.000 Zeichen) als `<quelle>`, keine Stammdaten. Eingescannte PDFs ohne Text gehen nicht an die KI; der Mensch trägt die Werte ein.
+- Die KI liest nur ab, was auf der schon verschickten Rechnung steht. Sie setzt keine Nummer, keinen Preis und keinen Steuersatz und rechnet nicht. Steht nur ein Zahlungsziel da („14 Tage“), rechnet die Regel die Fälligkeit (Rechnungsdatum plus Tage) und sagt das dem Menschen.
+- Gegenprobe: Nummer, Kunde, E-Mail, Datum und Beträge müssen wörtlich im PDF-Text stehen (deutsche und englische Schreibweise der Beträge, gängige Datumsformate). Sonst steht ein Hinweis über dem Formular.
+- Die Kopie bleibt immer in der Prüfung. Ein Posten entsteht erst, wenn Inhaber oder Freigeber die Werte bestätigt; das Protokoll hält fest, wer bestätigt hat. Der PDF-Text wird danach gelöscht.
+- Fehler (Ablehnung, Limit, kein JSON): Die Kopie bleibt in der Prüfung mit dem Hinweis, die Werte selbst einzutragen.

@@ -37,3 +37,18 @@ def cii(nummer: str = "RE-2026-0412", **ersetzen: str) -> bytes:
     for alt, neu in ersetzen.items():
         text = text.replace(alt.replace("__", "-"), neu)
     return text.encode()
+
+
+def text_pdf(*zeilen: str) -> bytes:
+    """Ein PDF mit Text, aber ohne eingebettete E-Rechnung (z. B. aus einem alten Rechnungsprogramm)."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.pdfgen import canvas
+
+    puffer = io.BytesIO()
+    c = canvas.Canvas(puffer, pagesize=A4)
+    y = 800
+    for zeile in zeilen:
+        c.drawString(60, y, zeile)
+        y -= 18
+    c.save()
+    return puffer.getvalue()

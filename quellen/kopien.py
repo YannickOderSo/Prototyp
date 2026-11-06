@@ -88,9 +88,9 @@ def _pdf_ohne_erechnung(kopie: Rechnungskopie, dateiname: str, daten: bytes) -> 
     quelle = pdf(dateiname, daten)
     kopie.format = "pdf"
     kopie.text = quelle.text
-    kopie.daten = {"art": "rechnung", "waehrung": "EUR"}
+    kopie.daten = {"art": "rechnung", "waehrung": "EUR", "ki": "wartet" if quelle.text else ""}
     if quelle.text:
-        kopie.grund = "Keine E-Rechnung: Die Werte hat die KI aus dem PDF gelesen. Bitte prüfen und bestätigen."
+        kopie.grund = "Keine E-Rechnung: Die KI liest das PDF. Danach bitte jeden Wert prüfen und bestätigen."
     else:
         kopie.grund = " ".join(quelle.hinweise) or "Das PDF enthält keinen lesbaren Text. Bitte Werte eintragen."
     kopie.save()

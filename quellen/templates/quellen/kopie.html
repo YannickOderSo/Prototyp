@@ -6,7 +6,7 @@
 <h1>Rechnungskopie {{ k.daten.nummer|default:k.dateiname }}</h1>
 <p class="leise">{{ k.get_weg_display }} am {{ k.erstellt|date:"d.m.Y H:i" }} · {{ k.dateiname }} · <span class="marke-status{% if k.status == 'angelegt' %} gut{% elif k.status == 'pruefung' %} warnung{% elif k.status == 'abgelehnt' %} schlecht{% endif %}">{{ k.get_status_display }}</span></p>
 {% if k.grund %}<p class="meldung{% if in_pruefung %} warnung{% endif %}">{{ k.grund }}</p>{% endif %}
-{% if k.format == "pdf" and in_pruefung %}<p class="hilfe">{% if k.ki_gelesen %}Die Werte unten hat die KI aus dem PDF gelesen.{% else %}Die KI liest das PDF gerade; die Werte erscheinen gleich (Seite neu laden).{% endif %} Übernommen wird erst, wenn Sie bestätigen. Bitte jede Zahl mit der Rechnung vergleichen.</p>{% endif %}
+{% if k.format == "pdf" and in_pruefung %}<p class="hilfe">{% if k.ki_gelesen %}Die Werte unten hat die KI aus dem PDF gelesen.{% elif k.daten.ki == "wartet" %}Die KI liest das PDF gerade; die Werte erscheinen gleich (Seite neu laden).{% else %}Bitte die Werte aus der Rechnung eintragen.{% endif %} Übernommen wird erst, wenn Sie bestätigen. Bitte jede Zahl mit der Rechnung vergleichen.</p>{% endif %}
 {% if k.beleg %}<p><a class="knopf zweitrangig" href="{% url 'ledger:beleg' k.beleg.pk %}">Zum Posten {{ k.beleg.nummer }}</a></p>{% endif %}
 {% if in_pruefung %}
 <form method="post" class="karte" novalidate>
