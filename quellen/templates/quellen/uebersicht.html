@@ -60,5 +60,63 @@
   {% endfor %}
 </ul>
 {% endif %}
-{% block kontoauszug %}{% endblock %}
+
+<h2 id="kontoauszug">Kontoauszüge und Zahlungseingänge</h2>
+<p class="meldung{% if stand.veraltet or stand.offene_zahlungen %} warnung{% endif %}">{{ stand.text }}</p>
+<div class="raster zwei">
+<section class="karte" aria-labelledby="auszug-hochladen">
+  <h3 id="auszug-hochladen">Kontoauszug hochladen</h3>
+  <form method="post" action="{% url 'quellen:kontoauszug' %}" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% with form=auszug_form %}{% include "web/_formular.html" %}{% endwith %}
+    <div class="knopfreihe"><button type="submit">{% icon "upload" %}Kontoauszug lesen</button></div>
+  </form>
+  <p class="hilfe">Belegfluss ordnet Zahlungseingänge nur Rechnungen zu, die nicht aus Lexware kommen. Der Zahlstatus ändert sich erst, wenn Sie bestätigen.</p>
+</section>
+<section class="karte" aria-labelledby="auszug-liste">
+  <h3 id="auszug-liste">Zuletzt hochgeladen</h3>
+  {% if auszuege %}
+  <ul class="liste">
+    {% for a in auszuege %}
+    <li><div class="zeile"><span>{{ a.dateiname }}</span><span>{% if a.bis %}Stand {{ a.bis|date:"d.m.Y" }}{% endif %}</span></div>
+      <div class="neben">{{ a.konto|default:"Konto" }} · {{ a.gutschriften }} Eingänge, {{ a.neu }} neu{% if a.doppelt %}, {{ a.doppelt }} schon bekannt{% endif %} · {{ a.erstellt|date:"d.m.Y H:i" }}</div></li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="leise">Noch kein Kontoauszug.</p>{% endif %}
+</section>
+</div>
+
+{% if zahlungen_offen %}
+<h3>Zahlungen zuordnen ({{ zahlungen_offen|length }})</h3>
+<ul class="liste">
+  {% for z in zahlungen_offen %}
+  <li id="zahlung-{{ z.pk }}">
+    <div class="zeile"><strong>{{ z.zahler|default:"Zahler unbekannt" }}</strong><strong>{{ z.betrag|euro }}</strong></div>
+    <div class="neben">{{ z.buchungsdatum|date:"d.m.Y" }}{% if z.zahler_konto %} · {{ z.zahler_konto }}{% endif %}{% if z.verwendungszweck %} · {{ z.verwendungszweck|truncatechars:140 }}{% endif %}</div>
+    {% if z.vorschlag %}<div class="zeile"><span>Vorschlag: <a href="{% url 'ledger:beleg' z.vorschlag.pk %}">Rechnung {{ z.vorschlag.nummer }}</a> · {{ z.vorschlag.kontakt.name|default:z.vorschlag.kontakt_name }}</span><span>offen {{ z.vorschlag.offen|euro }}</span></div>{% endif %}
+    <div class="hilfe">{{ z.vorschlag_grund }}</div>
+    <form method="post" action="{% url 'quellen:zahlung' z.pk %}" class="knopfreihe">
+      {% csrf_token %}
+      {% if z.vorschlag %}<button type="submit" name="aktion" value="bestaetigen">{% icon "circle-check" %}Bestätigen</button>{% endif %}
+      {% if offene_posten %}<details><summary>Andere Rechnung</summary>
+        <div class="feld"><label for="beleg{{ z.pk }}">Offene Rechnung</label>
+          <select id="beleg{{ z.pk }}" name="beleg">{% for b in offene_posten %}<option value="{{ b.pk }}"{% if b.pk == z.vorschlag_id %} selected{% endif %}>{{ b.nummer }} · {{ b.kontakt.name|default:b.kontakt_name }} · {{ b.offen|euro }}</option>{% endfor %}</select></div>
+        <button type="submit" name="aktion" value="zuordnen">Zuordnen</button>
+      </details>{% endif %}
+      <button type="submit" name="aktion" value="ignorieren" class="zweitrangig" data-bestaetigen="Zahlung ignorieren? Sie wird keiner Rechnung zugeordnet.">Ignorieren</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if zahlungen_erledigt %}
+<h3>Zuletzt erledigt</h3>
+<ul class="liste">
+  {% for z in zahlungen_erledigt %}
+  <li><div class="zeile"><span>{{ z.zahler|default:"Zahler unbekannt" }} · {{ z.buchungsdatum|date:"d.m.Y" }}</span><span>{{ z.betrag|euro }}</span></div>
+    <div class="neben">{% if z.beleg %}<a href="{% url 'ledger:beleg' z.beleg.pk %}">Rechnung {{ z.beleg.nummer }}</a>{% else %}{{ z.get_status_display }}{% endif %} · {{ z.erledigt_am|date:"d.m.Y H:i" }}</div></li>
+  {% endfor %}
+</ul>
+{% endif %}
 {% endblock %}

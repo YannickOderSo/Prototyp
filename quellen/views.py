@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.mandant import hole_oder_404
@@ -13,9 +14,9 @@ from accounts.rechte import freigabe_berechtigt
 from accounts.typen import FirmaRequest
 from audit.services import protokolliere
 
-from . import kopien
-from .forms import KopienUploadForm, PruefForm
-from .models import Kopieadresse, Rechnungskopie
+from . import bank, kopien, zahlungen
+from .forms import KontoauszugForm, KopienUploadForm, PruefForm
+from .models import Kontoauszug, Kopieadresse, Rechnungskopie, Zahlung
 
 
 def kopie_adresse(eintrag: Kopieadresse | None) -> str:
@@ -62,8 +63,78 @@ def uebersicht(request: FirmaRequest) -> HttpResponse:
             "adresse_text": kopie_adresse(eintrag),
             "zu_pruefen": alle.filter(status=Rechnungskopie.Status.PRUEFUNG).order_by("-erstellt"),
             "letzte": alle.exclude(status=Rechnungskopie.Status.PRUEFUNG).order_by("-erstellt")[:15],
+            **_kontoauszug_kontext(request),
         },
     )
+
+
+def _kontoauszug_kontext(request: FirmaRequest) -> dict[str, object]:
+    firma = request.firma
+    alle = Zahlung.objects.fuer(firma).select_related("vorschlag", "vorschlag__kontakt", "beleg")
+    return {
+        "auszug_form": KontoauszugForm(),
+        "stand": zahlungen.stand(firma),
+        "auszuege": Kontoauszug.objects.fuer(firma).order_by("-erstellt")[:5],
+        "zahlungen_offen": alle.filter(status=Zahlung.Status.NEU).order_by("-buchungsdatum", "pk"),
+        "zahlungen_erledigt": alle.exclude(status=Zahlung.Status.NEU).order_by("-erledigt_am")[:10],
+        "offene_posten": zahlungen.offene_posten(firma).select_related("kontakt").order_by("nummer")[:300],
+    }
+
+
+@require_POST
+@freigabe_berechtigt
+def kontoauszug(request: FirmaRequest) -> HttpResponse:
+    """K6: Kontoauszug hochladen. Neue Zahlungseingänge bekommen einen Vorschlag; gebucht wird noch nichts."""
+    form = KontoauszugForm(request.POST, request.FILES)
+    if not form.is_valid():
+        for fehler in form.errors.get("datei", ["Bitte eine Datei auswählen."]):
+            messages.error(request, str(fehler))
+        return redirect("quellen:uebersicht")
+    datei = form.cleaned_data["datei"]
+    try:
+        eintrag = zahlungen.einlesen(request.firma, datei.name or "kontoauszug", datei.read(), request.user)
+    except bank.AuszugFehler as fehler:
+        messages.error(request, str(fehler))
+        return redirect("quellen:uebersicht")
+    stand_text = f" mit Stand {eintrag.bis:%d.%m.%Y}" if eintrag.bis else ""
+    doppelt = f", {eintrag.doppelt} schon bekannt" if eintrag.doppelt else ""
+    messages.success(
+        request,
+        f"Kontoauszug{stand_text} gelesen: {eintrag.gutschriften} Zahlungseingänge, davon {eintrag.neu} neu{doppelt}. "
+        "Abbuchungen werden nicht gespeichert.",
+    )
+    return redirect(f"{reverse('quellen:uebersicht')}#kontoauszug")
+
+
+@require_POST
+@freigabe_berechtigt
+def zahlung(request: FirmaRequest, pk: int) -> HttpResponse:
+    """K7: Vorschlag bestätigen, andere Rechnung wählen oder ignorieren. Erst dann ändert sich der Zahlstatus."""
+    eintrag = hole_oder_404(Zahlung, request.firma, pk=pk)
+    aktion = request.POST.get("aktion", "")
+    try:
+        if aktion == "ignorieren":
+            zahlungen.ignorieren(eintrag, request.user)
+            messages.info(request, f"Zahlung über {eintrag.betrag} € ignoriert.")
+        else:
+            if aktion == "bestaetigen":
+                beleg = eintrag.vorschlag
+            else:
+                beleg = zahlungen.offene_posten(request.firma).filter(pk=_zahl(request.POST.get("beleg"))).first()
+            if beleg is None:
+                raise zahlungen.ZahlungFehler("Bitte eine offene Rechnung auswählen.")
+            ergebnis = zahlungen.bestaetigen(eintrag, beleg, request.user)
+            assert ergebnis.beleg is not None
+            rest = ergebnis.beleg.offen
+            zusatz = "jetzt bezahlt" if rest == 0 else f"noch {rest} € offen"
+            messages.success(request, f"Zahlung Rechnung {ergebnis.beleg.nummer} zugeordnet, {zusatz}.")
+    except zahlungen.ZahlungFehler as fehler:
+        messages.error(request, str(fehler))
+    return redirect(f"{reverse('quellen:uebersicht')}#kontoauszug")
+
+
+def _zahl(wert: str | None) -> int:
+    return int(wert) if wert and wert.isdigit() else 0
 
 
 @require_POST

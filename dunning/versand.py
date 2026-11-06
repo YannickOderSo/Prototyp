@@ -83,11 +83,29 @@ def _frische_check(vorschlag: Mahnvorschlag, zahlung_offen: Decimal, bezahlt: bo
     return True
 
 
+def _zahlung_offen(vorschlag: Mahnvorschlag) -> bool:
+    """K8: Passt eine noch nicht zugeordnete Zahlung aus dem Kontoauszug, geht nichts hinaus."""
+    from .vorschlaege import zahlung_hinweis
+
+    hinweis = zahlung_hinweis(vorschlag.beleg)
+    if not hinweis:
+        return False
+    vorschlag.status = Mahnvorschlag.Status.VORGESCHLAGEN
+    vorschlag.freigegeben_von = None
+    vorschlag.freigegeben_am = None
+    vorschlag.hinweise = [hinweis, *[h for h in vorschlag.hinweise if h != hinweis]]
+    vorschlag.save(update_fields=["status", "freigegeben_von", "freigegeben_am", "hinweise"])
+    protokolliere(vorschlag.firma, "mahnung.frischecheck_zahlung", objekt=vorschlag)
+    return True
+
+
 def _pdf_importiert(vorschlag: Mahnvorschlag) -> bytes | None:
     """ADR-008: Zahlstatus aus dem Cockpit statt aus Lexware; Mahnschreiben erzeugt die App."""
     beleg = vorschlag.beleg
     beleg.refresh_from_db()
     if not _frische_check(vorschlag, beleg.offen, beleg.status == Beleg.Status.BEZAHLT or beleg.offen <= 0):
+        raise _KeinVersand
+    if _zahlung_offen(vorschlag):
         raise _KeinVersand
     if vorschlag.stufe == 0:
         return None  # Erinnerung per Mail ohne Anhang; für den Postversand erzeugt versenden() den Brief

@@ -110,3 +110,20 @@ class PruefForm(forms.Form):
         if felder.get("art") not in dict(cls.ARTEN):
             felder["art"] = "rechnung"
         return cls(initial=felder)
+
+
+class KontoauszugForm(forms.Form):
+    datei = forms.FileField(
+        label="Kontoauszug (camt.053, camt.052 oder CSV)",
+        help_text="Aus dem Online-Banking: Umsätze als camt.053 (XML) oder CSV exportieren. Gespeichert werden nur "
+        "Zahlungseingänge; Abbuchungen werden verworfen.",
+        widget=forms.ClearableFileInput(attrs={"accept": ".xml,.csv,.txt"}),
+    )
+
+    def clean_datei(self) -> Any:
+        from .bank import MAX_BYTES
+
+        datei = self.cleaned_data["datei"]
+        if datei.size > MAX_BYTES:
+            raise forms.ValidationError("Der Kontoauszug ist größer als 10 MB.")
+        return datei

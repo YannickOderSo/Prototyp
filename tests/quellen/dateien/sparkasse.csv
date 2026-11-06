@@ -1,0 +1,4 @@
+"Auftragskonto";"Buchungstag";"Valutadatum";"Buchungstext";"Verwendungszweck";"Glaeubiger ID";"Mandatsreferenz";"Kundenreferenz (End-to-End)";"Sammlerreferenz";"Lastschrift Ursprungsbetrag";"Auslagenersatz Ruecklastschrift";"Beguenstigter/Zahlungspflichtiger";"Kontonummer/IBAN";"BIC (SWIFT-Code)";"Betrag";"Waehrung";"Info"
+"DE89370400440532013000";"04.11.26";"04.11.26";"GUTSCHR. UEBERWEISUNG";"RE-2026-0412 Malerarbeiten Gebäude";"";"";"NOTPROVIDED";"";"";"";"Huber Hausverwaltung GmbH";"DE02120300000000202051";"BYLADEM1001";"1.642,00";"EUR";"Umsatz gebucht"
+"DE89370400440532013000";"04.11.26";"04.11.26";"LASTSCHRIFT";"Mobilfunk Oktober";"DE123";"M-1";"";"";"";"";"Telekom Deutschland GmbH";"DE11111111111111111111";"";"-89,90";"EUR";"Umsatz gebucht"
+"DE89370400440532013000";"05.11.26";"05.11.26";"GUTSCHR. UEBERWEISUNG";"Abschlag Dach";"";"";"";"";"";"";"Dach KG";"DE22222222222222222222";"";"500,00";"EUR";"Umsatz vorgemerkt"

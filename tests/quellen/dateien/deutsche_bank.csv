@@ -1,0 +1,5 @@
+Umsätze Girokonto;;;;;;;;;;;;;;;;;
+Zeitraum: 01.11.2026 - 05.11.2026;;;;;;;;;;;;;;;;;
+Buchungstag;Wert;Umsatzart;Begünstigter / Auftraggeber;Verwendungszweck;IBAN;BIC;Kundenreferenz;Mandatsreferenz ;Gläubiger ID;Fremde Gebühren;Betrag;Abweichender Empfänger;Anzahl der Aufträge;Anzahl der Schecks;Soll;Haben;Währung
+03.11.2026;03.11.2026;SEPA-Überweisung von;Weber Elektro;RE-2026-0412;DE55555555555555555555;;;;;;;;;;;2.142,00;EUR
+03.11.2026;03.11.2026;SEPA-Lastschrift;Versicherung AG;Beitrag;DE66666666666666666666;;;;;;;;;;-120,00;;EUR

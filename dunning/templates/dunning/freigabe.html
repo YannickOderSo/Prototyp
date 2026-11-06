@@ -4,6 +4,7 @@
 {% block inhalt %}
 <h1>Mahnungen freigeben</h1>
 <p>Nichts geht ohne Ihre Freigabe hinaus. Vor jedem Versand prüft Belegfluss in Lexware, ob inzwischen bezahlt wurde.</p>
+{% if kontoauszug %}<p class="meldung{% if kontoauszug.veraltet or kontoauszug.offene_zahlungen %} warnung{% endif %}">Rechnungen ohne Lexware: {{ kontoauszug.text }} <a href="{% url 'quellen:uebersicht' %}#kontoauszug">Zum Abgleich</a></p>{% endif %}
 {% if basiszins_fehlt %}<p class="meldung warnung">Für heute ist kein aktueller Basiszinssatz gepflegt. Bis zur Pflege werden keine Verzugszinsen berechnet.</p>{% endif %}
 
 {% if anzahl_offen %}

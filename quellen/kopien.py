@@ -235,6 +235,10 @@ def uebernehmen(kopie: Rechnungskopie, werte: dict[str, Any], nutzer: Nutzer | N
             beleg = _posten(kopie, werte, nutzer)
         kopie.status, kopie.beleg, kopie.grund = Rechnungskopie.Status.ANGELEGT, beleg, ""
         _abschliessen(kopie, nutzer)
+    if art != "gutschrift":
+        from .zahlungen import neu_vorschlagen
+
+        neu_vorschlagen(firma)  # früher hochgeladene Zahlungen passen vielleicht zur neuen Rechnung
     return kopie
 
 

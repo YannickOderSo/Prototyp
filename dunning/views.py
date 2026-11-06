@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from accounts.mandant import hole_oder_404
+from accounts.models import Firma
 from accounts.rechte import freigabe_berechtigt, nur_inhaber
 from accounts.typen import FirmaRequest
 from audit.services import protokolliere
@@ -44,6 +45,16 @@ def mahnplan(request: FirmaRequest) -> HttpResponse:
     return render(request, "dunning/mahnplan.html", {"form": form, "basiszinsen": basiszinsen()})
 
 
+def _kontoauszug_stand(firma: Firma, offen: list[Mahnvorschlag]) -> object:
+    """K8: Stand des letzten Kontoauszugs, sobald Posten ohne Lexware zur Freigabe stehen."""
+    from quellen.models import Kontoauszug
+    from quellen.zahlungen import stand
+
+    if any(v.beleg.lokal for v in offen) or Kontoauszug.objects.fuer(firma).exists():
+        return stand(firma)
+    return None
+
+
 @freigabe_berechtigt
 def freigabe(request: FirmaRequest) -> HttpResponse:
     alle = (
@@ -60,6 +71,7 @@ def freigabe(request: FirmaRequest) -> HttpResponse:
                 (stufe, label, [v for v in offen if v.stufe == stufe]) for stufe, label in Mahnvorschlag.Stufe.choices
             ],
             "anzahl_offen": len(offen),
+            "kontoauszug": _kontoauszug_stand(request.firma, offen),
             "in_arbeit": alle.filter(status=Mahnvorschlag.Status.FREIGEGEBEN),
             "fehler": alle.filter(status=Mahnvorschlag.Status.FEHLER),
             "post": alle.filter(status=Mahnvorschlag.Status.POST_BEREIT),

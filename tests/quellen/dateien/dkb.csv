@@ -1,0 +1,6 @@
+"Kontonummer:";"DE89 3704 0044 0532 0130 00 / Girokonto";
+"Kontostand vom 05.11.2026:";"12.345,67 €";
+
+"Buchungsdatum";"Wertstellung";"Status";"Zahlungspflichtige*r";"Zahlungsempfänger*in";"Verwendungszweck";"Umsatztyp";"IBAN";"Betrag (€)";"Gläubiger-ID";"Mandatsreferenz";"Kundenreferenz"
+"05.11.26";"05.11.26";"Gebucht";"Bau AG";"Malerbetrieb Muster GmbH";"Rechnung 2026/0500";"Eingang";"DE33333333333333333333";"1.000,00";"";"";""
+"05.11.26";"05.11.26";"Gebucht";"Malerbetrieb Muster GmbH";"Farben Schmidt";"Material";"Ausgang";"DE44444444444444444444";"-250,00";"";"";""

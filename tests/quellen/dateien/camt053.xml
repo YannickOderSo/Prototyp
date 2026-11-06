@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+  <BkToCstmrStmt>
+    <GrpHdr><MsgId>STMT-2026-11-05</MsgId><CreDtTm>2026-11-05T06:00:00+01:00</CreDtTm></GrpHdr>
+    <Stmt>
+      <Id>2026-11-05-001</Id>
+      <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id></Acct>
+      <FrToDt><FrDtTm>2026-11-04T00:00:00+01:00</FrDtTm><ToDtTm>2026-11-04T23:59:59+01:00</ToDtTm></FrToDt>
+      <Ntry>
+        <Amt Ccy="EUR">1642.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Sts>BOOK</Sts>
+        <BookgDt><Dt>2026-11-04</Dt></BookgDt><ValDt><Dt>2026-11-04</Dt></ValDt>
+        <AcctSvcrRef>BANK-REF-0001</AcctSvcrRef>
+        <NtryDtls><TxDtls>
+          <Refs><EndToEndId>NOTPROVIDED</EndToEndId></Refs>
+          <RltdPties><Dbtr><Nm>Huber Hausverwaltung GmbH</Nm></Dbtr><DbtrAcct><Id><IBAN>DE02120300000000202051</IBAN></Id></DbtrAcct></RltdPties>
+          <RmtInf><Ustrd>Rechnung RE 2026 0412 vielen Dank</Ustrd></RmtInf>
+        </TxDtls></NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">89.90</Amt><CdtDbtInd>DBIT</CdtDbtInd><Sts>BOOK</Sts>
+        <BookgDt><Dt>2026-11-04</Dt></BookgDt>
+        <NtryDtls><TxDtls><RltdPties><Cdtr><Nm>Telekom Deutschland GmbH</Nm></Cdtr></RltdPties>
+          <RmtInf><Ustrd>Mobilfunk Oktober</Ustrd></RmtInf></TxDtls></NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">1500.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Sts>BOOK</Sts>
+        <BookgDt><Dt>2026-11-04</Dt></BookgDt>
+        <AcctSvcrRef>BANK-REF-0002</AcctSvcrRef>
+        <NtryDtls>
+          <TxDtls>
+            <AmtDtls><TxAmt><Amt Ccy="EUR">1000.00</Amt></TxAmt></AmtDtls>
+            <RltdPties><Dbtr><Nm>Bau AG</Nm></Dbtr></RltdPties>
+            <RmtInf><Ustrd>RE-2026-0500</Ustrd></RmtInf>
+          </TxDtls>
+          <TxDtls>
+            <AmtDtls><TxAmt><Amt Ccy="EUR">500.00</Amt></TxAmt></AmtDtls>
+            <RltdPties><Dbtr><Nm>Dach KG</Nm></Dbtr></RltdPties>
+            <RmtInf><Strd><CdtrRefInf><Ref>RF18539007547034</Ref></CdtrRefInf></Strd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">200.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><RvslInd>true</RvslInd><Sts>BOOK</Sts>
+        <BookgDt><Dt>2026-11-04</Dt></BookgDt><AcctSvcrRef>BANK-REF-0003</AcctSvcrRef>
+      </Ntry>
+    </Stmt>
+  </BkToCstmrStmt>
+</Document>

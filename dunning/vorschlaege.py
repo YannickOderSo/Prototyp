@@ -49,6 +49,23 @@ def hinweis_lokal(beleg: Beleg) -> str:
     return HINWEIS_KOPIE if beleg.quelle == Beleg.Quelle.KOPIE else HINWEIS_IMPORT
 
 
+def zahlung_hinweis(beleg: Beleg) -> str:
+    """K8: Eine noch nicht zugeordnete Zahlung aus dem Kontoauszug könnte zu diesem Posten gehören."""
+    from quellen.zahlungen import offene_zahlung_fuer
+
+    zahlung = offene_zahlung_fuer(beleg)
+    if zahlung is None:
+        return ""
+    return (
+        f"Am {zahlung.buchungsdatum:%d.%m.%Y} sind {zahlung.betrag} € eingegangen, die zu dieser Rechnung passen "
+        "könnten. Bitte die Zahlung erst unter „Abgleich“ zuordnen oder ignorieren; bis dahin wird nicht versendet."
+    )
+
+
+def hinweise_lokal(beleg: Beleg) -> list[str]:
+    return [h for h in (hinweis_lokal(beleg), zahlung_hinweis(beleg)) if h]
+
+
 @dataclass
 class Kandidat:
     beleg: Beleg
@@ -182,7 +199,7 @@ def berechnen(firma: Firma, heute: date) -> Laufergebnis:
         if versandart == "post":
             hinweise.append("Postversand nötig: Für diesen Kunden ist in Lexware keine E-Mail-Adresse hinterlegt.")
         if beleg.lokal:
-            hinweise.append(hinweis_lokal(beleg))
+            hinweise.extend(hinweise_lokal(beleg))
         bezug = beleg.faellig_am or beleg.belegdatum
         assert bezug is not None
         ergebnis.kandidaten.append(Kandidat(beleg, stufe, b, (heute - bezug).days, versandart, hinweise))
@@ -229,7 +246,7 @@ def neu_berechnen(vorschlag: Mahnvorschlag, heute: date) -> None:
     if versandart == "post":
         hinweise.append("Postversand nötig: Für diesen Kunden ist in Lexware keine E-Mail-Adresse hinterlegt.")
     if beleg.lokal:
-        hinweise.append(hinweis_lokal(beleg))
+        hinweise.extend(hinweise_lokal(beleg))
     k = Kandidat(beleg, vorschlag.stufe, b, (heute - bezug).days if bezug else 0, versandart, hinweise)
     for feld, wert in _werte(k, heute).items():
         setattr(vorschlag, feld, wert)

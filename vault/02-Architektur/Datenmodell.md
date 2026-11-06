@@ -62,3 +62,14 @@ Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich �
 - **ImportVorgang** (App `datenimport`): firma, art (`kunden` | `artikel` | `posten`), status (`zuordnung` → `vorschau` → `freigegeben` → `fertig` | `fehler` | `verworfen`), dateiname, blatt, spalten, zeilen (gelesene Zellen als Text), zuordnung (Feld → Spaltennummer), standardwerte (z. B. Steuersatz), kundentyp_uebernehmen, vorschau (je Zeile `neu` | `dublette` | `fehler` mit Grund und Daten), ergebnis (je Zeile Lexware-ID bzw. Fehler, für Neuversuche ohne Doppelanlage), erstellt_von, freigegeben_von, freigegeben_am, loeschen_ab (7 Tage), zeilen_geloescht_am. Die Datei selbst wird nicht gespeichert.
 - **Kontakt** ergänzt: `adresse` (Rechnungsadresse aus Lexware, für Mahnschreiben der App) und `excel_nummer` (Kundennummer aus dem Excel-Import, nur für die Zuordnung offener Posten; Lexware vergibt eigene Nummern).
 - **Beleg** ergänzt: `quelle` (`lexware` | `import`) und `import_vorgang`. Importierte Posten haben `extern_id` = `import-<vorgang>-<zeile>`, werden vom Lexware-Abgleich nie verändert und ihr Zahlstatus wird im Cockpit gepflegt.
+
+## Rechnungskopien und Kontoauszüge (M9, ADR-011 Stufe 3)
+
+App `quellen`. Dateien werden nie gespeichert, nur die gelesenen Felder (K9). Löschfrist für alle vier Tabellen: 12 Monate (`loeschen_ab`).
+
+- **Beleg** ergänzt: `quelle` = `kopie` (Rechnungskopie). `extern_id` = `kopie-<uuid>`. Eigenschaft `lokal` = jede Quelle außer `lexware`; lokale Posten werden vom Lexware-Abgleich nie verändert, ihr Zahlstatus kommt aus Kontoauszügen oder wird von Hand gepflegt.
+- **Kontakt** aus einer Kopie: `extern_id` = `lokal-<uuid>`, `kundentyp` = `unbekannt`, bis der Nutzer ihn festlegt.
+- **Kopieadresse**: firma (eindeutig), token (`r` + 16 Hex-Zeichen, Adresse `belege+<token>@…`), aktiv, absender (Liste erlaubter Adressen oder `@domain`), erstellt.
+- **Rechnungskopie**: firma, weg (`mail` | `upload`), message_id, dateiname, format (`zugferd` | `xrechnung_cii` | `xrechnung_ubl` | `pdf`), status (`angelegt` | `pruefung` | `doppelt` | `abgelehnt` | `verworfen`), daten (gelesene Felder EN 16931 bzw. KI-Vorschlag, Schlüssel wie im Prüfformular), grund, text (PDF-Text für die KI, nach der Entscheidung geleert), ki_gelesen, beleg, erstellt, erstellt_von, geprueft_von, geprueft_am, loeschen_ab.
+- **Kontoauszug**: firma, dateiname, format (`camt053` | `camt052` | `csv`), konto (IBAN gekürzt), von, bis (Stand für K8), gutschriften, neu, doppelt, hochgeladen_von, erstellt, loeschen_ab.
+- **Zahlung**: firma, kontoauszug, schluessel (SHA-256; eindeutig je Firma, gegen doppeltes Hochladen), buchungsdatum, betrag, waehrung, zahler, zahler_konto (gekürzt), verwendungszweck (höchstens 500 Zeichen), status (`neu` | `zugeordnet` | `ignoriert`), vorschlag (Beleg aus der Regel), vorschlag_grund, beleg (bestätigt), erledigt_von, erledigt_am, erstellt, loeschen_ab. Nur Gutschriften; Abbuchungen werden beim Lesen verworfen.

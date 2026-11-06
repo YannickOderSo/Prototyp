@@ -84,3 +84,66 @@ class Rechnungskopie(FirmaModel):
     @property
     def nummer(self) -> str:
         return str(self.daten.get("nummer") or "")
+
+
+class Kontoauszug(FirmaModel):
+    """K6: ein hochgeladener Kontoauszug. Die Datei selbst wird nicht gespeichert, nur Stand und Zählwerte."""
+
+    dateiname = models.CharField(max_length=200)
+    format = models.CharField(max_length=10, help_text="camt053, camt052 oder csv")
+    konto = models.CharField(max_length=40, blank=True, help_text="IBAN gekürzt, z. B. DE89 •••• 3000")
+    von = models.DateField(null=True, blank=True)
+    bis = models.DateField(null=True, blank=True, help_text="Stand: letzter Buchungstag im Auszug")
+    gutschriften = models.PositiveIntegerField(default=0)
+    neu = models.PositiveIntegerField(default=0)
+    doppelt = models.PositiveIntegerField(default=0)
+    hochgeladen_von = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    erstellt = models.DateTimeField(default=timezone.now)
+    loeschen_ab = models.DateTimeField(default=_in_12_monaten)
+
+    class Meta:
+        verbose_name_plural = "Kontoauszüge"
+        indexes = [models.Index(fields=["firma", "-bis"], name="kontoauszug_firma_idx")]
+
+    def __str__(self) -> str:
+        return f"Kontoauszug {self.dateiname}"
+
+
+class Zahlung(FirmaModel):
+    """K6/K7: ein Zahlungseingang (nur Gutschriften). Zugeordnet wird erst, wenn ein Mensch bestätigt."""
+
+    class Status(models.TextChoices):
+        NEU = "neu", "zuzuordnen"
+        ZUGEORDNET = "zugeordnet", "zugeordnet"
+        IGNORIERT = "ignoriert", "ignoriert"
+
+    kontoauszug = models.ForeignKey(Kontoauszug, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    schluessel = models.CharField(max_length=64, help_text="Hash gegen doppelt hochgeladene Umsätze")
+    buchungsdatum = models.DateField()
+    betrag = models.DecimalField(max_digits=12, decimal_places=2)
+    waehrung = models.CharField(max_length=3, default="EUR")
+    zahler = models.CharField(max_length=200, blank=True)
+    zahler_konto = models.CharField(max_length=40, blank=True, help_text="IBAN gekürzt")
+    verwendungszweck = models.CharField(max_length=500, blank=True)
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.NEU)
+    vorschlag = models.ForeignKey("ledger.Beleg", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    vorschlag_grund = models.CharField(max_length=300, blank=True)
+    beleg = models.ForeignKey(
+        "ledger.Beleg", null=True, blank=True, on_delete=models.SET_NULL, related_name="zahlungseingaenge"
+    )
+    erledigt_von = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    erledigt_am = models.DateTimeField(null=True, blank=True)
+    erstellt = models.DateTimeField(default=timezone.now)
+    loeschen_ab = models.DateTimeField(default=_in_12_monaten)
+
+    class Meta:
+        verbose_name_plural = "Zahlungen"
+        constraints = [models.UniqueConstraint(fields=["firma", "schluessel"], name="zahlung_einmal_je_firma")]
+        indexes = [models.Index(fields=["firma", "status", "-buchungsdatum"], name="zahlung_firma_status_idx")]
+
+    def __str__(self) -> str:
+        return f"Zahlung {self.betrag} {self.buchungsdatum}"

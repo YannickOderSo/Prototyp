@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.052.001.08">
+  <BkToCstmrAcctRpt>
+    <GrpHdr><MsgId>RPT-1</MsgId><CreDtTm>2026-11-05T12:00:00+01:00</CreDtTm></GrpHdr>
+    <Rpt>
+      <Id>RPT-1</Id>
+      <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id></Acct>
+      <Ntry>
+        <Amt Ccy="EUR">300.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Sts><Cd>BOOK</Cd></Sts>
+        <BookgDt><DtTm>2026-11-05T09:12:00+01:00</DtTm></BookgDt>
+        <NtryDtls><TxDtls>
+          <Refs><AcctSvcrRef>TX-77</AcctSvcrRef><EndToEndId>RE-2026-0600</EndToEndId></Refs>
+          <RltdPties><Dbtr><Pty><Nm>Lindner Immobilien</Nm></Pty></Dbtr></RltdPties>
+          <RmtInf><Ustrd>RE-2026-0600 Teilzahlung</Ustrd></RmtInf>
+        </TxDtls></NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">50.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Sts><Cd>PDNG</Cd></Sts>
+        <BookgDt><Dt>2026-11-05</Dt></BookgDt>
+      </Ntry>
+    </Rpt>
+  </BkToCstmrAcctRpt>
+</Document>

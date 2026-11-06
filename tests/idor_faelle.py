@@ -75,7 +75,19 @@ def _rechnungskopie(firma, nutzer=None):
     return {"pk": k.pk}
 
 
+def _zahlung(firma, nutzer=None):
+    from datetime import date
+
+    from quellen.models import Zahlung
+
+    z = Zahlung.objects.create(
+        firma=firma, schluessel=f"idor-{Zahlung.objects.count()}", buchungsdatum=date(2026, 11, 4), betrag=10
+    )
+    return {"pk": z.pk}
+
+
 FAELLE: dict[str, Fabrik] = {
+    "quellen:zahlung": _zahlung,
     "quellen:kopie": _rechnungskopie,
     "telefon:rueckruf": _rueckruf,
     "telefon:erledigt": _rueckruf,
