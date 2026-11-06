@@ -46,9 +46,10 @@
 </section>
 {% if v.status == 'vorschau' %}
 <p>{{ erklaerung }} Dubletten, bezahlte und fehlerhafte Zeilen werden übersprungen.</p>
-{% if v.art != 'posten' and not verbunden %}<p class="meldung warnung">Lexware ist nicht verbunden. <a href="{% url 'connectors:lexware' %}">Jetzt verbinden</a></p>{% endif %}
+{% if v.art == 'artikel' and ohne_lexware %}<p class="meldung warnung">Artikel lassen sich nur mit Lexware importieren. <a href="{% url 'connectors:lexware' %}">Lexware verbinden</a></p>
+{% elif v.art != 'posten' and not verbunden and not ohne_lexware %}<p class="meldung warnung">Lexware ist nicht verbunden. <a href="{% url 'connectors:lexware' %}">Jetzt verbinden</a></p>{% endif %}
 <div class="knopfreihe">
-  <form method="post" action="{% url 'datenimport:freigeben' v.pk %}">{% csrf_token %}<button type="submit"{% if not anzahl.neu %} disabled{% endif %}>{{ anzahl.neu }} {% if v.art == 'posten' %}offene Rechnungen in Belegfluss übernehmen{% elif v.art == 'kunden' %}Kunden in Lexware anlegen{% else %}Artikel in Lexware anlegen{% endif %}</button></form>
+  <form method="post" action="{% url 'datenimport:freigeben' v.pk %}">{% csrf_token %}<button type="submit"{% if not anzahl.neu %} disabled{% endif %}>{{ anzahl.neu }} {% if v.art == 'posten' %}offene Rechnungen in Belegfluss übernehmen{% elif v.art == 'kunden' %}Kunden in {% if ohne_lexware %}Belegfluss{% else %}Lexware{% endif %} anlegen{% else %}Artikel in Lexware anlegen{% endif %}</button></form>
   <form method="post" action="{% url 'datenimport:verwerfen' v.pk %}">{% csrf_token %}<button type="submit" class="zweitrangig">Verwerfen</button></form>
 </div>
 {% elif v.status == 'freigegeben' and haengt %}

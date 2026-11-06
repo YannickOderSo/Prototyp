@@ -307,7 +307,7 @@ Vor dem ersten Pilotbetrieb, in dieser Reihenfolge. Alles hier ist bisher nur mi
 **Neuen Betrieb ohne Lexware einrichten**
 1. Inhaber legt das Konto an, Einrichtung → „Kein Lexware?“ → Abgleich.
 2. Kopie-Adresse einrichten und die Absenderadresse des Rechnungsprogramms eintragen (oder `@domain`). Im Rechnungsprogramm diese Adresse als BCC für Rechnungsmails eintragen.
-3. Alte offene Rechnungen als PDF oder E-Rechnung hochladen (bis 20 Dateien je Vorgang). PDF-Werte prüfen und bestätigen.
+3. Alte offene Rechnungen als Liste aus Excel/CSV übernehmen (Einstellungen → Import aus Excel → offene Rechnungen; fehlende Kunden legt Belegfluss mit an) oder einzeln als PDF/E-Rechnung hochladen (bis 20 Dateien je Vorgang). PDF-Werte prüfen und bestätigen.
 4. Unter „Kunden“ den Kundentyp der neuen Kunden setzen; vorher wird nicht gemahnt.
 5. Mahnplan wählen, Probelauf ansehen.
 6. Täglich oder vor jeder Mahnfreigabe einen Kontoauszug hochladen (camt.053 bevorzugt). Die Freigabe warnt, wenn der letzte Auszug älter als 2 Tage ist.

@@ -77,7 +77,7 @@ def _importieren(firma, inhaber):
     return vorgang
 
 
-def test_vorschau_offener_posten(firma, inhaber, kunden, heute):
+def test_vorschau_offener_posten(firma, inhaber, kunden, heute, verbindung):
     vorgang = _importieren(firma, inhaber)
     zeilen = {z["nr"]: z for z in vorgang.vorschau}
     assert zeilen[2]["status"] == "neu" and zeilen[2]["daten"]["ueberfaellig"] is True
@@ -101,7 +101,10 @@ def test_posten_nur_im_cockpit_ohne_lexware(firma, inhaber, kunden, umgebung):
     vorgang = _importieren(firma, inhaber)
     services.freigeben(vorgang, inhaber)  # ohne Verbindung möglich: Lexware wird nicht berührt
     vorgang.refresh_from_db()
-    assert vorgang.status == ImportVorgang.Status.FERTIG and vorgang.ergebnis["angelegt"] == 2
+    # ohne Lexware legt der Import den unbekannten Kunden „Unbekannt GmbH“ in Belegfluss an (M9-08)
+    assert vorgang.status == ImportVorgang.Status.FERTIG and vorgang.ergebnis["angelegt"] == 3
+    neu = Kontakt.objects.get(firma=firma, name="Unbekannt GmbH")
+    assert neu.extern_id.startswith("lokal-") and neu.kundentyp == "unbekannt"
     alt = Beleg.objects.get(firma=firma, nummer="2024-117")
     assert alt.quelle == "import" and alt.importiert and alt.import_vorgang == vorgang
     assert alt.status == "ueberfaellig" and alt.offen == D("1190.00") and alt.kontakt == kunden[0]

@@ -344,6 +344,14 @@ Anlass: Die Pilotkundin nutzt DATEV. Damit Betriebe ohne Lexware (oder mit einem
 - Keine echte Mail an die Kopie-Adresse: Das Sammelpostfach ist noch nicht eingerichtet (Offene-Fragen.md).
 - Keine echte DATEV-Rechnung: Ob DATEV Auftragswesen next ZUGFeRD mit eingebettetem XML erzeugt, ist zu prüfen.
 
-**Richtigstellung:** In einer früheren Antwort hieß es, Betriebe ohne Lexware könnten den Excel-Import nutzen. Das stimmt nicht: Der Excel-Import legt Kunden und Artikel in Lexware an und setzt für offene Posten einen Lexware-Kunden voraus (ADR-008, H6). Ohne Lexware führt der Weg über Rechnungskopien.
+**Richtigstellung:** In einer früheren Antwort hieß es, Betriebe ohne Lexware könnten den Excel-Import nutzen. Das stimmte zu dem Zeitpunkt nicht: Der Excel-Import legte Kunden und Artikel in Lexware an und setzte für offene Posten einen Kunden im Spiegel voraus (ADR-008, H6). Seit M9-08 (unten) geht es für Kunden und offene Rechnungen.
 
 **Noch nicht gebaut:** Stufe 1 („Positionsliste zum Abtippen“ für Erfassungen ohne Schnittstelle); Kontoabruf über finAPI (B2, erst nach Vertrag); Aufteilen von Sammelzahlungen.
+
+### Nachtrag M9-08: Excel-Import ohne Lexware (6. November 2026)
+- Firma ohne Lexware (keine oder nur getrennte Verbindung): Kunden aus Excel entstehen nur in Belegfluss, mit Anschrift für Mahnschreiben und Kundennummer aus Excel. Kundentyp nur nach Bestätigung.
+- Import offener Rechnungen legt unbekannte Kunden mit an (Name, optional neue Spalte „E-Mail des Kunden“), je Name einmal. Kunden aus Rechnungskopien werden gefunden. Vorschau sagt je Zeile, welcher Kunde neu entsteht.
+- Artikel bleiben nur mit Lexware möglich (Hochladen wird mit Begründung abgelehnt). Eine gestörte Verbindung schaltet nicht still auf „ohne Lexware“ um.
+- Einrichtung, Cockpit und Abgleich zeigen den Weg „offene Rechnungen aus Excel übernehmen“.
+- Tests: 8 neue, 3 bestehende auf „mit Lexware-Verbindung“ umgestellt (sie prüfen den Lexware-Weg). Kein Aufruf an Lexware im Weg ohne Lexware (Mock zählt 0 Anfragen). Nicht getestet: echte Excel-/CSV-Exporte aus DATEV (OP-Liste).
+- Ablauf für die DATEV-Pilotkundin: Start mit einer Liste offener Rechnungen (Excel/CSV), neue Rechnungen über Rechnungskopien, Zahlungen über den Kontoauszug.

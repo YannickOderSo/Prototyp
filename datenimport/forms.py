@@ -8,6 +8,13 @@ ERKLAERUNG = {
     "artikel": "Werden nach Ihrer Freigabe in Lexware angelegt und stehen danach für Angebote zur Verfügung.",
     "posten": "Alte offene Rechnungen werden nur in Belegfluss geführt und gemahnt, nie in Lexware gebucht.",
 }
+# Ohne Lexware (M9-08): nichts verlässt Belegfluss
+ERKLAERUNG_OHNE_LEXWARE = {
+    "kunden": "Werden nach Ihrer Freigabe nur in Belegfluss angelegt (ohne Lexware).",
+    "artikel": "Nur mit Lexware möglich: Artikel dienen den Entwürfen, die nach Lexware übertragen werden.",
+    "posten": "Alte offene Rechnungen werden nur in Belegfluss geführt und gemahnt. Unbekannte Kunden werden "
+    "dabei mit angelegt.",
+}
 
 
 class UploadForm(forms.Form):

@@ -145,6 +145,13 @@ FELDER: dict[str, list[Feld]] = {
             ("K-1001", "K-1002"),
         ),
         Feld(
+            "kunde_email",
+            "E-Mail des Kunden",
+            False,
+            ("e mail", "email", "mail", "e mail adresse", "kunden e mail", "kunden email", "emailadresse"),
+            ("buchhaltung@bau-ag.example", "erika@example.org"),
+        ),
+        Feld(
             "betrag",
             "Betrag brutto",
             True,

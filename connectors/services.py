@@ -26,6 +26,14 @@ def connector_fuer(verbindung: Verbindung) -> AccountingConnector:
     return LexwareConnector(entschluesseln(verbindung.schluessel_verschluesselt), basis_url=settings.LEXWARE_BASIS_URL)
 
 
+def ohne_lexware(firma: Firma) -> bool:
+    """ADR-011/M9-08: Firma arbeitet ohne Bestandstool (nie verbunden oder nur getrennte Verbindungen).
+
+    Eine Verbindung mit Fehler (z. B. abgelehnter Schlüssel) zählt nicht als „ohne Lexware“: Dort sollen Kunden in
+    Lexware entstehen, sobald die Verbindung wieder steht, nicht still nur in Belegfluss."""
+    return not Verbindung.objects.fuer(firma).exclude(status=Verbindung.Status.GETRENNT).exists()
+
+
 def aktive_verbindung(firma: Firma) -> Verbindung | None:
     return (
         Verbindung.objects.fuer(firma)

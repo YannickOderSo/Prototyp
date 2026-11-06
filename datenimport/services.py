@@ -8,6 +8,7 @@ damit ein Neuversuch nach einem Abbruch nichts doppelt anlegt. Offene Posten wer
 from __future__ import annotations
 
 import logging
+import uuid
 from datetime import date
 from decimal import Decimal
 from typing import Any
@@ -20,7 +21,7 @@ from audit.services import protokolliere
 from connectors.base import AccountingConnector, ArticleDraft, ContactDraft
 from connectors.fehler import ConnectorFehler, NichtAutorisiert
 from connectors.models import Verbindung
-from connectors.services import aktive_verbindung
+from connectors.services import aktive_verbindung, ohne_lexware
 from jobs.queue import enqueue
 from ledger.abgleich import kontakt_speichern
 from ledger.models import Artikel, Beleg, Kontakt, Kundentyp
@@ -31,6 +32,12 @@ from .lesen import Tabelle, lesen
 from .models import ImportVorgang
 
 log = logging.getLogger(__name__)
+
+
+ARTIKEL_NUR_MIT_LEXWARE = (
+    "Artikel lassen sich nur mit Lexware importieren: Sie dienen den Angebots- und Rechnungsentwürfen, "
+    "die nach Lexware übertragen werden."
+)
 
 
 class ImportNichtMoeglich(Exception):
@@ -91,8 +98,13 @@ def freigeben(vorgang: ImportVorgang, nutzer: Nutzer) -> None:
         vorgang.vorschau = vorschau.berechnen(vorgang)
         if not vorgang.anzahl("neu"):
             raise ImportNichtMoeglich("Es gibt keine neuen Einträge zum Importieren.")
-        verbindung = aktive_verbindung(vorgang.firma) if vorgang.art != ImportVorgang.Art.POSTEN else None
-        if vorgang.art != ImportVorgang.Art.POSTEN and verbindung is None:
+        lokal = vorgang.art == ImportVorgang.Art.POSTEN or (
+            vorgang.art == ImportVorgang.Art.KUNDEN and ohne_lexware(vorgang.firma)
+        )
+        if vorgang.art == ImportVorgang.Art.ARTIKEL and ohne_lexware(vorgang.firma):
+            raise ImportNichtMoeglich(ARTIKEL_NUR_MIT_LEXWARE)
+        verbindung = None if lokal else aktive_verbindung(vorgang.firma)
+        if not lokal and verbindung is None:
             raise ImportNichtMoeglich("Keine aktive Verbindung zu Lexware.")
         vorgang.status = ImportVorgang.Status.FREIGEGEBEN
         vorgang.freigegeben_von = nutzer
@@ -115,6 +127,8 @@ def freigeben(vorgang: ImportVorgang, nutzer: Nutzer) -> None:
             )
     if vorgang.art == ImportVorgang.Art.POSTEN:
         posten_anlegen(vorgang)
+    elif lokal:
+        kunden_lokal_anlegen(vorgang)
 
 
 def job_aktiv(vorgang: ImportVorgang) -> bool:
@@ -278,14 +292,78 @@ def artikel_anlegen(vorgang: ImportVorgang, connector: AccountingConnector) -> N
     _abschliessen(vorgang)
 
 
-def posten_anlegen(vorgang: ImportVorgang) -> None:
-    """Alte offene Rechnungen nur im Cockpit (ADR-008): nie in Lexware, vom Abgleich ausgenommen."""
+def _adresse(d: dict[str, Any]) -> str:
+    ansprechpartner = " ".join(x for x in (d["ansprechpartner_vorname"], d["ansprechpartner_nachname"]) if x)
+    ort = " ".join(x for x in (d["plz"], d["ort"]) if x)
+    name = " ".join(x for x in (d["vorname"], d["name"]) if x)
+    zeilen = [name, ansprechpartner, d["strasse"], ort, "" if d["land"] == "DE" else d["land"]]
+    return "\n".join(z for z in zeilen if z)[:1000]
+
+
+def _lokaler_kontakt(vorgang: ImportVorgang, **felder: Any) -> Kontakt:
+    """Kunde nur in Belegfluss (ohne Lexware, M9-08). Kundentyp bleibt „unbekannt“, bis der Nutzer ihn setzt."""
+    kontakt = Kontakt.objects.create(firma=vorgang.firma, extern_id=f"lokal-{uuid.uuid4().hex[:20]}", **felder)
+    protokolliere(
+        vorgang.firma,
+        "kontakt.aus_import_angelegt",
+        nutzer=vorgang.freigegeben_von,
+        objekt=kontakt,
+        daten={"import": vorgang.pk},
+    )
+    return kontakt
+
+
+def kunden_lokal_anlegen(vorgang: ImportVorgang) -> None:
+    """M9-08: Kunden aus Excel ohne Lexware nur in Belegfluss anlegen (nichts verlässt die App)."""
     with transaction.atomic():
         for zeile in vorgang.vorschau:
             if zeile["status"] != "neu":
                 continue
             d = zeile["daten"]
-            kontakt = Kontakt.objects.fuer(vorgang.firma).get(pk=d["kontakt_id"])
+            kontakt = _lokaler_kontakt(
+                vorgang,
+                name=" ".join(x for x in (d["vorname"], d["name"]) if x)[:250],
+                email=d["email"],
+                adresse=_adresse(d),
+                ist_unternehmen_extern=d["ist_firma"],
+                excel_nummer=d["kundennummer"],
+            )
+            if vorgang.kundentyp_uebernehmen and d["kundentyp"] in (Kundentyp.PRIVAT, Kundentyp.UNTERNEHMER):
+                kontakt.kundentyp = d["kundentyp"]
+                kontakt.save(update_fields=["kundentyp"])
+                protokolliere(
+                    vorgang.firma,
+                    "kontakt.kundentyp_gesetzt",
+                    nutzer=vorgang.freigegeben_von,
+                    objekt=kontakt,
+                    daten={"alt": "unbekannt", "neu": d["kundentyp"], "per": "import"},
+                )
+            vorgang.ergebnis.setdefault("zeilen", {})[str(zeile["nr"])] = {"id": kontakt.extern_id}
+        _abschliessen(vorgang)
+
+
+def posten_anlegen(vorgang: ImportVorgang) -> None:
+    """Alte offene Rechnungen nur im Cockpit (ADR-008): nie in Lexware, vom Abgleich ausgenommen.
+
+    Ohne Lexware legt der Import unbekannte Kunden mit an (M9-08), je Name nur einmal."""
+    neue: dict[str, Kontakt] = {}
+    with transaction.atomic():
+        for zeile in vorgang.vorschau:
+            if zeile["status"] != "neu":
+                continue
+            d = zeile["daten"]
+            if d.get("kunde_neu"):
+                schluessel = " ".join(d["kunde"].lower().split())
+                if schluessel not in neue:
+                    neue[schluessel] = _lokaler_kontakt(
+                        vorgang, name=d["kunde"], email=d.get("kunde_email", ""), excel_nummer=d.get("kunde_nummer", "")
+                    )
+                kontakt = neue[schluessel]
+                if d.get("kunde_email") and not kontakt.email:
+                    kontakt.email = d["kunde_email"]
+                    kontakt.save(update_fields=["email"])
+            else:
+                kontakt = Kontakt.objects.fuer(vorgang.firma).get(pk=d["kontakt_id"])
             faellig = date.fromisoformat(d["faellig_am"]) if d["faellig_am"] else None
             beleg = Beleg.objects.create(
                 firma=vorgang.firma,

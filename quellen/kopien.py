@@ -38,12 +38,14 @@ class KopieFehler(ValueError):
 
 
 def arbeitet_mit_kopien(firma: Firma) -> bool:
-    """K10: Firma arbeitet über Rechnungskopien (Adresse aktiv oder Posten aus Kopien vorhanden)."""
+    """K10: Firma arbeitet ohne Lexware über Rechnungskopien oder den Excel-Import (M9-08): Kopie-Adresse aktiv,
+    Posten aus Kopien oder Kunden, die nur in Belegfluss angelegt wurden."""
     from .models import Kopieadresse
 
     return (
         Kopieadresse.objects.fuer(firma).filter(aktiv=True).exists()
         or Beleg.objects.fuer(firma).filter(quelle=Beleg.Quelle.KOPIE).exists()
+        or Kontakt.objects.fuer(firma).filter(extern_id__startswith="lokal-").exists()
     )
 
 

@@ -1,8 +1,11 @@
 """Vorschau je Zeile: neu, Dublette, bezahlt oder Fehler mit Grund (H3). Ändert nichts, berechnet nur.
 
-Dubletten werden gegen den Spiegel (Lexware) und innerhalb der Datei erkannt. Kunden für offene Posten werden
-über die Kundennummer (Excel-Nummer oder Lexware-Nummer) oder den genauen Namen gefunden; mehrdeutige Treffer
-sind ein Fehler, nie eine Vermutung.
+Dubletten werden gegen die Kunden, Artikel und Belege in Belegfluss (mit Lexware: der Spiegel) und innerhalb der
+Datei erkannt. Kunden für offene Posten werden über die Kundennummer (Excel-Nummer oder Lexware-Nummer) oder den
+genauen Namen gefunden; mehrdeutige Treffer sind ein Fehler, nie eine Vermutung.
+
+Ohne Lexware (M9-08, ADR-008 Nachtrag): Ein unbekannter Kunde eines offenen Postens wird in der Vorschau als
+„wird neu angelegt“ markiert und bei der Freigabe nur in Belegfluss angelegt.
 """
 
 from __future__ import annotations
@@ -13,6 +16,7 @@ from typing import Any
 
 from django.utils import timezone
 
+from connectors.services import ohne_lexware
 from ledger.models import Artikel, Beleg, Kontakt
 
 from . import werte
@@ -66,8 +70,13 @@ def _land(text: str) -> str:
     raise werte.WertFehler(f"Land „{text}“ unbekannt (Ländercode wie DE angeben)")
 
 
+def _wo(v: ImportVorgang) -> str:
+    return "in Belegfluss" if ohne_lexware(v.firma) else "in Lexware"
+
+
 def _kunden(v: ImportVorgang) -> list[dict[str, Any]]:
     z = _Zeilen(v)
+    wo = _wo(v)
     vorhanden_name = {_schluessel(k.name): k.name for k in Kontakt.objects.fuer(v.firma)}
     vorhanden_mail = {k.email.lower(): k.name for k in Kontakt.objects.fuer(v.firma) if k.email}
     gesehen: dict[str, int] = {}
@@ -104,9 +113,9 @@ def _kunden(v: ImportVorgang) -> list[dict[str, Any]]:
         anzeige = " ".join(x for x in (daten["vorname"], daten["name"]) if x)
         schluessel = _schluessel(anzeige)
         if schluessel in vorhanden_name or _schluessel(daten["name"]) in vorhanden_name:
-            status, grund = "dublette", "Schon in Lexware vorhanden"
+            status, grund = "dublette", f"Schon {wo} vorhanden"
         elif daten["email"] and daten["email"] in vorhanden_mail:
-            status, grund = "dublette", f"E-Mail gehört schon zu „{vorhanden_mail[daten['email']]}“ in Lexware"
+            status, grund = "dublette", f"E-Mail gehört schon zu „{vorhanden_mail[daten['email']]}“ {wo}"
         elif schluessel in gesehen:
             status, grund = "dublette", f"Doppelt in der Datei (Zeile {gesehen[schluessel]})"
         else:
@@ -172,7 +181,8 @@ def _artikel(v: ImportVorgang) -> list[dict[str, Any]]:
     return ergebnis
 
 
-def _kunde_finden(firma_id: int, kontakte: list[Kontakt], nummer: str, name: str) -> Kontakt:
+def _kunde_finden(kontakte: list[Kontakt], nummer: str, name: str) -> Kontakt | None:
+    """Eindeutiger Treffer, None wenn keiner; mehrdeutig ist ein Fehler."""
     if nummer:
         treffer = [k for k in kontakte if nummer in (k.excel_nummer, k.kundennummer)]
         if len(treffer) == 1:
@@ -184,11 +194,13 @@ def _kunde_finden(firma_id: int, kontakte: list[Kontakt], nummer: str, name: str
         return treffer[0]
     if len(treffer) > 1:
         raise werte.WertFehler(f"Kunde „{name}“ ist mehrdeutig, bitte Kundennummer angeben")
-    raise werte.WertFehler(f"Kunde „{name or nummer}“ nicht in Lexware, bitte zuerst Kunden importieren")
+    return None
 
 
 def _posten(v: ImportVorgang) -> list[dict[str, Any]]:
     z = _Zeilen(v)
+    lokal = ohne_lexware(v.firma)
+    neue_kunden: dict[str, int] = {}
     kontakte = list(Kontakt.objects.fuer(v.firma))
     vorhanden = {_schluessel(n) for n in Beleg.objects.fuer(v.firma).values_list("nummer", flat=True) if n}
     gesehen: dict[str, int] = {}
@@ -213,15 +225,26 @@ def _posten(v: ImportVorgang) -> list[dict[str, Any]]:
             offen = werte.betrag(offen_text) if offen_text else betrag - bezahlt
             if offen > betrag:
                 raise werte.WertFehler("Offener Betrag ist größer als der Rechnungsbetrag")
-            kunde = _kunde_finden(v.firma_id, kontakte, z.wert(zeile, "kundennummer"), z.wert(zeile, "kunde"))
+            name, kundennummer = z.wert(zeile, "kunde"), z.wert(zeile, "kundennummer")
+            kunde = _kunde_finden(kontakte, kundennummer, name)
+            if kunde is None and not lokal:
+                raise werte.WertFehler(
+                    f"Kunde „{name or kundennummer}“ nicht in Lexware, bitte zuerst Kunden importieren"
+                )
+            if kunde is None and not name:
+                raise werte.WertFehler(f"Kundennummer „{kundennummer}“ unbekannt und kein Kundenname angegeben")
+            email_text = z.wert(zeile, "kunde_email")
             daten: dict[str, Any] = {
                 "nummer": nummer[:50],
                 "belegdatum": belegdatum.isoformat(),
                 "faellig_am": faellig.isoformat() if faellig else "",
                 "brutto": str(betrag),
                 "offen": str(offen),
-                "kontakt_id": kunde.pk,
-                "kunde": kunde.name,
+                "kontakt_id": kunde.pk if kunde else None,
+                "kunde": kunde.name if kunde else name[:250],
+                "kunde_neu": kunde is None,
+                "kunde_email": werte.email(email_text) if kunde is None and email_text else "",
+                "kunde_nummer": kundennummer[:50] if kunde is None else "",
                 "ueberfaellig": bool(faellig and faellig < heute),
             }
         except werte.WertFehler as fehler:
@@ -238,6 +261,13 @@ def _posten(v: ImportVorgang) -> list[dict[str, Any]]:
         else:
             status, grund = "neu", ""
             gesehen[schluessel] = nr
+            if daten["kunde_neu"]:
+                erste = neue_kunden.setdefault(_schluessel(daten["kunde"]), nr)
+                grund = (
+                    f"Kunde „{daten['kunde']}“ wird in Belegfluss neu angelegt (Kundentyp danach festlegen)."
+                    if erste == nr
+                    else f"Neuer Kunde „{daten['kunde']}“ wie in Zeile {erste}."
+                )
         ergebnis.append({"nr": nr, "status": status, "grund": grund, "anzeige": anzeige, "daten": daten})
     return ergebnis
 

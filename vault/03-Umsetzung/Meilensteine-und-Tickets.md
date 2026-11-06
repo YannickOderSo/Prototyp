@@ -116,3 +116,4 @@ Entschieden von Yannick am 6. November 2026. Ziel: Betriebe mit jedem Rechnungsp
 - [x] **M9-05** Kontoauszug camt.053/camt.052 und CSV, nur Gutschriften (K6).
 - [x] **M9-06** Zahlungen zuordnen und bestätigen, Hinweis auf den letzten Kontoauszug in der Freigabe (K7, K8).
 - [x] **M9-07** Oberfläche, Einrichtung, Löschfristen, IDOR, Demo-Daten, Vault (K9, K10).
+- [x] **M9-08** Excel-Import ohne Lexware: Kunden nur in Belegfluss, offene Rechnungen legen fehlende Kunden an, Artikel nur mit Lexware (H10, ADR-008 Nachtrag).

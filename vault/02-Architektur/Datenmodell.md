@@ -68,7 +68,7 @@ Alle fachlichen Tabellen haben `firma_id` (Mandant) und werden ausschließlich �
 App `quellen`. Dateien werden nie gespeichert, nur die gelesenen Felder (K9). Löschfrist für alle vier Tabellen: 12 Monate (`loeschen_ab`).
 
 - **Beleg** ergänzt: `quelle` = `kopie` (Rechnungskopie). `extern_id` = `kopie-<uuid>`. Eigenschaft `lokal` = jede Quelle außer `lexware`; lokale Posten werden vom Lexware-Abgleich nie verändert, ihr Zahlstatus kommt aus Kontoauszügen oder wird von Hand gepflegt.
-- **Kontakt** aus einer Kopie: `extern_id` = `lokal-<uuid>`, `kundentyp` = `unbekannt`, bis der Nutzer ihn festlegt.
+- **Kontakt** aus einer Kopie oder aus dem Excel-Import ohne Lexware (M9-08): `extern_id` = `lokal-<uuid>`, `kundentyp` = `unbekannt`, bis der Nutzer ihn festlegt (Excel: auf Bestätigung aus der Datei).
 - **Kopieadresse**: firma (eindeutig), token (`r` + 16 Hex-Zeichen, Adresse `belege+<token>@…`), aktiv, absender (Liste erlaubter Adressen oder `@domain`), erstellt.
 - **Rechnungskopie**: firma, weg (`mail` | `upload`), message_id, dateiname, format (`zugferd` | `xrechnung_cii` | `xrechnung_ubl` | `pdf`), status (`angelegt` | `pruefung` | `doppelt` | `abgelehnt` | `verworfen`), daten (gelesene Felder EN 16931 bzw. KI-Vorschlag, Schlüssel wie im Prüfformular), grund, text (PDF-Text für die KI, nach der Entscheidung geleert), ki_gelesen, beleg, erstellt, erstellt_von, geprueft_von, geprueft_am, loeschen_ab.
 - **Kontoauszug**: firma, dateiname, format (`camt053` | `camt052` | `csv`), konto (IBAN gekürzt), von, bis (Stand für K8), gutschriften, neu, doppelt, hochgeladen_von, erstellt, loeschen_ab.

@@ -9,8 +9,12 @@
     <div class="neben">{{ erklaerung }}</div></li>
   {% endfor %}
 </ul>
+{% if ohne_lexware %}
+<p class="meldung" role="status">Sie arbeiten ohne Lexware. Kunden und offene Rechnungen werden nur in Belegfluss angelegt, nichts in einem Rechnungsprogramm. Für den Start genügt eine Datei mit Ihren offenen Rechnungen (mit Kundenname und E-Mail); fehlende Kunden legt Belegfluss mit an. Mit Anschriften für den Postversand vorher die Kunden importieren. Neue Rechnungen kommen danach über <a href="{% url 'quellen:uebersicht' %}">Rechnungskopien</a>.</p>
+{% else %}
 <p class="hilfe">Empfohlene Reihenfolge: erst Kunden, dann Artikel, zuletzt offene Rechnungen (die Kunden müssen dafür schon in Lexware sein).</p>
 {% if not verbunden %}<p class="meldung warnung" role="status">Lexware ist nicht verbunden. Kunden und Artikel können erst nach der Verbindung angelegt werden. <a href="{% url 'connectors:lexware' %}">Jetzt verbinden</a></p>{% endif %}
+{% endif %}
 <h2>Datei hochladen</h2>
 <form method="post" enctype="multipart/form-data" class="karte" novalidate>
   {% csrf_token %}

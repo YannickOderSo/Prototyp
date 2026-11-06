@@ -97,6 +97,7 @@ Entscheidung in ADR-008. Gilt nur für Betriebe mit Lexware Office.
 | H7 MUSS | Zahlstatus importierter Posten pflegt der Betrieb im Cockpit: bezahlt mit Datum oder neuer offener Betrag; protokolliert | Bezahlte Posten erscheinen nicht mehr als offen und werden nicht gemahnt |
 | H8 MUSS | Mahnwesen für importierte Posten nach denselben Regeln; Versand prüft den Zahlstatus im Cockpit; Mahnschreiben-PDF (Stufe 1 und 2, Postversand) erzeugt die App; Freigabe weist auf den manuell gepflegten Zahlstatus hin | Mahnung zu einem importierten Posten geht mit PDF der App hinaus; bezahlt markierte Posten werden nicht versendet |
 | H9 MUSS | Jeder Import und jede Freigabe wird protokolliert; die Importdatei wird wie Rohdateien nach 7 Tagen gelöscht | Protokoll zeigt Datei, Anzahl und Ergebnis |
+| H10 MUSS | Ohne Lexware (keine oder nur getrennte Verbindung, ADR-008 Nachtrag): Kunden werden nur in Belegfluss angelegt; der Import offener Rechnungen legt unbekannte Kunden mit an (Name, E-Mail); Artikel nur mit Lexware; eine gestörte Verbindung zählt nicht als „ohne Lexware“ | Firma ohne Lexware importiert eine Liste offener Rechnungen samt neuer Kunden ohne einen Aufruf an Lexware; Artikel-Import wird mit Begründung abgelehnt |
 
 ## I. Rückmeldung Lukas (Meilenstein 7)
 

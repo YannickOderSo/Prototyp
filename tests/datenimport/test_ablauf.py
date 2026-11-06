@@ -49,7 +49,7 @@ def spiegel(firma):
     )
 
 
-def test_kunden_vorschau_neu_dublette_fehler(firma, inhaber, spiegel):
+def test_kunden_vorschau_neu_dublette_fehler(firma, inhaber, spiegel, verbindung):
     vorgang = _vorgang(firma, inhaber, "kunden", KUNDEN_CSV)
     assert vorgang.status == ImportVorgang.Status.VORSCHAU
     status = {z["nr"]: (z["status"], z["grund"]) for z in vorgang.vorschau}
@@ -73,7 +73,10 @@ def test_pflichtfelder_fehlen_keine_vorschau(firma, inhaber):
     assert fehlend and vorgang.status == ImportVorgang.Status.ZUORDNUNG and vorgang.vorschau == []
 
 
-def test_freigabe_ohne_verbindung_nicht_moeglich(firma, inhaber, spiegel):
+def test_freigabe_mit_gestoerter_verbindung_nicht_moeglich(firma, inhaber, spiegel, verbindung):
+    """Verbindung mit Fehler (z. B. Schlüssel abgelehnt): Kunden sollen in Lexware entstehen, nicht still lokal."""
+    verbindung.status = "fehler"
+    verbindung.save()
     vorgang = _vorgang(firma, inhaber, "kunden", KUNDEN_CSV)
     with pytest.raises(ImportNichtMoeglich, match="Verbindung"):
         services.freigeben(vorgang, inhaber)

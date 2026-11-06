@@ -21,3 +21,14 @@ Geprüft in der Lexware-Doku (5. November 2026):
 + Keine Doppelbuchung in Lexware und keine Rechnungen außerhalb von Lexware.
 - Für importierte Posten gibt es keinen automatischen Zahlungsabgleich; der Betrieb muss Zahlungen im Cockpit eintragen. Das Risiko einer Mahnung trotz Zahlung ist höher und wird in der Freigabe sichtbar gemacht.
 - Die App erzeugt erstmals selbst ein PDF (Mahnschreiben). Inhalt und Form gehören zur rechtlichen Prüfung der Mahntexte (Prüfliste für das Team).
+
+## Nachtrag 6. November 2026: Import ohne Lexware (M9-08)
+
+Anlass: Betriebe ohne Lexware (z. B. DATEV Auftragswesen, ADR-011 Stufe 3) brauchen für den Start ihre bisherigen offenen Rechnungen im Cockpit. Entscheidung von Yannick am 6. November 2026.
+
+- Punkt 1 gilt nicht mehr ausschließlich: Arbeitet eine Firma **ohne Lexware** (keine Verbindung oder nur getrennte), legt der Import Kunden **nur in Belegfluss** an (`extern_id` = `lokal-…`), genau wie die Rechnungskopien. Nichts verlässt die App.
+- Eine Verbindung mit Fehler (z. B. abgelehnter Schlüssel) zählt **nicht** als „ohne Lexware“. Dort bleibt der Import blockiert, damit Kunden nicht still neben Lexware entstehen.
+- Beim Import offener Rechnungen ohne Lexware legt Belegfluss unbekannte Kunden mit an (Name, optional E-Mail; je Name nur einmal). Die Vorschau zeigt das je Zeile an. Mit Lexware bleibt es bei H6: Der Kunde muss vorhanden sein.
+- Den Kundentyp übernimmt der Import wie bisher nur nach ausdrücklicher Bestätigung; neue Kunden aus dem Posten-Import haben immer „unbekannt“ und werden bis zur Festlegung nicht gemahnt.
+- **Artikel** bleiben nur mit Lexware möglich: Sie dienen den Entwürfen, die nach Lexware übertragen werden; ohne Ziel hätten sie keinen Zweck.
+- Folge: Verbindet eine Firma später doch Lexware, können Kunden doppelt erscheinen (lokal und aus Lexware). Zusammenführen über die E-Mail ist offen (Offene-Fragen.md).

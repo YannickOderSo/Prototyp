@@ -15,12 +15,12 @@ from django.views.decorators.http import require_GET, require_POST
 from accounts.mandant import hole_oder_404
 from accounts.rechte import firma_erforderlich, freigabe_berechtigt
 from accounts.typen import FirmaRequest
-from connectors.services import aktive_verbindung
+from connectors.services import aktive_verbindung, ohne_lexware
 from ledger.models import Beleg
 
 from . import services
 from .felder import FELDER, fehlende_pflichtfelder, vorlage_csv, vorlage_xlsx
-from .forms import ERKLAERUNG, UploadForm, ZahlungForm
+from .forms import ERKLAERUNG, ERKLAERUNG_OHNE_LEXWARE, UploadForm, ZahlungForm
 from .lesen import LeseFehler
 from .models import ImportVorgang
 
@@ -33,6 +33,9 @@ ARTIKELTYPEN = [("", "aus der Datei"), ("SERVICE", "Dienstleistung"), ("PRODUCT"
 @freigabe_berechtigt
 def uebersicht(request: FirmaRequest) -> HttpResponse:
     form = UploadForm(request.POST or None, request.FILES or None, initial={"art": request.GET.get("art", "kunden")})
+    ohne = ohne_lexware(request.firma)
+    if request.method == "POST" and form.is_valid() and ohne and form.cleaned_data["art"] == ImportVorgang.Art.ARTIKEL:
+        form.add_error("art", services.ARTIKEL_NUR_MIT_LEXWARE)
     if request.method == "POST" and form.is_valid():
         datei = form.cleaned_data["datei"]
         try:
@@ -55,7 +58,11 @@ def uebersicht(request: FirmaRequest) -> HttpResponse:
             "form": form,
             "vorgaenge": ImportVorgang.objects.fuer(request.firma).order_by("-erstellt")[:20],
             "verbunden": aktive_verbindung(request.firma) is not None,
-            "arten": [(wert, titel, ERKLAERUNG[wert]) for wert, titel in ImportVorgang.Art.choices],
+            "ohne_lexware": ohne,
+            "arten": [
+                (wert, titel, (ERKLAERUNG_OHNE_LEXWARE if ohne else ERKLAERUNG)[wert])
+                for wert, titel in ImportVorgang.Art.choices
+            ],
         },
     )
 
@@ -120,10 +127,11 @@ def vorgang(request: FirmaRequest, pk: int) -> HttpResponse:
             "steuersaetze": STEUERSAETZE,
             "artikeltypen": ARTIKELTYPEN,
             "verbunden": aktive_verbindung(request.firma) is not None,
+            "ohne_lexware": ohne_lexware(request.firma),
             "haengt": v.status == ImportVorgang.Status.FREIGEGEBEN
             and v.art != ImportVorgang.Art.POSTEN
             and not services.job_aktiv(v),
-            "erklaerung": ERKLAERUNG[v.art],
+            "erklaerung": (ERKLAERUNG_OHNE_LEXWARE if ohne_lexware(request.firma) else ERKLAERUNG)[v.art],
         },
     )
 
@@ -179,6 +187,8 @@ def freigeben(request: FirmaRequest, pk: int) -> HttpResponse:
         v.refresh_from_db()
         if v.art == ImportVorgang.Art.POSTEN:
             messages.success(request, f"{v.ergebnis.get('angelegt', 0)} offene Rechnungen sind jetzt in Belegfluss.")
+        elif v.status == ImportVorgang.Status.FERTIG:  # ohne Lexware: sofort fertig
+            messages.success(request, f"{v.ergebnis.get('angelegt', 0)} Kunden sind jetzt in Belegfluss.")
         else:
             messages.success(request, "Freigegeben. Die Einträge werden jetzt im Hintergrund in Lexware angelegt.")
     return redirect("datenimport:vorgang", pk=v.pk)
