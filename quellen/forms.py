@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from django import forms
@@ -109,6 +110,11 @@ class PruefForm(forms.Form):
             felder["kaeufer_anschrift"] = ""
         if felder.get("art") not in dict(cls.ARTEN):
             felder["art"] = "rechnung"
+        for feld in ("brutto", "zahlbetrag"):  # als Zahl, damit das Feld deutsch formatiert anzeigt (3.570,00)
+            try:
+                felder[feld] = Decimal(str(felder[feld])) if felder.get(feld) not in ("", None) else ""
+            except InvalidOperation:
+                felder[feld] = ""
         return cls(initial=felder)
 
 

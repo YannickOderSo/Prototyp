@@ -79,6 +79,7 @@ def test_mensch_bestaetigt_dann_entsteht_der_posten(firma, worker, ki, client_in
     kopie, _ = _einlesen_und_lesen(firma, worker, ki, antwort(ki_werte()))
     seite = client_inhaber.get(reverse("quellen:kopie", args=[kopie.pk])).content.decode()
     assert "Die Werte unten hat die KI aus dem PDF gelesen" in seite and 'value="2026-117"' in seite
+    assert 'value="1.190,00"' in seite  # deutsch formatiert; beim Absenden wieder richtig gelesen (unten)
     client_inhaber.post(
         reverse("quellen:kopie", args=[kopie.pk]),
         {
