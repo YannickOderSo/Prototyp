@@ -4,6 +4,6 @@
      <strong>An:</strong> {{ mail.empfaenger|default:"keine E-Mail-Adresse (Postversand)" }}<br>
      <strong>Antwort an:</strong> {{ mail.reply_to|default:"–" }}{% if mail.bcc %}<br><strong>Kopie (BCC):</strong> {{ mail.bcc }}{% endif %}<br>
      <strong>Betreff:</strong> {{ mail.betreff }}<br>
-     {% if v.beleg.importiert %}{% if v.stufe > 0 %}<strong>Anhang:</strong> {{ mail.anhang_name }} (Mahnschreiben von Belegfluss){% else %}<strong>Anhang:</strong> keiner (die ursprüngliche Rechnung liegt dem Cockpit nicht vor){% endif %}{% else %}<strong>Anhang:</strong> {{ mail.anhang_name }}{% if v.stufe > 0 %} (Mahnung aus Lexware){% else %} (Rechnung aus Lexware){% endif %}{% endif %}</p>
+     {% if v.beleg.lokal %}{% if v.stufe > 0 %}<strong>Anhang:</strong> {{ mail.anhang_name }} (Mahnschreiben von Belegfluss){% else %}<strong>Anhang:</strong> keiner (die ursprüngliche Rechnung liegt dem Cockpit nicht vor){% endif %}{% else %}<strong>Anhang:</strong> {{ mail.anhang_name }}{% if v.stufe > 0 %} (Mahnung aus Lexware){% else %} (Rechnung aus Lexware){% endif %}{% endif %}</p>
   <pre class="mailtext">{{ mail.text }}</pre>
 </div>

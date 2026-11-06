@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Rechnungskopie{% endblock %}
+{% block inhalt %}
+<p><a href="{% url 'quellen:uebersicht' %}">← Abgleich</a></p>
+<h1>Rechnungskopie {{ k.daten.nummer|default:k.dateiname }}</h1>
+<p class="leise">{{ k.get_weg_display }} am {{ k.erstellt|date:"d.m.Y H:i" }} · {{ k.dateiname }} · <span class="marke-status{% if k.status == 'angelegt' %} gut{% elif k.status == 'pruefung' %} warnung{% elif k.status == 'abgelehnt' %} schlecht{% endif %}">{{ k.get_status_display }}</span></p>
+{% if k.grund %}<p class="meldung{% if in_pruefung %} warnung{% endif %}">{{ k.grund }}</p>{% endif %}
+{% if k.format == "pdf" and in_pruefung %}<p class="hilfe">{% if k.ki_gelesen %}Die Werte unten hat die KI aus dem PDF gelesen.{% else %}Die KI liest das PDF gerade; die Werte erscheinen gleich (Seite neu laden).{% endif %} Übernommen wird erst, wenn Sie bestätigen. Bitte jede Zahl mit der Rechnung vergleichen.</p>{% endif %}
+{% if k.beleg %}<p><a class="knopf zweitrangig" href="{% url 'ledger:beleg' k.beleg.pk %}">Zum Posten {{ k.beleg.nummer }}</a></p>{% endif %}
+{% if in_pruefung %}
+<form method="post" class="karte" novalidate>
+  {% csrf_token %}
+  {% include "web/_formular.html" %}
+  <p class="hilfe">Nur Rechnungen in Euro. Neue Kunden werden im Cockpit angelegt; den Kundentyp (Unternehmer oder Privatkunde) legen Sie danach fest, vorher wird nicht gemahnt.</p>
+  <div class="knopfreihe"><button type="submit" name="aktion" value="uebernehmen">{% icon "circle-check" %}Übernehmen</button>
+    <button type="submit" name="aktion" value="verwerfen" class="zweitrangig" formnovalidate data-bestaetigen="Kopie verwerfen? Es wird kein Posten angelegt.">Verwerfen</button></div>
+</form>
+{% else %}
+<section class="karte">
+  <h2>Gelesene Werte</h2>
+  <ul class="liste">
+    <li><div class="zeile"><span>Kunde</span><strong>{{ k.daten.kaeufer_name|default:"–" }}</strong></div></li>
+    <li><div class="zeile"><span>Rechnungsdatum</span><span>{{ k.daten.belegdatum|default:"–" }}</span></div></li>
+    <li><div class="zeile"><span>Fällig am</span><span>{{ k.daten.faellig_am|default:"–" }}</span></div></li>
+    <li><div class="zeile"><span>Offener Betrag</span><strong>{% if k.daten.zahlbetrag %}{{ k.daten.zahlbetrag|euro }}{% else %}–{% endif %}</strong></div></li>
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

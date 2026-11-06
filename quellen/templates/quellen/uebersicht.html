@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load cockpit %}
+{% block titel %}Abgleich{% endblock %}
+{% block inhalt %}
+<h1>Rechnungskopien und Kontoauszüge</h1>
+<p>Für Rechnungsprogramme ohne Schnittstelle: Belegfluss liest Ihre Rechnungen aus Kopien und erkennt Zahlungen in Ihren Kontoauszügen. Es wird nichts in Ihrem Rechnungsprogramm gebucht.</p>
+
+<h2>Rechnungskopien</h2>
+<div class="raster zwei">
+<section class="karte" aria-labelledby="kopie-adresse">
+  <h3 id="kopie-adresse">Kopie per Mail</h3>
+  {% if adresse %}
+    {% if adresse_text %}<p>Lassen Sie Ihr Rechnungsprogramm von jeder Rechnung eine Kopie (BCC) an diese Adresse schicken:</p>
+    <p><code>{{ adresse_text }}</code></p>
+    {% else %}<p class="meldung warnung">Das Sammelpostfach ist auf diesem Server noch nicht eingerichtet. Bis dahin Rechnungen bitte hochladen.</p>{% endif %}
+    <form method="post" action="{% url 'quellen:adresse' %}">
+      {% csrf_token %}
+      <div class="feld checkbox"><input type="checkbox" id="aktiv" name="aktiv" value="1"{% if adresse.aktiv %} checked{% endif %}> <label for="aktiv">Kopie-Adresse aktiv</label></div>
+      <div class="feld"><label for="absender">Erlaubte Absender (Absenderadresse Ihres Rechnungsprogramms, eine je Zeile, oder @domain.de)</label>
+        <textarea id="absender" name="absender" rows="3">{% for a in adresse.absender %}{{ a }}
+{% endfor %}</textarea></div>
+      <div class="knopfreihe"><button type="submit" name="aktion" value="speichern">Speichern</button>
+        <button type="submit" name="aktion" value="neue_adresse" class="zweitrangig" data-bestaetigen="Neue Adresse erzeugen? Die alte nimmt dann keine Mails mehr an.">Neue Adresse</button></div>
+    </form>
+    <p class="hilfe">Angenommen werden nur Mails von diesen Absendern, deren Mailserver die Herkunft bestätigt (DKIM oder SPF). Gespeichert werden nur die gelesenen Rechnungsdaten, nicht die Dateien.</p>
+  {% else %}
+    <p>Eine eigene Adresse, an die Ihr Rechnungsprogramm automatisch eine Kopie jeder Rechnung schickt. So landet jede neue Rechnung ohne Handarbeit im Cockpit.</p>
+    <form method="post" action="{% url 'quellen:adresse' %}">{% csrf_token %}<div class="knopfreihe"><button type="submit">{% icon "mail-question" %}Kopie-Adresse einrichten</button></div></form>
+  {% endif %}
+</section>
+
+<section class="karte" aria-labelledby="hochladen">
+  <h3 id="hochladen">Rechnungen hochladen</h3>
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% include "web/_formular.html" %}
+    <div class="knopfreihe"><button type="submit">{% icon "upload" %}Hochladen und lesen</button></div>
+  </form>
+</section>
+</div>
+
+{% if zu_pruefen %}
+<h2>Bitte prüfen ({{ zu_pruefen|length }})</h2>
+<ul class="liste">
+  {% for k in zu_pruefen %}
+  <li><div class="zeile"><strong><a href="{% url 'quellen:kopie' k.pk %}">{{ k.daten.nummer|default:k.dateiname }}</a></strong>{% if k.daten.zahlbetrag %}<strong>{{ k.daten.zahlbetrag|euro }}</strong>{% endif %}</div>
+    <div class="zeile neben"><span>{{ k.daten.kaeufer_name|default:"Kunde noch offen" }} · {{ k.get_weg_display }} am {{ k.erstellt|date:"d.m.Y H:i" }}</span><span class="marke-status warnung">{% if k.format == "pdf" %}PDF, Werte bestätigen{% else %}bitte prüfen{% endif %}</span></div>
+    <div class="hilfe">{{ k.grund }}</div></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if letzte %}
+<h2>Zuletzt eingegangen</h2>
+<ul class="liste">
+  {% for k in letzte %}
+  <li><div class="zeile"><span>{% if k.beleg %}<a href="{% url 'ledger:beleg' k.beleg.pk %}">{{ k.daten.nummer|default:k.dateiname }}</a>{% else %}<a href="{% url 'quellen:kopie' k.pk %}">{{ k.daten.nummer|default:k.dateiname }}</a>{% endif %}{% if k.daten.kaeufer_name %} · {{ k.daten.kaeufer_name }}{% endif %}</span>
+    <span class="marke-status{% if k.status == 'angelegt' %} gut{% elif k.status == 'abgelehnt' %} schlecht{% endif %}">{{ k.get_status_display }}</span></div>
+    <div class="neben">{{ k.get_weg_display }} am {{ k.erstellt|date:"d.m.Y H:i" }}{% if k.grund %} · {{ k.grund }}{% endif %}</div></li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% block kontoauszug %}{% endblock %}
+{% endblock %}

@@ -68,7 +68,15 @@ def _testgespraech(firma, nutzer=None):
     return {"kennung": str(Gespraech.objects.create(firma=firma, kanal="test").uuid)}
 
 
+def _rechnungskopie(firma, nutzer=None):
+    from quellen.models import Rechnungskopie
+
+    k = Rechnungskopie.objects.create(firma=firma, dateiname="idor.xml", daten={"nummer": "IDOR", "art": "rechnung"})
+    return {"pk": k.pk}
+
+
 FAELLE: dict[str, Fabrik] = {
+    "quellen:kopie": _rechnungskopie,
     "telefon:rueckruf": _rueckruf,
     "telefon:erledigt": _rueckruf,
     "telefon:test_nachricht": _testgespraech,

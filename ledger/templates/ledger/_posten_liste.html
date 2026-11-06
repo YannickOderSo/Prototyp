@@ -8,7 +8,7 @@
       <strong>{{ b.offen|euro }}</strong>
     </div>
     <div class="zeile neben">
-      <span><a href="{% url 'ledger:beleg' b.pk %}">{{ b.get_art_display }} {{ b.nummer }}</a> vom {{ b.belegdatum|datum }}{% if b.importiert %} · <span class="marke-status">aus Excel</span>{% endif %}</span>
+      <span><a href="{% url 'ledger:beleg' b.pk %}">{{ b.get_art_display }} {{ b.nummer }}</a> vom {{ b.belegdatum|datum }}{% if b.importiert %} · <span class="marke-status">aus Excel</span>{% elif b.quelle == "kopie" %} · <span class="marke-status">aus Rechnungskopie</span>{% endif %}</span>
       <span>{% if b.faellig_am and b.faellig_am < heute %}<span class="marke-status schlecht">{{ b.faellig_am|tage_seit:heute }} Tage überfällig</span>{% elif b.faellig_am %}fällig {{ b.faellig_am|datum }}{% else %}<span class="marke-status warnung">ohne Fälligkeit</span>{% endif %}</span>
     </div>
     {% if b.offen != b.brutto %}<div class="neben">Teilzahlung: {{ b.brutto|euro }} gesamt</div>{% endif %}

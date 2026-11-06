@@ -34,6 +34,7 @@ def start(request: FirmaRequest) -> HttpResponse:
     kontext: dict[str, object] = {
         "c": c,
         "prognose_max": max((w.summe for w in c.prognose.wochen), default=0),
+        "mit_kopien": verbindung is None and _arbeitet_mit_kopien(request.firma),
         "verbindung": verbindung,
         "reiter": reiter,
         "ansicht": ansicht,
@@ -41,6 +42,17 @@ def start(request: FirmaRequest) -> HttpResponse:
     }
     kontext.update(reiter_daten(request.firma, ansicht, heute))
     return render(request, "web/start.html", kontext)
+
+
+def _arbeitet_mit_kopien(firma: Firma) -> bool:
+    """K10: Firma ohne Lexware, die über Rechnungskopien arbeitet (Adresse eingerichtet oder Posten vorhanden)."""
+    from ledger.models import Beleg
+    from quellen.models import Kopieadresse
+
+    return (
+        Kopieadresse.objects.fuer(firma).filter(aktiv=True).exists()
+        or Beleg.objects.fuer(firma).filter(quelle=Beleg.Quelle.KOPIE).exists()
+    )
 
 
 def reiter_daten(firma: Firma, ansicht: str, heute: date) -> dict[str, object]:

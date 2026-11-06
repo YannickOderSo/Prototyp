@@ -66,7 +66,7 @@ ANHANG_SATZ = " Die Rechnung finden Sie zur Sicherheit noch einmal im Anhang."
 
 
 def anhang_name(vorschlag: Mahnvorschlag) -> str:
-    if vorschlag.beleg.importiert and vorschlag.stufe == 0:
+    if vorschlag.beleg.lokal and vorschlag.stufe == 0:
         art = "Zahlungserinnerung"  # nur für den Postversand; per Mail geht die Erinnerung ohne Anhang
     else:
         art = "Rechnung" if vorschlag.stufe == 0 else ("Mahnung" if vorschlag.stufe == 1 else "2_Mahnung")
@@ -75,7 +75,7 @@ def anhang_name(vorschlag: Mahnvorschlag) -> str:
 
 
 def _text(vorschlag: Mahnvorschlag, text: str) -> str:
-    if vorschlag.beleg.importiert and vorschlag.stufe == 0:
+    if vorschlag.beleg.lokal and vorschlag.stufe == 0:
         # Importierte Posten: Die ursprüngliche Rechnung liegt der App nicht vor, also kein Verweis auf einen Anhang
         text = text.replace(ANHANG_SATZ, "")
     return text.strip() + "\n"

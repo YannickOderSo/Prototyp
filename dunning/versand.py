@@ -68,7 +68,7 @@ def _frische_check(vorschlag: Mahnvorschlag, zahlung_offen: Decimal, bezahlt: bo
         vorschlag.freigegeben_von = None
         vorschlag.freigegeben_am = None
         vorschlag.hinweise = [
-            f"Der offene Betrag hat sich {'in Belegfluss' if beleg.importiert else 'in Lexware'} geändert "
+            f"Der offene Betrag hat sich {'in Belegfluss' if beleg.lokal else 'in Lexware'} geändert "
             f"({alt} → {zahlung_offen}). Bitte erneut freigeben.",
             *vorschlag.hinweise,
         ]
@@ -96,7 +96,7 @@ def _pdf_importiert(vorschlag: Mahnvorschlag) -> bytes | None:
 
 def _pdf_holen(vorschlag: Mahnvorschlag) -> bytes | None:
     beleg = vorschlag.beleg
-    if beleg.importiert:
+    if beleg.lokal:
         return _pdf_importiert(vorschlag)
     verbindung = aktive_verbindung(vorschlag.firma)
     if verbindung is None:

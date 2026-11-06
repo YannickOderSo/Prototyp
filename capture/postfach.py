@@ -19,6 +19,7 @@ import re
 from dataclasses import dataclass
 from email.message import EmailMessage
 from email.utils import getaddresses, parseaddr
+from typing import Any, Protocol
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
@@ -80,7 +81,11 @@ def authentifizierung(nachricht: EmailMessage, authserv_id: str) -> Pruefung:
     return Pruefung(False, "Kein Prüfergebnis des eigenen Mailservers")
 
 
-def absender_erlaubt(postfach: Belegpostfach, absender: str) -> bool:
+class HatAbsender(Protocol):
+    absender: Any
+
+
+def absender_erlaubt(postfach: HatAbsender, absender: str) -> bool:
     absender = absender.lower().strip()
     for eintrag in postfach.absender:
         eintrag = str(eintrag).lower().strip()
@@ -141,8 +146,13 @@ def verarbeiten(roh: bytes) -> PostfachEingang:
     if PostfachEingang.objects.filter(message_id=message_id).exists():
         return PostfachEingang(message_id=message_id, ergebnis="doppelt")
     token = _token(nachricht)
-    postfach = Belegpostfach.objects.select_related("firma").filter(token=token, aktiv=True).first() if token else None
     absender = parseaddr(str(nachricht.get("From", "")))[1]
+    if token and token.startswith("r"):
+        # ADR-011 Stufe 3: Kopie einer eigenen Ausgangsrechnung (eigene Adresse je Firma, Präfix „r“)
+        from quellen.postfach import kopie_verarbeiten
+
+        return kopie_verarbeiten(nachricht, token, message_id, absender)
+    postfach = Belegpostfach.objects.select_related("firma").filter(token=token, aktiv=True).first() if token else None
 
     def ablehnen(grund: str) -> PostfachEingang:
         eingang = PostfachEingang.objects.create(

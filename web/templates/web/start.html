@@ -16,7 +16,9 @@
 {% if request.mitgliedschaft.ist_inhaber and not request.firma.einrichtung_fertig_am %}
 <div class="meldung">Willkommen bei Belegfluss! In vier Schritten ist alles startklar. <a class="knopf" href="{% url 'web:einrichtung' %}">Einrichtung {% if verbindung %}fortsetzen{% else %}starten{% endif %}</a></div>
 {% endif %}
-{% if not verbindung %}
+{% if mit_kopien %}
+<div class="meldung">Belegfluss liest Ihre Rechnungen aus Rechnungskopien. Zahlungen gleichen Sie über Kontoauszüge ab. <a href="{% url 'quellen:uebersicht' %}">Zum Abgleich</a></div>
+{% elif not verbindung %}
 <div class="meldung warnung">
   Noch keine Verbindung zu Lexware Office.
   {% if request.mitgliedschaft.ist_inhaber %}<a href="{% url 'connectors:lexware' %}">Jetzt verbinden</a>{% else %}Bitte den Inhaber bitten, Lexware zu verbinden.{% endif %}

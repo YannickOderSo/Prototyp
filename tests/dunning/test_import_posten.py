@@ -230,3 +230,22 @@ def test_mahnschreiben_inhalt(firma, inhaber, kunden, umgebung):
     assert "Bahnhofstr. 1" in text and "10115 Berlin" in text
     assert "Malerweg 5" in text and "05.11.2026" in text
     assert "2024-117" in text and "1.190,00" in text
+
+
+def test_mahnung_fuer_rechnungskopie_ohne_verbindung(firma, inhaber, umgebung, worker):
+    """M9-03 (K8): Betrieb ohne Lexware-Verbindung; Posten aus einer E-Rechnungs-Kopie wird wie ein Import gemahnt."""
+    from quellen import kopien
+    from tests.quellen.hilfen import cii
+
+    kopie = kopien.einlesen(firma, "re.xml", cii("RE-K-1", **{"20261020": "20260901", "20261103": "20260915"}))
+    beleg = kopie.beleg
+    assert beleg.quelle == "kopie" and beleg.status == "ueberfaellig"
+    beleg.kontakt.kundentyp = "unternehmer"
+    beleg.kontakt.save()
+    versendet(beleg, 0, tage_her=30)
+    vorschlag = _senden(firma, inhaber, _vorschlag(firma, "RE-K-1"), worker)
+    assert vorschlag.stufe == 1 and vorschlag.status == "versendet"
+    name, inhalt, _ = mail.outbox[0].attachments[0]
+    assert name == "Mahnung_RE-K-1.pdf" and inhalt.startswith(b"%PDF")
+    assert mail.outbox[0].to == ["rechnung@huber-hv.example"]
+    assert umgebung.calls.call_count == 0

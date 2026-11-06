@@ -111,7 +111,7 @@ Entschieden von Yannick am 6. November 2026. Ziel: Betriebe mit jedem Rechnungsp
 
 - [x] **M9-01** Spezifikation K1–K10, ADR-011 angenommen, Tickets.
 - [x] **M9-02** E-Rechnung lesen: ZUGFeRD/Factur-X, XRechnung CII und UBL (K2).
-- [ ] **M9-03** Kopie-Adresse und Hochladen, Posten und Kunden ohne Lexware, Gutschriften, Dubletten, Mahnwesen auch ohne Lexware-Verbindung (K1, K3, K4, K8).
+- [x] **M9-03** Kopie-Adresse und Hochladen, Posten und Kunden ohne Lexware, Gutschriften, Dubletten, Mahnwesen auch ohne Lexware-Verbindung (K1, K3, K4, K8).
 - [ ] **M9-04** PDF ohne E-Rechnung: KI liest vor, Mensch bestätigt (K5).
 - [ ] **M9-05** Kontoauszug camt.053/camt.052 und CSV, nur Gutschriften (K6).
 - [ ] **M9-06** Zahlungen zuordnen und bestätigen, Hinweis auf den letzten Kontoauszug in der Freigabe (K7, K8).

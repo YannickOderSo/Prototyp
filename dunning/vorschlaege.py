@@ -39,6 +39,14 @@ HINWEIS_IMPORT = (
     "Posten aus dem Excel-Import: Der Zahlstatus wird in Belegfluss gepflegt, nicht in Lexware. "
     "Bitte vor der Freigabe prüfen, ob inzwischen bezahlt wurde."
 )
+HINWEIS_KOPIE = (
+    "Posten aus einer Rechnungskopie: Der Zahlstatus kommt aus den Kontoauszügen in Belegfluss oder wird von Hand "
+    "gepflegt. Bitte vor der Freigabe prüfen, ob inzwischen bezahlt wurde."
+)
+
+
+def hinweis_lokal(beleg: Beleg) -> str:
+    return HINWEIS_KOPIE if beleg.quelle == Beleg.Quelle.KOPIE else HINWEIS_IMPORT
 
 
 @dataclass
@@ -173,8 +181,8 @@ def berechnen(firma: Firma, heute: date) -> Laufergebnis:
         hinweise = list(b.hinweise)
         if versandart == "post":
             hinweise.append("Postversand nötig: Für diesen Kunden ist in Lexware keine E-Mail-Adresse hinterlegt.")
-        if beleg.importiert:
-            hinweise.append(HINWEIS_IMPORT)
+        if beleg.lokal:
+            hinweise.append(hinweis_lokal(beleg))
         bezug = beleg.faellig_am or beleg.belegdatum
         assert bezug is not None
         ergebnis.kandidaten.append(Kandidat(beleg, stufe, b, (heute - bezug).days, versandart, hinweise))
@@ -220,8 +228,8 @@ def neu_berechnen(vorschlag: Mahnvorschlag, heute: date) -> None:
     hinweise = list(b.hinweise)
     if versandart == "post":
         hinweise.append("Postversand nötig: Für diesen Kunden ist in Lexware keine E-Mail-Adresse hinterlegt.")
-    if beleg.importiert:
-        hinweise.append(HINWEIS_IMPORT)
+    if beleg.lokal:
+        hinweise.append(hinweis_lokal(beleg))
     k = Kandidat(beleg, vorschlag.stufe, b, (heute - bezug).days if bezug else 0, versandart, hinweise)
     for feld, wert in _werte(k, heute).items():
         setattr(vorschlag, feld, wert)

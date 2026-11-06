@@ -83,6 +83,7 @@ class Beleg(FirmaModel):
     class Quelle(models.TextChoices):
         LEXWARE = "lexware", "Lexware"
         IMPORT = "import", "Import aus Excel"
+        KOPIE = "kopie", "Rechnungskopie"  # ADR-011 Stufe 3: aus der Kopie einer Ausgangsrechnung
 
     extern_id = models.CharField(max_length=100)
     art = models.CharField(max_length=20, choices=Art.choices, default=Art.RECHNUNG)
@@ -113,6 +114,11 @@ class Beleg(FirmaModel):
     @property
     def importiert(self) -> bool:
         return self.quelle == self.Quelle.IMPORT
+
+    @property
+    def lokal(self) -> bool:
+        """Posten ohne Lexware (Excel-Import oder Rechnungskopie): Zahlstatus und Mahnschreiben in Belegfluss."""
+        return self.quelle != self.Quelle.LEXWARE
 
     class Meta:
         verbose_name_plural = "Belege"

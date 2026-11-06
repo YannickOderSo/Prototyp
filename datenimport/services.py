@@ -317,17 +317,18 @@ def ausfuehren(verbindung: Verbindung, connector: AccountingConnector, vorgang_i
 
 
 def importierte_status_aktualisieren(firma: Firma) -> int:
-    """Importierte offene Posten werden mit Ablauf der Fälligkeit überfällig (Lexware-Posten setzt der Abgleich)."""
+    """Posten ohne Lexware (Excel, Kopie) werden mit Ablauf der Fälligkeit überfällig (Lexware setzt der Abgleich)."""
     return (
         Beleg.objects.fuer(firma)
-        .filter(quelle=Beleg.Quelle.IMPORT, status=Beleg.Status.OFFEN, faellig_am__lt=timezone.localdate())
+        .exclude(quelle=Beleg.Quelle.LEXWARE)
+        .filter(status=Beleg.Status.OFFEN, faellig_am__lt=timezone.localdate())
         .update(status=Beleg.Status.UEBERFAELLIG)
     )
 
 
 def zahlung_eintragen(beleg: Beleg, nutzer: Nutzer, bezahlt_am: date | None, offen: Decimal | None) -> None:
     """H7: Zahlstatus importierter Posten pflegt der Betrieb im Cockpit."""
-    if not beleg.importiert:
+    if not beleg.lokal:
         raise ImportNichtMoeglich("Der Zahlstatus von Lexware-Rechnungen kommt aus Lexware.")
     alt = {"offen": str(beleg.offen), "status": beleg.status}
     if bezahlt_am is not None:
