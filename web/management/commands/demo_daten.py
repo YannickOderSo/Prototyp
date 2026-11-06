@@ -10,7 +10,7 @@ Beim ersten Anmelden richtet der Demo-Nutzer die Zwei-Faktor-Anmeldung ein (Auth
 echten Betrieb.
 """
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -29,7 +29,7 @@ from dunning.models import Mahnplan, Mahnvorschlag
 from dunning.vorschlaege import vorschlagslauf
 from ledger.models import Artikel, Beleg, Kontakt
 
-FIRMA = "Malerbetrieb Muster GmbH (Demo)"
+FIRMA = "Malerbetrieb Muster GmbH"
 EMAIL = "demo@cockpit.local"
 PASSWORT = "Demo-Cockpit-2026!"
 D = Decimal
@@ -42,10 +42,12 @@ KUNDEN = [
     ("k-praxis", "Praxis Dr. Sommer", "praxis@sommer.example", "unternehmer", True),
     ("k-weber", "Familie Weber", "weber@example.org", "unbekannt", False),
     ("k-kita", "Kita Sonnenschein e. V.", "verwaltung@kita.example", "unternehmer", True),
+    ("k-lindner", "Schreinerei Lindner GmbH", "buero@lindner.example", "unternehmer", True),
 ]
 
 # Nummer, Kunde, Brutto, offen, Tage seit Fälligkeit (negativ = noch nicht fällig)
 RECHNUNGEN = [
+    ("RE2026-094", "k-lindner", "1785.00", "1785.00", 68),
     ("RE2026-101", "k-bau", "4760.00", "4760.00", 45),
     ("RE2026-108", "k-huber", "1904.00", "1904.00", 24),
     ("RE2026-112", "k-erika", "833.00", "833.00", 12),
@@ -60,7 +62,7 @@ RECHNUNGEN = [
 # Nummer, Kunde, Brutto, Status, Angebotsdatum vor X Tagen, gültig bis in Y Tagen (negativ = abgelaufen)
 ANGEBOTE = [
     ("AN2026-036", "k-weber", "1190.00", "offen", 2, 28),
-    ("AN2026-034", "k-huber", "4165.00", "offen", 5, 23),
+    ("AN2026-034", "k-huber", "4165.00", "angenommen", 5, None),
     ("AN2026-031", "k-praxis", "2856.00", "offen", 25, 3),
     ("AN2026-027", "k-bau", "9520.00", "angenommen", 30, None),
     ("AN2026-022", "k-erika", "1428.00", "abgelehnt", 45, None),
@@ -111,6 +113,14 @@ class Command(BaseCommand):
         )
         Mitgliedschaft.objects.create(nutzer=nutzer, firma=firma, rolle=Rolle.INHABER)
         jetzt = timezone.now()
+        firma.einrichtung_fertig_am = jetzt - timedelta(days=21)
+        firma.save(update_fields=["einrichtung_fertig_am"])
+
+        def am_tag(tage_zurueck: int, stunde: int, minute: int) -> Any:
+            """Zeitpunkt vor `tage_zurueck` Tagen zur Bürozeit (Ortszeit), damit die Demo keine Nachtzeiten zeigt."""
+            tag = heute - timedelta(days=tage_zurueck)
+            return timezone.make_aware(datetime(tag.year, tag.month, tag.day, stunde, minute))
+
         Verbindung.objects.create(
             firma=firma,
             schluessel_verschluesselt=verschluesseln("demo-kein-echter-schluessel"),
@@ -148,7 +158,7 @@ class Command(BaseCommand):
                 nummer=nummer,
                 kontakt=kunden[kunde],
                 kontakt_name=kunden[kunde].name,
-                belegdatum=faellig - timedelta(days=14),
+                belegdatum=faellig - timedelta(days=14 if tage >= -10 else 30),
                 faellig_am=faellig,
                 brutto=D(brutto),
                 offen=D(offen),
@@ -193,12 +203,44 @@ class Command(BaseCommand):
             beleg=erste,
             stufe=0,
             status=Mahnvorschlag.Status.VERSENDET,
-            versendet_am=jetzt - timedelta(days=20),
+            versendet_am=am_tag(20, 8, 12),
             offen_betrag=erste.offen,
             gesamt=erste.offen,
             freigegeben_von=nutzer,
-            freigegeben_am=jetzt - timedelta(days=20),
+            freigegeben_am=am_tag(20, 8, 10),
         )
+        # Diese Woche: drei Zahlungseingänge, zwei davon nach einer Erinnerung bzw. Mahnung aus Belegfluss
+        for nummer, kunde, brutto, belegt_vor, bezahlt_vor, gemahnt in [
+            ("RE2026-098", "k-kita", "2380.00", 30, 1, (0, 6)),
+            ("RE2026-103", "k-praxis", "1428.00", 34, 3, (1, 5)),
+            ("RE2026-110", "k-erika", "952.00", 19, 4, None),
+        ]:
+            bezahlt = Beleg.objects.create(
+                firma=firma,
+                extern_id=f"demo-{nummer}",
+                nummer=nummer,
+                kontakt=kunden[kunde],
+                kontakt_name=kunden[kunde].name,
+                belegdatum=heute - timedelta(days=belegt_vor),
+                faellig_am=heute - timedelta(days=belegt_vor - 14),
+                brutto=D(brutto),
+                offen=D("0.00"),
+                status=Beleg.Status.BEZAHLT,
+                bezahlt_am=heute - timedelta(days=bezahlt_vor),
+            )
+            if gemahnt:
+                stufe, vor = gemahnt
+                Mahnvorschlag.objects.create(
+                    firma=firma,
+                    beleg=bezahlt,
+                    stufe=stufe,
+                    status=Mahnvorschlag.Status.VERSENDET,
+                    versendet_am=am_tag(vor, 7, 45),
+                    offen_betrag=bezahlt.brutto,
+                    gesamt=bezahlt.brutto,
+                    freigegeben_von=nutzer,
+                    freigegeben_am=am_tag(vor, 7, 40),
+                )
         vorschlagslauf(firma, heute)
         from dunning.angebote import vorschlaege_erzeugen
 
@@ -232,6 +274,7 @@ class Command(BaseCommand):
             },
         )
         regeln_anwenden(erfassung)
+        Erfassung.objects.filter(pk=erfassung.pk).update(erstellt=am_tag(1, 17, 42))
         # Ein Angebot aus einem Sprachmemo, vollständig zugeordnet und freigabebereit
         angebot = Erfassung.objects.create(
             firma=firma,
@@ -259,6 +302,7 @@ class Command(BaseCommand):
             },
         )
         regeln_anwenden(angebot)
+        Erfassung.objects.filter(pk=angebot.pk).update(erstellt=am_tag(1, 12, 18))
         # Ein Excel-Import alter offener Rechnungen wartet in der Vorschau (nur im Cockpit, nie in Lexware)
         from datenimport import services as datenimport
 
@@ -273,18 +317,53 @@ class Command(BaseCommand):
             "Malermeister Alt;100,00;\n"
         ).encode()
         # KI-Telefonassistent (ADR-010): eingeschaltet mit Demo-Nummer und drei Rückruf-Notizen
+        from telefon import gespraech as fuehrung
         from telefon.models import Gespraech, Rueckruf, Telefonassistent
 
-        Telefonassistent.objects.create(firma=firma, aktiv=True, rufnummer="+4930000000000")
-        for name, anliegen, nummer, dringlichkeit, zeit, vor_minuten in [
-            ("Familie Weber", "Wasserfleck an der Küchendecke, wird größer.", "01512345678", "dringend", "", 25),
+        Telefonassistent.objects.create(
+            firma=firma,
+            aktiv=True,
+            rufnummer="+4930000000000",
+            begruessung="Guten Tag, Sie sind verbunden mit dem Malerbetrieb Muster.",
+        )
+        ansage = fuehrung.ansage(firma)
+        weber_verlauf = [
+            {"rolle": "assistent", "text": ansage},
+            {
+                "rolle": "anrufer",
+                "text": "Ja, hallo, hier ist Familie Weber. Bei uns ist ein Wasserfleck an der Küchendecke, "
+                "und der wird immer größer.",
+            },
+            {
+                "rolle": "assistent",
+                "text": "Danke, das klingt dringend. Erreichen wir Sie unter der Nummer 0151 2345678?",
+            },
+            {
+                "rolle": "anrufer",
+                "text": "Ja, genau. Kann heute noch jemand vorbeikommen? Und was kostet so etwas ungefähr?",
+            },
+            {
+                "rolle": "assistent",
+                "text": "Preise und Termine klärt unser Team gern beim Rückruf. Ich gebe Ihr Anliegen als dringend "
+                "weiter. " + fuehrung.ABSCHIED,
+            },
+        ]
+        for name, anliegen, nummer, dringlichkeit, zeit, zeitpunkt in [
+            (
+                "Familie Weber",
+                "Wasserfleck an der Küchendecke, wird immer größer.",
+                "01512345678",
+                "dringend",
+                "",
+                am_tag(1, 16, 20),
+            ),
             (
                 "Herr Krüger",
                 "Angebot für Fassadenanstrich, Einfamilienhaus.",
                 "0301234567",
                 "normal",
                 "nachmittags",
-                140,
+                am_tag(1, 11, 5),
             ),
             (
                 "",
@@ -292,17 +371,19 @@ class Command(BaseCommand):
                 "01709876543",
                 "normal",
                 "",
-                300,
+                am_tag(1, 9, 40),
             ),
         ]:
             g = Gespraech.objects.create(
                 firma=firma,
                 anrufer_nummer=nummer,
                 status=Gespraech.Status.BEENDET if name else Gespraech.Status.ABGEBROCHEN,
-                begonnen=jetzt - timedelta(minutes=vor_minuten),
-                beendet=jetzt - timedelta(minutes=vor_minuten - 2),
+                begonnen=zeitpunkt - timedelta(minutes=2),
+                beendet=zeitpunkt,
                 runden=3 if name else 0,
-                verlauf=[{"rolle": "assistent", "text": "Guten Tag, Sie sind verbunden mit " + FIRMA + "."}]
+                verlauf=weber_verlauf
+                if name == "Familie Weber"
+                else [{"rolle": "assistent", "text": ansage}]
                 + ([{"rolle": "anrufer", "text": anliegen}] if name else []),
             )
             Rueckruf.objects.create(
@@ -314,7 +395,7 @@ class Command(BaseCommand):
                 dringlichkeit=dringlichkeit,
                 beste_zeit=zeit,
                 kontakt=kunden["k-weber"] if name == "Familie Weber" else None,
-                erstellt=jetzt - timedelta(minutes=vor_minuten),
+                erstellt=zeitpunkt,
             )
         vorgang = datenimport.hochladen(firma, nutzer, "posten", "alte-rechnungen.csv", alte)
         datenimport.zuordnung_speichern(vorgang, vorgang.zuordnung, {}, kundentyp_uebernehmen=False)

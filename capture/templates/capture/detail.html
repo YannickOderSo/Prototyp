@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load cockpit %}
 {% block titel %}Entwurf{% endblock %}
 {% block inhalt %}
 <h1>{{ e.get_kanal_display }} vom {{ e.erstellt|date:"d.m.Y H:i" }}</h1>
@@ -8,12 +9,19 @@
 {% endif %}
 {% if e.fehler %}<p class="meldung fehler">{{ e.fehler }}</p>{% endif %}
 {% if e.status == "fehler" and not e.transkript and not e.quelltext %}<form method="post" action="{% url 'capture:neuversuch' e.pk %}" class="knopfreihe">{% csrf_token %}<button type="submit">Erneut versuchen</button></form>{% endif %}
-{% for h in e.hinweise %}<p class="meldung warnung">{{ h }}</p>{% endfor %}
+{% if e.status != "pruefung" %}{% for h in e.hinweise %}<p class="meldung warnung">{{ h }}</p>{% endfor %}{% endif %}
 
 {% if e.status == "uebertragen" %}
 <div class="karte"><p><span class="marke-status gut">in Lexware angelegt</span></p>
   <p>Der {% if e.ziel_art == "quotation" %}Angebots{% else %}Rechnungs{% endif %}entwurf liegt in Lexware. Prüfen und schließen Sie ihn dort ab.</p>
   <p><a class="knopf" href="{{ e.ziel_url }}" rel="noopener" target="_blank">Entwurf in Lexware öffnen</a></p></div>
+{% endif %}
+
+{% if e.status == "pruefung" and e.transkript %}
+<figure class="zitat">
+  <figcaption>{% icon "mic" %}{% if e.kanal == "aufnahme" %}Das haben Sie gesagt{% else %}Ihre Notiz{% endif %}</figcaption>
+  <blockquote>{{ e.transkript }}</blockquote>
+</figure>
 {% endif %}
 
 {% block pruefansicht %}{% include "capture/_pruefansicht.html" %}{% endblock %}

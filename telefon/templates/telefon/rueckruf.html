@@ -9,7 +9,7 @@
   <div class="kennzahl"><div class="label">Rückrufnummer</div><div class="wert nummer">{% if r.rueckrufnummer %}<a href="tel:{{ r.rueckrufnummer }}">{{ r.rueckrufnummer }}</a>{% else %}–{% endif %}</div></div>
   <div class="kennzahl{% if r.dringlichkeit == 'dringend' %} schlecht{% endif %}"><div class="label">Dringlichkeit</div><div class="wert">{{ r.get_dringlichkeit_display }}</div></div>
   <div class="kennzahl"><div class="label">Beste Zeit</div><div class="wert">{{ r.beste_zeit|default:"–" }}</div></div>
-  <div class="kennzahl"><div class="label">Kunde in Lexware</div><div class="wert">{% if r.kontakt %}<a href="{% url 'ledger:kunde' r.kontakt.pk %}">{{ r.kontakt.name }}</a>{% else %}–{% endif %}</div></div>
+  <div class="kennzahl"><div class="label">Kunde in Lexware</div><div class="wert text">{% if r.kontakt %}<a href="{% url 'ledger:kunde' r.kontakt.pk %}">{{ r.kontakt.name }}</a>{% else %}–{% endif %}</div></div>
 </section>
 <section class="karte"><h2>Anliegen</h2><p>{{ r.anliegen|linebreaksbr }}</p>
   {% if r.gespraech.ausfallbetrieb %}<p class="hilfe">Ohne KI aufgenommen (Ausfallbetrieb): Das Anliegen steht im Wortlaut des Anrufers da.</p>{% endif %}</section>

@@ -62,6 +62,10 @@ class Kennzahlen:
     summe_nicht_faellig: Decimal = NULL
     klassen: list[Klasse] = field(default_factory=list)
 
+    @property
+    def anzahl_nicht_faellig(self) -> int:
+        return self.anzahl_offen - self.anzahl_ueberfaellig
+
 
 def kennzahlen(posten: Iterable[Posten], heute: date) -> Kennzahlen:
     k = Kennzahlen(klassen=[Klasse(name) for name, _, _ in KLASSEN])

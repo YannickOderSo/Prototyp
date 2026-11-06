@@ -43,7 +43,7 @@ def test_demo_pdf_ist_gueltig():
 def test_demo_lokal_durchspielen_ohne_anfrage_nach_aussen(settings, worker, mailoutbox):
     settings.DEBUG = True
     call_command("demo_daten")
-    firma = Firma.objects.get(name__endswith="(Demo)")
+    firma = Firma.objects.get(name="Malerbetrieb Muster GmbH")
     nutzer = Nutzer.objects.get(email="demo@cockpit.local")
     offen_vorher = Beleg.objects.fuer(firma).filter(status__in=Beleg.OFFENE_STATUS).count()
     with respx.mock(assert_all_mocked=True, assert_all_called=False) as router:

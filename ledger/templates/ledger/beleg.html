@@ -6,7 +6,7 @@
 <section class="kennzahlen">
   <div class="kennzahl"><div class="label">Offen</div><div class="wert">{{ b.offen|euro }}</div><div class="label">von {{ b.brutto|euro }}</div></div>
   <div class="kennzahl"><div class="label">Fällig</div><div class="wert">{{ b.faellig_am|datum }}</div></div>
-  <div class="kennzahl"><div class="label">Kunde</div><div class="wert">{% if b.kontakt %}<a href="{% url 'ledger:kunde' b.kontakt.pk %}">{{ b.kontakt.name }}</a>{% else %}{{ b.kontakt_name|default:"(ohne Kunde)" }}{% endif %}</div></div>
+  <div class="kennzahl"><div class="label">Kunde</div><div class="wert text">{% if b.kontakt %}<a href="{% url 'ledger:kunde' b.kontakt.pk %}">{{ b.kontakt.name }}</a>{% else %}{{ b.kontakt_name|default:"(ohne Kunde)" }}{% endif %}</div></div>
   <div class="kennzahl"><div class="label">Mahnstufe</div><div class="wert">{{ b.mahnstufe }}</div></div>
 </section>
 {% if b.importiert %}<p class="meldung" role="status">Aus Excel übernommen{% if b.import_vorgang %} ({{ b.import_vorgang.dateiname }}){% endif %}. Diese Rechnung kennt Lexware nicht: Den Zahlstatus pflegen Sie hier in Belegfluss.</p>{% endif %}

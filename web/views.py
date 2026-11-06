@@ -30,8 +30,10 @@ def start(request: FirmaRequest) -> HttpResponse:
     ansicht = request.GET.get("ansicht", "ueberblick")
     if ansicht not in dict(reiter):
         ansicht = "ueberblick"
+    c = cockpit(request.firma, heute)
     kontext: dict[str, object] = {
-        "c": cockpit(request.firma, heute),
+        "c": c,
+        "prognose_max": max((w.summe for w in c.prognose.wochen), default=0),
         "verbindung": verbindung,
         "reiter": reiter,
         "ansicht": ansicht,

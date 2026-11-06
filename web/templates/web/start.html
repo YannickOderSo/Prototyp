@@ -2,8 +2,14 @@
 {% load cockpit %}
 {% block titel %}Cockpit{% endblock %}
 {% block inhalt %}
-<h1>Cockpit</h1>
-{% if request.firma %}<p>Rechnungen, Angebote und Mahnungen auf einen Blick, Stand {% now "j. F Y" %}.</p>{% endif %}
+<div class="seitenkopf">
+  <div>
+    {% if request.firma %}<p class="vorzeile">{% now "l, j. F Y" %}</p>{% endif %}
+    <h1>Cockpit</h1>
+    {% if request.firma %}<p>Rechnungen, Angebote und Mahnungen auf einen Blick.</p>{% endif %}
+  </div>
+  {% if request.firma %}<a class="knopf" href="{% url 'capture:neu' %}">{% icon "mic" %}Neu erfassen</a>{% endif %}
+</div>
 {% if not request.firma %}
 <div class="karte"><p>Ihr Konto gehört noch zu keiner Firma. Bitte lassen Sie sich vom Inhaber einladen.</p></div>
 {% else %}
@@ -28,10 +34,10 @@
 {% elif ansicht == "mahnungen" %}{% include "web/_reiter_mahnungen.html" %}
 {% else %}
 <section class="kennzahlen" aria-label="Kennzahlen">
-  <div class="kennzahl"><div class="label">Offen gesamt</div><div class="wert" data-kennzahl="summe_offen">{{ c.kennzahlen.summe_offen|euro }}</div><div class="label">{{ c.kennzahlen.anzahl_offen }} Posten</div></div>
-  <div class="kennzahl schlecht"><div class="label">Überfällig</div><div class="wert" data-kennzahl="summe_ueberfaellig">{{ c.kennzahlen.summe_ueberfaellig|euro }}</div><div class="label"><span data-kennzahl="anzahl_ueberfaellig">{{ c.kennzahlen.anzahl_ueberfaellig }}</span> Posten</div></div>
-  <div class="kennzahl"><div class="label">Noch nicht fällig</div><div class="wert">{{ c.kennzahlen.summe_nicht_faellig|euro }}</div></div>
-  <div class="kennzahl"><div class="label">Erwartet in 4 Wochen</div><div class="wert" data-kennzahl="prognose">{{ c.prognose.summe|euro }}</div></div>
+  <div class="kennzahl mit-symbol"><span class="symbol">{% icon "wallet" %}</span><div class="label">Offen gesamt</div><div class="wert" data-kennzahl="summe_offen">{{ c.kennzahlen.summe_offen|euro }}</div><div class="label">{{ c.kennzahlen.anzahl_offen }} Posten</div></div>
+  <div class="kennzahl mit-symbol schlecht"><span class="symbol">{% icon "triangle-alert" %}</span><div class="label">Überfällig</div><div class="wert" data-kennzahl="summe_ueberfaellig">{{ c.kennzahlen.summe_ueberfaellig|euro }}</div><div class="label"><span data-kennzahl="anzahl_ueberfaellig">{{ c.kennzahlen.anzahl_ueberfaellig }}</span> Posten</div></div>
+  <div class="kennzahl mit-symbol"><span class="symbol">{% icon "calendar-clock" %}</span><div class="label">Noch nicht fällig</div><div class="wert">{{ c.kennzahlen.summe_nicht_faellig|euro }}</div><div class="label">{{ c.kennzahlen.anzahl_nicht_faellig }} Posten</div></div>
+  <div class="kennzahl mit-symbol gut-akzent"><span class="symbol">{% icon "trending-up" %}</span><div class="label">Erwartet in 4 Wochen</div><div class="wert" data-kennzahl="prognose">{{ c.prognose.summe|euro }}</div><div class="label">nach Zahlungsverhalten</div></div>
 </section>
 
 {% if c.ohne_kundentyp %}
@@ -53,16 +59,21 @@
 </section>
 
 <section class="karte" aria-labelledby="prognose">
-  <h2 id="prognose">Erwarteter Geldeingang</h2>
+  <div class="karten-kopf"><h2 id="prognose">Erwarteter Geldeingang</h2><strong class="karten-summe">{{ c.prognose.summe|euro }}</strong></div>
   <p class="hilfe">Nach Fälligkeit, verschoben um den durchschnittlichen Zahlungsverzug des Kunden in den letzten 12 Monaten.</p>
-  <ul class="liste">
+  <div class="saeulen" role="img" aria-label="Erwarteter Geldeingang je Woche: {% for w in c.prognose.wochen %}{{ w.beginn|date:'d.m.' }} {{ w.summe|euro }}{% if not forloop.last %}, {% endif %}{% endfor %}">
     {% for w in c.prognose.wochen %}
-    <li><div class="zeile"><span>{{ w.beginn|date:"d.m." }}–{{ w.ende|date:"d.m.Y" }}</span><strong>{{ w.summe|euro }}</strong></div><div class="neben">{{ w.anzahl }} Posten</div></li>
+    <div class="saeule">
+      <span class="saeule-wert">{{ w.summe|euro_rund }}</span>
+      <span class="saeule-flaeche"><span class="hoehe-{{ w.summe|hoehe:prognose_max }}"></span></span>
+      <span class="saeule-text">{{ w.beginn|date:"d.m." }}<span class="bis">–{{ w.ende|date:"d.m." }}</span></span>
+      <span class="saeule-neben">{{ w.anzahl }} Posten</span>
+    </div>
     {% endfor %}
-    {% if c.prognose.anzahl_unsicher %}
-    <li><div class="zeile"><span>Überfällig, Termin unsicher</span><strong>{{ c.prognose.unsicher|euro }}</strong></div><div class="neben">{{ c.prognose.anzahl_unsicher }} Posten, nicht in der Prognose</div></li>
-    {% endif %}
-  </ul>
+  </div>
+  {% if c.prognose.anzahl_unsicher %}
+  <div class="zeile karten-fuss"><span>Überfällig, Termin unsicher <span class="neben">· {{ c.prognose.anzahl_unsicher }} Posten, nicht in der Prognose</span></span><strong>{{ c.prognose.unsicher|euro }}</strong></div>
+  {% endif %}
 </section>
 
 </div>
@@ -85,13 +96,17 @@
 
 <section class="karte" aria-labelledby="verzug">
   <h2 id="verzug">Tage von Fälligkeit bis Zahlung</h2>
-  <ul class="liste">
+  <p class="hilfe">Je Monat der Zahlung. Grün: im Schnitt vor Fälligkeit bezahlt.</p>
+  <div class="saeulen sechs" role="img" aria-label="Tage von Fälligkeit bis Zahlung je Monat: {% for m in c.verzug_monate %}{{ m.monat|date:'F' }} {% if m.tage is None %}keine Zahlung{% else %}{{ m.tage|zahl }} Tage{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}">
     {% for m in c.verzug_monate %}
-    <li><div class="zeile"><span>{{ m.monat|date:"F Y" }}</span><strong>{% if m.tage is None %}–{% else %}{{ m.tage|zahl }} Tage{% endif %}</strong></div>
-      {% if m.tage is not None %}<div class="balken"><span class="anteil-{{ m.anteil }}"></span></div>{% endif %}
-      <div class="neben">{{ m.anzahl }} Zahlung{{ m.anzahl|pluralize:"en" }}</div></li>
+    <div class="saeule{% if m.tage is not None and m.tage < 0 %} frueh{% endif %}">
+      <span class="saeule-wert">{% if m.tage is None %}–{% else %}{{ m.tage|zahl }}{% endif %}</span>
+      <span class="saeule-flaeche"><span class="hoehe-{% if m.tage is None %}0{% else %}{{ m.anteil|hoehe:100 }}{% endif %}"></span></span>
+      <span class="saeule-text">{{ m.monat|date:"M" }}</span>
+      <span class="saeule-neben">{{ m.anzahl }} Zahl.</span>
+    </div>
     {% endfor %}
-  </ul>
+  </div>
 </section>
 </div>
 {% endif %}{# Ende Überblick #}

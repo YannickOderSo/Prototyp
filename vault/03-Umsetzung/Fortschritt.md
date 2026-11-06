@@ -317,3 +317,10 @@ Wunsch von Lukas (Punkt 10). Yannick hat entschieden: Live-Gespräch mit KI, im 
 - 9 neue Tests (Voxtral-Anfrage und WAV-Formate, Zwischenspeicher nur für feste Sätze, Fehlerfälle, Haiku ohne Mitdenken, getrenntes Limit, Systemcheck). Voxtral TTS und Haiku 5.5 sind nur gegen nachgebildete Dienste getestet, nicht gegen die echten.
 - Darstellung: Die Rückrufnummer brach auf dem Handy mitten in der Zahl um (Kachel zu schmal). Jetzt etwas kleiner und ohne Umbruch (beim Pitch-Video aufgefallen).
 - Pitch-Video „Beispielablauf KI-Telefonassistent“ (1:54 Min.) aus echten App-Aufnahmen und einem nachgestellten Beispielgespräch mit synthetischen Stimmen; an Yannick geschickt, nicht im Repository.
+
+### Feinschliff der Klick-Demo für den Pilot-Pitch (6. November 2026)
+- Cockpit: Seitenkopf mit Datum und Knopf „Neu erfassen“, Symbole an den Kennzahlen, Säulendiagramme für den erwarteten Geldeingang und die Tage bis zur Zahlung (ohne Inline-Styles, Höhe über Klassen).
+- Prüfansicht der Erfassung: Sprachmemo als Zitat über dem Entwurf, Kopfdaten im Raster, Positionen auf dem Desktop als Tabellenzeilen, Summen wie auf einer Rechnung. Behoben: fehlender Abstand in „Summe netto“, doppelter Hinweis zur offenen Frage.
+- Mahnungen: „Verwerfen“ sieht aus wie ein Knopf. Belegseite und Rückruf: Namen in Kacheln brechen nur an Wortgrenzen um.
+- Demo-Daten: Firmenname ohne „(Demo)“, Einrichtung abgeschlossen, Zahlungseingänge und versendete Mahnungen in dieser Woche, ein angenommenes Angebot, ein Posten 61–90 Tage überfällig, Uhrzeiten zur Bürozeit, keine Rechnung mehr mit Datum in der Zukunft. Rückruf „Familie Weber“ mit dem Gesprächsverlauf aus dem Pitch-Video.
+- Geprüft: 57 Seiten auf Desktop und Handy ohne Fehler und ohne waagerechtes Scrollen, 1.970 Links ohne Fehler, alle Tests grün.

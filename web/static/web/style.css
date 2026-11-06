@@ -67,7 +67,7 @@
   --radius-s: 6px;
   --radius: 10px;
   --radius-l: 14px;
-  --schatten-s: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --schatten-s: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03);
   --schatten: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
   --schatten-l: 0 12px 24px -6px rgba(16, 24, 40, 0.14), 0 4px 8px -4px rgba(16, 24, 40, 0.06);
   --ring: 0 0 0 4px rgba(41, 82, 204, 0.18);
@@ -246,6 +246,8 @@ main {
 }
 .kennzahl .wert a { color: inherit; text-decoration: none; }
 /* Telefonnummern nie mitten in der Zahl umbrechen, dafür etwas kleiner (schmale Kacheln auf dem Handy) */
+/* Namen in Kacheln: kleiner und nur an Wortgrenzen umbrechen */
+.kennzahl .wert.text { font-size: 1.0625rem; line-height: 1.35; overflow-wrap: break-word; hyphens: auto; }
 .kennzahl .wert.nummer { font-size: 1.0625rem; overflow-wrap: normal; white-space: nowrap; letter-spacing: 0; }
 .kennzahl .label { font-size: 0.8125rem; color: var(--text-leise); font-weight: 500; }
 .kennzahl > .label:first-child { color: var(--text-2); }
@@ -620,6 +622,150 @@ details.meldung p, details.meldung ul { margin: 0 0 8px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
+}
+
+/* ------------------------------------------------------------------ Feinschliff (Pilot-Demo) */
+
+/* Zeile „Text links, Betrag rechts“ auch außerhalb von Listen (Summen, Karten) */
+.zeile { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; min-width: 0; }
+
+/* Seitenkopf mit Datum und Hauptaktion */
+.seitenkopf { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px 24px; margin-bottom: 22px; }
+.seitenkopf h1 { margin: 0 0 6px; }
+.seitenkopf h1 + p { margin: 0; color: var(--text-2); }
+.vorzeile { margin: 0 0 6px; font-size: 0.75rem; font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase; color: var(--primaer); }
+.seitenkopf .knopf { box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08), 0 4px 12px -4px rgba(41, 82, 204, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14); }
+.seitenkopf .knopf .icon { width: 18px; height: 18px; }
+
+/* Kennzahlen mit Symbol (ab Tablet sichtbar) */
+.kennzahl.mit-symbol { position: relative; }
+.kennzahl .symbol { display: none; }
+.kennzahl.gut-akzent .wert { color: var(--grau-900); }
+
+/* Kopf einer Karte mit Summe rechts */
+.karten-kopf { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; }
+.karten-kopf h2 { margin: 0 0 4px; }
+.karten-summe { font-size: 1.0625rem; font-weight: 650; color: var(--grau-900); font-variant-numeric: tabular-nums; }
+.karten-fuss { border-top: 1px solid var(--grau-100); padding-top: 12px; margin-top: 4px; font-size: 0.9375rem; }
+.karten-fuss > span { flex: 1 1 220px; min-width: 0; }
+.karten-fuss strong { font-variant-numeric: tabular-nums; }
+
+/* Säulendiagramm ohne Inline-Styles: Höhe über Klassen in Fünferschritten */
+.saeulen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: end; margin: 18px 0 10px; }
+.saeulen.sechs { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.saeule { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; text-align: center; }
+.saeule-flaeche {
+  display: flex; align-items: flex-end; width: 100%; max-width: 64px; height: 136px; overflow: hidden;
+  border-radius: 8px; background: var(--grau-50); box-shadow: inset 0 0 0 1px var(--grau-100);
+}
+.saeule-flaeche > span {
+  display: block; width: 100%; border-radius: 7px 7px 3px 3px;
+  background: linear-gradient(180deg, var(--primaer-500), var(--primaer-600));
+}
+.saeule.frueh .saeule-flaeche > span { background: linear-gradient(180deg, #32d583, var(--gut-600)); }
+.saeule-wert { font-size: 0.8125rem; font-weight: 650; color: var(--grau-900); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.saeule-text { font-size: 0.75rem; font-weight: 600; color: var(--grau-700); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.saeule-text .bis { display: none; }
+.saeule-neben { font-size: 0.6875rem; color: var(--text-leise); white-space: nowrap; margin-top: -4px; }
+.hoehe-0 { height: 0; } .hoehe-5 { height: 5%; } .hoehe-10 { height: 10%; } .hoehe-15 { height: 15%; }
+.hoehe-20 { height: 20%; } .hoehe-25 { height: 25%; } .hoehe-30 { height: 30%; } .hoehe-35 { height: 35%; }
+.hoehe-40 { height: 40%; } .hoehe-45 { height: 45%; } .hoehe-50 { height: 50%; } .hoehe-55 { height: 55%; }
+.hoehe-60 { height: 60%; } .hoehe-65 { height: 65%; } .hoehe-70 { height: 70%; } .hoehe-75 { height: 75%; }
+.hoehe-80 { height: 80%; } .hoehe-85 { height: 85%; } .hoehe-90 { height: 90%; } .hoehe-95 { height: 95%; }
+.hoehe-100 { height: 100%; }
+
+/* Sprachmemo als Zitat über dem Entwurf */
+.zitat {
+  margin: 0 0 20px; padding: 18px 20px; background: var(--flaeche); border: 1px solid var(--rand);
+  border-radius: var(--radius-l); box-shadow: var(--schatten-s);
+}
+.zitat figcaption {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  font-size: 0.75rem; font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase; color: var(--primaer);
+}
+.zitat figcaption .icon { width: 16px; height: 16px; }
+.zitat blockquote { margin: 0; font-size: 1.0625rem; line-height: 1.6; color: var(--grau-800); }
+.zitat blockquote::before { content: "„"; }
+.zitat blockquote::after { content: "“"; }
+
+/* Prüfansicht: Kopfdaten im Raster, Positionen als kompakte Zeilen */
+.kopfdaten { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 16px; }
+#positionen > li.position { gap: 10px; }
+.pos-kopf { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pos-kopf .neben { margin-left: auto; font-size: 0.8125rem; }
+.pos-nr {
+  display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 6px;
+  background: var(--grau-100); color: var(--grau-600); font-size: 0.75rem; font-weight: 650; font-variant-numeric: tabular-nums;
+}
+.pos-felder { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+.pos-felder .feld { margin-bottom: 10px; min-width: 0; }
+.pos-beschreibung, .pos-artikel, .pos-summe { grid-column: 1 / -1; }
+.pos-summe { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.pos-summe .label { margin: 0; font-size: 0.8125rem; font-weight: 500; color: var(--text-leise); }
+.pos-summe strong { font-size: 1rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.pos-fuss { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; }
+.pos-fuss .hilfe { margin: 0; }
+.pos-fuss .checkbox label { font-size: 0.8125rem; color: var(--text-leise); font-weight: 500; }
+.pos-fuss .neben { font-size: 0.8125rem; }
+
+/* Summen wie auf einer Rechnung */
+.summenbox { display: grid; gap: 14px; }
+.summenbox .hilfe { margin: 0; }
+.summen { display: grid; gap: 6px; }
+.summen .zeile strong { font-variant-numeric: tabular-nums; }
+.summen .zeile.gesamt { border-top: 1px solid var(--rand); padding-top: 10px; margin-top: 4px; font-weight: 650; }
+.summen .zeile.gesamt strong { font-size: 1.25rem; letter-spacing: -0.01em; }
+
+/* Aufklappbares in Knopfreihen (z. B. „Verwerfen“) sieht aus wie ein zweitrangiger Knopf */
+.knopfreihe > details > summary {
+  min-height: 40px; padding: 0 14px; gap: 6px;
+  border: 1px solid var(--rand-stark); border-radius: var(--radius); background: var(--flaeche);
+  color: var(--grau-700); font-weight: 600; font-size: 0.9375rem; box-shadow: var(--schatten-s);
+}
+.knopfreihe > details > summary::before { width: 6px; height: 6px; margin-right: 2px; }
+.knopfreihe > details > summary:hover { background: var(--grau-50); color: var(--grau-900); border-color: var(--grau-400); }
+.knopfreihe > details[open] > summary { margin-bottom: 8px; }
+
+@media (min-width: 720px) {
+  .kennzahl .symbol {
+    position: absolute; top: 16px; right: 16px; display: grid; place-items: center; width: 34px; height: 34px;
+    border-radius: 10px; background: var(--primaer-50); color: var(--primaer-600);
+  }
+  .kennzahl .symbol .icon { width: 18px; height: 18px; }
+  .kennzahl.mit-symbol .symbol + .label { padding-right: 42px; min-height: 22px; }
+  .kennzahl.schlecht .symbol { background: #fff; color: var(--fehler-600); box-shadow: inset 0 0 0 1px var(--fehler-200); }
+  .kennzahl.gut-akzent .symbol { background: var(--gut-50); color: var(--gut-700); }
+  .saeulen { gap: 14px; }
+  .saeulen.sechs { gap: 10px; }
+  .saeule-flaeche { height: 156px; }
+  .saeule-text .bis { display: inline; }
+  .kopfdaten { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kopfdaten .feld:last-child { grid-column: 1 / -1; }
+  .pos-felder { grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1.2fr); }
+  .pos-beschreibung { grid-column: 1 / -1; }
+  .pos-artikel { grid-column: auto; }
+  .pos-felder > .pos-artikel { grid-column: 1 / -1; }
+  .summenbox { grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); align-items: end; }
+}
+
+@media (min-width: 1024px) {
+  h1 { font-size: 2rem; letter-spacing: -0.025em; }
+  .seitenkopf { margin-bottom: 26px; }
+  form#pruefformular { max-width: none; }
+  .pos-felder { grid-template-columns: minmax(0, 2.3fr) 84px 108px minmax(0, 2.7fr) 132px; align-items: end; }
+  .pos-felder > .pos-beschreibung, .pos-felder > .pos-artikel { grid-column: auto; }
+  .pos-summe {
+    grid-column: 5; grid-row: 1; flex-direction: column; align-items: flex-end; justify-content: flex-end; gap: 2px;
+    min-height: 40px; margin-bottom: 18px; text-align: right;
+  }
+  .pos-felder.mit-preis .pos-preis { grid-column: 1; }
+  .pos-felder.mit-preis .pos-satz { grid-column: 2 / 4; }
+  /* Spaltenköpfe nur in der ersten Position zeigen, darunter liest es sich wie eine Tabelle */
+  #positionen > li.position + li.position :is(.pos-beschreibung, .pos-menge, .pos-einheit, .pos-artikel) > label,
+  #positionen > li.position + li.position .pos-summe .label {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  #positionen > li.position + li.position .pos-summe { margin-bottom: 10px; }
 }
 
 /* Balkenbreiten ohne Inline-Styles (CSP) */

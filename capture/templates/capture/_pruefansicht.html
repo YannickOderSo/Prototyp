@@ -10,6 +10,7 @@
 
   <form method="post" action="{% url 'capture:pruefen' e.pk %}" class="karte" id="pruefformular">
     {% csrf_token %}
+    <div class="kopfdaten">
     <div class="feld"><label for="belegart">Belegart</label>
       <select id="belegart" name="belegart"{% if e.status != "pruefung" %} disabled{% endif %}>
         <option value="unklar"{% if e.entwurf.belegart == "unklar" %} selected{% endif %}>bitte wählen</option>
@@ -24,32 +25,36 @@
     <div class="feld"><label for="leistung_von">Leistung von</label><input type="date" id="leistung_von" name="leistung_von" value="{{ e.entwurf.leistung_von|default_if_none:'' }}"></div>
     <div class="feld"><label for="leistung_bis">Leistung bis</label><input type="date" id="leistung_bis" name="leistung_bis" value="{{ e.entwurf.leistung_bis|default_if_none:'' }}"></div>
     <div class="feld"><label for="angebot_nummer">Bezug auf Angebot (Nummer)</label><input type="text" id="angebot_nummer" name="angebot_nummer" value="{{ e.entwurf.angebot_nummer }}"></div>
+    </div>
 
     <h3>Positionen</h3>
     <ul class="liste" id="positionen">
       {% for p in positionen %}
       <li class="position" data-herkunft="{{ p.herkunft }}">
-        <div class="zeile"><span class="marke-status">{{ p.herkunft_text }}</span>{% if p.quelle %}<span class="neben">Quelle: {{ p.quelle }}</span>{% endif %}</div>
-        <div class="feld"><label for="pos-{{ p.index }}-beschreibung">Beschreibung</label><input type="text" id="pos-{{ p.index }}-beschreibung" name="pos-{{ p.index }}-beschreibung" value="{{ p.beschreibung }}"></div>
-        <div class="feld"><label for="pos-{{ p.index }}-menge">Menge</label><input type="text" inputmode="decimal" id="pos-{{ p.index }}-menge" name="pos-{{ p.index }}-menge" value="{{ p.menge|zahl }}"></div>
-        <div class="feld"><label for="pos-{{ p.index }}-einheit">Einheit</label><input type="text" id="pos-{{ p.index }}-einheit" name="pos-{{ p.index }}-einheit" value="{{ p.einheit }}"></div>
-        <div class="feld"><label for="pos-{{ p.index }}-artikel_id">Lexware-Artikel</label>
-          <select id="pos-{{ p.index }}-artikel_id" name="pos-{{ p.index }}-artikel_id">
-            <option value="">kein Artikel (Preis selbst setzen)</option>
-            {% for a in artikel %}<option value="{{ a.extern_id }}"{% if a.extern_id == p.artikel_id %} selected{% endif %}>{{ a.bezeichnung }} ({{ a.netto|euro }} je {{ a.einheit }})</option>{% endfor %}
-          </select></div>
-        {% if p.artikel_id %}
-        <div class="neben">Preis {{ p.netto|euro }} netto, {{ p.steuersatz|zahl }} % USt, {{ p.preis_herkunft }}</div>
-        {% else %}
-        <div class="feld"><label for="pos-{{ p.index }}-preis_nutzer">Preis netto je Einheit (€)</label><input type="text" inputmode="decimal" id="pos-{{ p.index }}-preis_nutzer" name="pos-{{ p.index }}-preis_nutzer" value="{{ p.preis_nutzer }}"></div>
-        <div class="feld"><label for="pos-{{ p.index }}-steuersatz_nutzer">Steuersatz</label>
-          <select id="pos-{{ p.index }}-steuersatz_nutzer" name="pos-{{ p.index }}-steuersatz_nutzer"><option value="">bitte wählen</option>
-            {% for s in steuersaetze %}<option value="{{ s }}"{% if s == p.steuersatz_nutzer %} selected{% endif %}>{{ s }} %</option>{% endfor %}</select></div>
-        {% if p.netto %}<div class="neben">{{ p.preis_herkunft }}</div>{% endif %}
-        {% endif %}
-        {% if p.summe %}<div class="zeile"><span>Summe netto</span><strong>{{ p.summe|euro }}</strong></div>{% endif %}
-        {% if p.hinweis %}<div class="hilfe">{{ p.hinweis }}</div>{% endif %}
-        <div class="checkbox"><input type="checkbox" id="pos-{{ p.index }}-entfernen" name="pos-{{ p.index }}-entfernen" value="1"> <label for="pos-{{ p.index }}-entfernen">Position entfernen</label></div>
+        <div class="pos-kopf"><span class="pos-nr">{{ forloop.counter }}</span><span class="marke-status">{{ p.herkunft_text }}</span>{% if p.quelle %}<span class="neben">Quelle: {{ p.quelle }}</span>{% endif %}</div>
+        <div class="pos-felder{% if not p.artikel_id %} mit-preis{% endif %}">
+          <div class="feld pos-beschreibung"><label for="pos-{{ p.index }}-beschreibung">Beschreibung</label><input type="text" id="pos-{{ p.index }}-beschreibung" name="pos-{{ p.index }}-beschreibung" value="{{ p.beschreibung }}"></div>
+          <div class="feld pos-menge"><label for="pos-{{ p.index }}-menge">Menge</label><input type="text" inputmode="decimal" id="pos-{{ p.index }}-menge" name="pos-{{ p.index }}-menge" value="{{ p.menge|zahl }}"></div>
+          <div class="feld pos-einheit"><label for="pos-{{ p.index }}-einheit">Einheit</label><input type="text" id="pos-{{ p.index }}-einheit" name="pos-{{ p.index }}-einheit" value="{{ p.einheit }}"></div>
+          <div class="feld pos-artikel"><label for="pos-{{ p.index }}-artikel_id">Lexware-Artikel</label>
+            <select id="pos-{{ p.index }}-artikel_id" name="pos-{{ p.index }}-artikel_id">
+              <option value="">kein Artikel (Preis selbst setzen)</option>
+              {% for a in artikel %}<option value="{{ a.extern_id }}"{% if a.extern_id == p.artikel_id %} selected{% endif %}>{{ a.bezeichnung }} ({{ a.netto|euro }} je {{ a.einheit }})</option>{% endfor %}
+            </select></div>
+          {% if not p.artikel_id %}
+          <div class="feld pos-preis"><label for="pos-{{ p.index }}-preis_nutzer">Preis netto je Einheit (€)</label><input type="text" inputmode="decimal" id="pos-{{ p.index }}-preis_nutzer" name="pos-{{ p.index }}-preis_nutzer" value="{{ p.preis_nutzer }}"></div>
+          <div class="feld pos-satz"><label for="pos-{{ p.index }}-steuersatz_nutzer">Steuersatz</label>
+            <select id="pos-{{ p.index }}-steuersatz_nutzer" name="pos-{{ p.index }}-steuersatz_nutzer"><option value="">bitte wählen</option>
+              {% for s in steuersaetze %}<option value="{{ s }}"{% if s == p.steuersatz_nutzer %} selected{% endif %}>{{ s }} %</option>{% endfor %}</select></div>
+          {% endif %}
+          <div class="pos-summe"><span class="label">Summe netto</span>{% if p.summe %}<strong>{{ p.summe|euro }}</strong>{% else %}<strong class="leise">offen</strong>{% endif %}</div>
+        </div>
+        <div class="pos-fuss">
+          {% if p.artikel_id %}<span class="neben">Preis {{ p.netto|euro }} netto, {{ p.steuersatz|zahl }} % USt, {{ p.preis_herkunft }}</span>
+          {% elif p.netto %}<span class="neben">{{ p.preis_herkunft }}</span>{% endif %}
+          {% if p.hinweis %}<span class="hilfe">{{ p.hinweis }}</span>{% endif %}
+          <span class="checkbox"><input type="checkbox" id="pos-{{ p.index }}-entfernen" name="pos-{{ p.index }}-entfernen" value="1"> <label for="pos-{{ p.index }}-entfernen">Position entfernen</label></span>
+        </div>
       </li>
       {% endfor %}
     </ul>
@@ -62,11 +67,13 @@
     {% if e.status == "pruefung" %}<div class="knopfreihe"><button type="submit" class="zweitrangig">Änderungen übernehmen und prüfen</button></div>{% endif %}
   </form>
 
-  <div class="karte">
-    <div class="zeile"><span>Summe netto</span><strong data-summe="netto">{{ e.entwurf.summen.netto|euro }}</strong></div>
-    {% for satz, betrag in e.entwurf.summen.steuer_je_satz.items %}<div class="zeile neben"><span>USt {{ satz|zahl }} %</span><span>{{ betrag|euro }}</span></div>{% endfor %}
-    <div class="zeile"><span>Summe brutto</span><strong data-summe="brutto">{{ e.entwurf.summen.brutto|euro }}</strong></div>
+  <div class="karte summenbox">
     <p class="hilfe">Die endgültige Rechnung mit Nummer, Steuerausweis und E-Rechnung entsteht erst, wenn Sie den Entwurf in Lexware abschließen.</p>
+    <div class="summen">
+      <div class="zeile"><span>Summe netto</span><strong data-summe="netto">{{ e.entwurf.summen.netto|euro }}</strong></div>
+      {% for satz, betrag in e.entwurf.summen.steuer_je_satz.items %}<div class="zeile neben"><span>USt {{ satz|zahl }} %</span><span>{{ betrag|euro }}</span></div>{% endfor %}
+      <div class="zeile gesamt"><span>Summe brutto</span><strong data-summe="brutto">{{ e.entwurf.summen.brutto|euro }}</strong></div>
+    </div>
   </div>
 
   {% if e.hinweise %}

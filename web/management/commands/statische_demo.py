@@ -63,8 +63,11 @@ BANNER = (
     '<div class="demo-hinweis" id="demo-hinweis" role="status" hidden></div>'
 )
 DEMO_CSS = """
-.demo-banner { background: #fff4d6; color: #5a4300; border-bottom: 1px solid #e8d08a; padding: 8px 16px;
-  font-size: .9rem; line-height: 1.4; }
+.demo-banner { background: #101828; color: #d0d5dd; padding: 7px 16px; font-size: .8125rem; line-height: 1.4;
+  text-align: center; letter-spacing: .005em; }
+.demo-banner strong { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: 999px;
+  background: #fedf89; color: #4e3200; font-size: .6875rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; vertical-align: 1px; }
 .demo-hinweis { position: fixed; left: 16px; right: 16px; bottom: 16px; max-width: 560px; margin: 0 auto;
   background: #1f2937; color: #fff; padding: 12px 16px; border-radius: 10px; z-index: 50;
   box-shadow: 0 4px 16px rgba(0,0,0,.25); font-size: .95rem; }
