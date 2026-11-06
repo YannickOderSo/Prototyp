@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "reports",
     "datenimport",
     "telefon",
+    "quellen",
     "web",
 ]
 

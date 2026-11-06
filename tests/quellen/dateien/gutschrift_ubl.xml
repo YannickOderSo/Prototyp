@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CreditNote xmlns="urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2"
+    xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+    xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:ID>GS-2026-007</cbc:ID>
+  <cbc:IssueDate>2026-10-28</cbc:IssueDate>
+  <cbc:CreditNoteTypeCode>381</cbc:CreditNoteTypeCode>
+  <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
+  <cac:BillingReference><cac:InvoiceDocumentReference><cbc:ID>RE-2026-0412</cbc:ID></cac:InvoiceDocumentReference></cac:BillingReference>
+  <cac:AccountingSupplierParty><cac:Party><cac:PartyName><cbc:Name>Malerbetrieb Muster GmbH</cbc:Name></cac:PartyName></cac:Party></cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty><cac:Party><cac:PartyName><cbc:Name>Huber Hausverwaltung GmbH</cbc:Name></cac:PartyName></cac:Party></cac:AccountingCustomerParty>
+  <cac:LegalMonetaryTotal>
+    <cbc:TaxInclusiveAmount currencyID="EUR">238.00</cbc:TaxInclusiveAmount>
+    <cbc:PayableAmount currencyID="EUR">238.00</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+</CreditNote>

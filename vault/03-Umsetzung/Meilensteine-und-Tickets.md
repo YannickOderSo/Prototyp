@@ -110,7 +110,7 @@ Wunsch von Lukas, Entscheidung von Yannick am 5. November 2026: Live-Gespräch, 
 Entschieden von Yannick am 6. November 2026. Ziel: Betriebe mit jedem Rechnungsprogramm (auch DATEV) und ohne Lexware können Belegfluss nutzen.
 
 - [x] **M9-01** Spezifikation K1–K10, ADR-011 angenommen, Tickets.
-- [ ] **M9-02** E-Rechnung lesen: ZUGFeRD/Factur-X, XRechnung CII und UBL (K2).
+- [x] **M9-02** E-Rechnung lesen: ZUGFeRD/Factur-X, XRechnung CII und UBL (K2).
 - [ ] **M9-03** Kopie-Adresse und Hochladen, Posten und Kunden ohne Lexware, Gutschriften, Dubletten, Mahnwesen auch ohne Lexware-Verbindung (K1, K3, K4, K8).
 - [ ] **M9-04** PDF ohne E-Rechnung: KI liest vor, Mensch bestätigt (K5).
 - [ ] **M9-05** Kontoauszug camt.053/camt.052 und CSV, nur Gutschriften (K6).
