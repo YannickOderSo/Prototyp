@@ -127,6 +127,23 @@ Entscheidung in ADR-010. Live-Gespräch, nur Rückruf-Notizen, kein Kalender. Im
 | J7 MUSS | Telefonie: Anmeldung des Anrufs durch Asterisk per HTTPS mit Geheimnis; Audio über AudioSocket; Spracherkennung je Beitrag (Voxtral), Sprachausgabe Voxtral TTS (EU; Piper nur mit gewerblich freigegebener Stimme); eigenes Monatslimit je Firma, getrennt vom KI-Limit der Erfassung; Zuordnung der Firma über die angerufene Nummer | Simulierter Anruf über AudioSocket im Test ergibt Rückruf-Notiz |
 | J8 MUSS | Löschfristen: Verlauf 90 Tage, Notizen 90 Tage nach Erledigung bzw. 12 Monate | im Löschjob mit Test |
 
+## K. Rechnungskopien und Kontoauszüge (Meilenstein 9, ADR-011 Stufe 3)
+
+Für Betriebe, deren Rechnungsprogramm keine Schnittstelle hat (z. B. DATEV Auftragswesen next, Handwerkersoftware ohne API) oder die kein Lexware nutzen.
+
+| Nr. | Anforderung | Abnahmekriterium |
+| --- | --- | --- |
+| K1 MUSS | Eigene Kopie-Adresse je Firma (`…+r<token>@…`) im Sammelpostfach; nur Absender aus der Liste der Firma und bestandene DKIM- oder SPF-Prüfung wie beim Belegpostfach; zusätzlich Hochladen von Rechnungsdateien in der App | Kopie eines erlaubten Absenders wird gelesen; fremder Absender wird abgelehnt und protokolliert |
+| K2 MUSS | E-Rechnungen lesen: ZUGFeRD/Factur-X (PDF mit eingebettetem XML), XRechnung als CII und UBL, mit abgesichertem XML-Parser; Felder Nummer (BT-1), Datum (BT-2), Art (BT-3), Fälligkeit (BT-9, sonst aus BT-20), Bezug (BT-25), Käufer (BT-44, BT-48, BT-49/BT-58, Anschrift), Beträge (BT-112, BT-113, BT-115) | Beispieldateien in allen drei Formaten ergeben dieselben Werte; Dateien mit DTD oder Entitäten werden abgelehnt |
+| K3 MUSS | Aus einer Kopie entsteht ein offener Posten mit Quelle „Rechnungskopie“, nie in einem Bestandstool gebucht; Dubletten über die Rechnungsnummer; eine Gutschrift (381) mindert die Rechnung, auf die sie verweist; Korrekturrechnung, fehlende Fälligkeit, andere Währung als Euro oder fremder Verkäufer gehen in die Prüfung durch einen Menschen | Doppelt geschickte Kopie erzeugt keinen zweiten Posten; Gutschrift senkt den offenen Betrag |
+| K4 MUSS | Kunde wird über E-Mail oder Namen zugeordnet oder im Cockpit neu angelegt; den Kundentyp setzt immer der Nutzer | Neuer Kunde erscheint mit Kundentyp „unbekannt“ und wird bis zur Festlegung nicht gemahnt |
+| K5 MUSS | PDF ohne E-Rechnung: Die KI (Bedrock EU) liest Nummer, Datum, Fälligkeit, Kunde und Betrag vor; ein Posten entsteht erst, wenn ein Mensch die Werte bestätigt; das KI-Kostenlimit gilt | Ohne Bestätigung kein Posten; Werte lassen sich vor dem Bestätigen ändern |
+| K6 MUSS | Kontoauszug hochladen: camt.053 und camt.052 (XML) sowie CSV der Banken; nur Gutschriften werden gespeichert; mehrfach hochgeladene Umsätze werden erkannt | Abbuchungen erscheinen nirgends; doppelter Upload erzeugt keine doppelten Zahlungen |
+| K7 MUSS | Zahlungen werden offenen Posten ohne Lexware zugeordnet vorgeschlagen (Rechnungsnummer im Verwendungszweck, Betrag, Name); der Zahlstatus ändert sich erst nach Bestätigung; Bestätigen, andere Rechnung wählen und Ignorieren werden protokolliert | Nach Bestätigung ist der Posten bezahlt oder teilbezahlt und wird nicht mehr gemahnt |
+| K8 MUSS | Mahnwesen für Posten aus Kopien wie bei importierten Posten (H8); der tägliche Vorschlagslauf gilt auch für Firmen ohne Lexware-Verbindung; die Freigabe zeigt das Datum des letzten Kontoauszugs und warnt, wenn er älter als 2 Tage ist oder fehlt | Firma ohne Lexware bekommt Vorschläge; Warnung bei veraltetem Kontoauszug sichtbar |
+| K9 MUSS | Rohdateien werden nicht gespeichert, nur die gelesenen Felder; Kopien und Zahlungen werden nach 12 Monaten gelöscht; alles mandantengetrennt | Löschlauf entfernt alte Einträge; IDOR-Test deckt die neuen Seiten ab |
+| K10 SOLL | Cockpit zeigt keine Lexware-Warnung, wenn die Firma mit Rechnungskopien arbeitet; Einrichtung und Einstellungen zeigen den Weg ohne Lexware | Firma nur mit Kopien sieht im Cockpit keinen Lexware-Hinweis |
+
 ## G. sevdesk (Meilenstein 5)
 
 | ID | Anforderung | Abnahmekriterium |

@@ -1,6 +1,6 @@
 # ADR-011: Breite Anbindung an Rechnungsprogramme in drei Stufen
 
-Status: **vorgeschlagen** · 6. November 2026 · ergänzt ADR-001, ADR-003, ADR-005 und ADR-008 · Entscheidung: Yannick, Lukas
+Status: **angenommen** · 6. November 2026 (Yannick: „Dann fang an zu bauen“, zuerst Stufe 3) · ergänzt ADR-001, ADR-003, ADR-005 und ADR-008
 
 ## Kontext
 Eine Pilotkundin „nutzt DATEV“. Belegfluss soll möglichst viele Betriebe erreichen, unabhängig vom Rechnungsprogramm. Bisher gibt es nur Lexware Office (ADR-003). `Vision-und-Abgrenzung.md` schließt eine DATEV-Anbindung aus. Recherche vom 6. November 2026 (Quellen in [[Anbindungen-Recherche]]):
@@ -19,3 +19,9 @@ Eine Pilotkundin „nutzt DATEV“. Belegfluss soll möglichst viele Betriebe er
 + Jeder Betrieb kann ab dem ersten Tag starten (Stufe 1); die Automatik wächst mit jedem Adapter.
 + Volle Kontrolle über die Entwurfs-Regeln, keine zusätzlichen Auftragsverarbeiter außerhalb der EU.
 - Stufe 1 bedeutet Handarbeit beim Zahlstatus; Stufe 3 kostet eine PSD2-Anbindung (finAPI ab ca. 300 €/Monat laut Preisliste) und einen E-Rechnungs-Parser.
+
+## Umsetzung Stufe 3 (M9, 6. November 2026)
+- Posten aus Rechnungskopien bekommen die Quelle „Rechnungskopie“ und laufen wie importierte Posten (ADR-008): nie in einem Bestandstool gebucht, Zahlstatus in Belegfluss, Mahnschreiben-PDF der App, Erinnerung ohne Anhang.
+- Für Betriebe ohne Lexware legt Belegfluss Kunden im Cockpit an (Name, E-Mail, Anschrift aus der E-Rechnung). Das erweitert ADR-008 Punkt 1 und H6 nur für diesen Weg; der Excel-Import bleibt unverändert.
+- Zahlungen aus Kontoauszügen ändern den Zahlstatus erst nach Bestätigung durch einen Menschen. Gespeichert werden nur Gutschriften, keine Abbuchungen.
+- Die Kopie-Dateien selbst werden nicht aufbewahrt, nur die gelesenen Felder (Archiv bleibt beim Bestandstool, ADR-001).
