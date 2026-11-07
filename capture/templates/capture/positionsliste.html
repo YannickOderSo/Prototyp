@@ -13,16 +13,16 @@
 </dl>
 <div class="tabelle-huelle">
 <table class="positionsliste">
-  <thead><tr><th>Pos.</th><th>Beschreibung</th><th class="zahl">Menge</th><th>Einheit</th><th class="zahl">Einzelpreis netto</th><th class="zahl">USt</th><th class="zahl">Summe netto</th></tr></thead>
+  <thead><tr><th>Pos.</th><th>Beschreibung</th><th class="spalte-zahl">Menge</th><th>Einheit</th><th class="spalte-zahl">Einzelpreis netto</th><th class="spalte-zahl">USt</th><th class="spalte-zahl">Summe netto</th></tr></thead>
   <tbody>
   {% for p in liste.positionen %}
-  <tr><td>{{ p.nr }}</td><td>{{ p.beschreibung }}</td><td class="zahl">{{ p.menge }}</td><td>{{ p.einheit }}</td>
-    <td class="zahl">{% if p.netto %}{{ p.netto }} €{% else %}<span class="leise">in Ihrem Programm</span>{% endif %}</td>
-    <td class="zahl">{% if p.steuersatz %}{{ p.steuersatz }} %{% endif %}</td>
-    <td class="zahl">{% if p.summe %}{{ p.summe }} €{% endif %}</td></tr>
+  <tr><td>{{ p.nr }}</td><td>{{ p.beschreibung }}</td><td class="spalte-zahl">{{ p.menge }}</td><td>{{ p.einheit }}</td>
+    <td class="spalte-zahl">{% if p.netto %}{{ p.netto }} €{% else %}<span class="leise">in Ihrem Programm</span>{% endif %}</td>
+    <td class="spalte-zahl">{% if p.steuersatz %}{{ p.steuersatz }} %{% endif %}</td>
+    <td class="spalte-zahl">{% if p.summe %}{{ p.summe }} €{% endif %}</td></tr>
   {% endfor %}
   </tbody>
-  {% if liste.summe_netto and liste.summe_netto != "0,00" %}<tfoot><tr><td colspan="6">Summe netto der Positionen mit Preis{% if liste.ohne_preis %} ({{ liste.ohne_preis }} ohne Preis nicht enthalten){% endif %}</td><td class="zahl">{{ liste.summe_netto }} €</td></tr></tfoot>{% endif %}
+  {% if liste.summe_netto and liste.summe_netto != "0,00" %}<tfoot><tr><td colspan="6">Summe netto der Positionen mit Preis{% if liste.ohne_preis %} ({{ liste.ohne_preis }} ohne Preis nicht enthalten){% endif %}</td><td class="spalte-zahl">{{ liste.summe_netto }} €</td></tr></tfoot>{% endif %}
 </table>
 </div>
 {% if e.hinweise %}<div class="meldung warnung"><strong>Bitte beachten:</strong><ul>{% for h in e.hinweise %}<li>{{ h }}</li>{% endfor %}</ul></div>{% endif %}
