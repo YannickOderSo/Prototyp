@@ -183,7 +183,7 @@ Ausgerollt wird nur per Git-Tag aus der CI, nie vom Laptop.
 - Zeilen, die Lexware dauerhaft ablehnt (z. B. ungültige Daten), stehen im Ergebnis als „nicht angelegt“ mit Grund. Der Kunde korrigiert sie in Excel und lädt nur diese Zeilen erneut hoch; schon angelegte Kunden erkennt die Vorschau als Dublette.
 
 **Mails kommen nicht an**
-- Bounces erreichen den Zustell-Webhook `/hooks/zustellung/<ZUSTELLUNG_WEBHOOK_TOKEN>/`. Der Zustellfehler steht dann mit Grund auf der Seite „Mahnungen“ der Firma und im Protokoll (`mahnung.zustellfehler`); eine eigene Benachrichtigung gibt es nicht.
+- Bounces erreichen den Zustell-Webhook `/hooks/zustellung/<ZUSTELLUNG_WEBHOOK_TOKEN>/` (generisches Format oder Mailjet-Ereignisse, ADR-012). Der Zustellfehler steht dann mit Grund auf der Seite „Mahnungen“ der Firma und im Protokoll (`mahnung.zustellfehler`); bei Angebots-Erinnerungen unter „Angebots-Erinnerung fehlgeschlagen“ (`angebot.zustellfehler`). Eine eigene Benachrichtigung gibt es nicht. Zeigt Mailjet Ereignisse, die Belegfluss nicht zuordnet: Prüfen, ob `MAILVERSAND_ANBIETER=mailjet` gesetzt ist (sonst fehlt `X-MJ-CustomID`).
 - SMTP-Zugang der Plattform prüfen. Firmen mit eigenem SMTP sehen ihren Zugang unter Einstellungen → E-Mail-Versand und können dort eine Testmail senden.
 
 **KI oder Transkription gestört (Bedrock, Mistral)**
@@ -223,7 +223,8 @@ Ausgerollt wird nur per Git-Tag aus der CI, nie vom Laptop.
 | `BEDROCK_REGION`, `BEDROCK_MODELL` | EU-Region und EU-Inferenzprofil | `eu-central-1`, Profil-ID mit Präfix `eu.` aus der Bedrock-Konsole (offene Frage zur genauen ID) |
 | `MISTRAL_API_KEY`, `MISTRAL_MODELL` | Transkription der Sprachmemos (Voxtral) | Mistral-Konsole (La Plateforme), Organisation mit EU-Verarbeitung; AVV mit Mistral AI |
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS`, `DEFAULT_FROM_EMAIL` | Versand der Erinnerungen, Mahnungen, Sammelmails und Systemmails | EU-SMTP-Anbieter mit AVV (Auswahl offen, siehe Offene Fragen); SPF, DKIM und DMARC für die Absenderdomain einrichten |
-| `ZUSTELLUNG_WEBHOOK_TOKEN` | Bounces und Zustellfehler vom SMTP-Anbieter | selbst erzeugen, beim Anbieter als Webhook `https://<domain>/hooks/zustellung/<token>/` eintragen; Adapter für dessen Format fehlt noch |
+| `ZUSTELLUNG_WEBHOOK_TOKEN` | Bounces und Zustellfehler vom SMTP-Anbieter | selbst erzeugen (`python -c "import secrets; print(secrets.token_urlsafe(32))"`), bei Mailjet unter Event-Benachrichtigungen als URL `https://<domain>/hooks/zustellung/<token>/` für „bounce“, „blocked“ und „spam“ eintragen, Ereignisse gruppieren erlaubt (ADR-012) |
+| `MAILVERSAND_ANBIETER` | `mailjet`: Kopf `X-MJ-CustomID` an jede Mail über das Plattform-SMTP, damit Ereignisse zugeordnet werden | `mailjet`, solange ADR-012 gilt |
 | `BELEGPOSTFACH_ADRESSE`, `BELEGPOSTFACH_IMAP_HOST`, `BELEGPOSTFACH_IMAP_PORT`, `BELEGPOSTFACH_IMAP_BENUTZER`, `BELEGPOSTFACH_IMAP_PASSWORT`, `BELEGPOSTFACH_IMAP_ORDNER` | Belegpostfach (`belege+<token>@…`) | EU-Mailanbieter mit Plus-Adressierung und IMAP |
 | `BELEGPOSTFACH_AUTHSERV_ID` | Nur DKIM/SPF-Ergebnisse des eigenen Mailservers zählen | Kennung im `Authentication-Results`-Kopf einer Testmail an das Postfach |
 | `SENTRY_DSN`, `SENTRY_UMGEBUNG` | Fehlererfassung | GlitchTip selbst gehostet (EU) oder Sentry-Projekt mit Datenhaltung EU (`*.de.sentry.io`) |
@@ -243,7 +244,7 @@ Vor dem ersten Pilotbetrieb, in dieser Reihenfolge. Alles hier ist bisher nur mi
 - [ ] Sicherung läuft nachts, erste Restore-Probe auf dem Server erfolgreich (`restore_probe.sh`).
 - [ ] Uptime-Check alarmiert, wenn `worker` gestoppt wird (Test: `docker compose stop worker`, Alarm binnen 5 Minuten, danach wieder starten).
 - [ ] Fehlererfassung empfängt einen Testfehler (z. B. einen Job mit unbekanntem Typ einplanen).
-- [ ] SMTP-Anbieter gewählt (ADR), SPF/DKIM/DMARC eingerichtet, Testmail kommt an und landet nicht im Spam; Bounce-Webhook liefert an `/hooks/zustellung/…` (Adapter für das Anbieterformat schreiben).
+- [ ] SMTP-Anbieter gewählt (ADR-012 bestätigt), SPF/DKIM/DMARC eingerichtet, Testmail kommt an und landet nicht im Spam. Bounce-Test: Mail an eine nicht existierende Adresse schicken, Mailjet-Ereignis kommt an `/hooks/zustellung/…` an, der Versand zeigt den Zustellfehler (Feldnamen damit gegen die Doku-Beispiele bestätigen).
 - [ ] Lexware: Pilot mit XL-Tarif verbindet sich. Prüfen:
   - Erstimport ist binnen 2 Minuten nutzbar.
   - Ein Webhook kommt an (Signatur geprüft).

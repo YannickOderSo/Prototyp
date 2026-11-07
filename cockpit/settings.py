@@ -171,6 +171,9 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="cockpit@localhost")
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Geheimes Token für Zustellmeldungen (Bounces) des SMTP-Anbieters: /hooks/zustellung/<token>/
 ZUSTELLUNG_WEBHOOK_TOKEN = env.str("ZUSTELLUNG_WEBHOOK_TOKEN", default="")
+# Anbieter des Plattform-SMTP. "mailjet": jede Mail bekommt X-MJ-CustomID (= Message-ID), damit Mailjet-Ereignisse
+# (Bounce, blockiert, Spam) über den Zustellungs-Webhook dem Versand zugeordnet werden (ADR-012, Vorschlag)
+MAILVERSAND_ANBIETER = env.str("MAILVERSAND_ANBIETER", default="").strip().lower()
 
 # Externe Dienste, ausschließlich EU-Endpunkte (ADR-005)
 LEXWARE_BASIS_URL = env.str("LEXWARE_BASIS_URL", default="https://api.lexware.io")

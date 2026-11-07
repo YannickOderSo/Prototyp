@@ -3,7 +3,8 @@
 Standard: Plattform-SMTP (EU-Anbieter, Einstellungen EMAIL_*), Absender „Name der Firma <Plattformadresse>“,
 Reply-To der Firma. Optional: eigenes SMTP der Firma mit eigener Absenderadresse.
 Zustellfehler: sofortige Ablehnung durch den SMTP-Server wird direkt erfasst; spätere Bounces meldet der
-Anbieter per Webhook (`zustellung_webhook`), soweit er das unterstützt.
+Anbieter per Webhook (`zustellung_webhook`), soweit er das unterstützt. Formate: das eigene, generische Format und
+das Ereignis-Format von Mailjet (einzeln oder gruppiert als Liste, ADR-012 Vorschlag).
 """
 
 from __future__ import annotations
@@ -44,8 +45,8 @@ def eigenes_smtp(firma: Firma) -> SmtpZugang | None:
     return SmtpZugang.objects.fuer(firma).filter(aktiv=True).first()
 
 
-def verbindung_fuer(firma: Firma) -> BaseEmailBackend:
-    zugang = eigenes_smtp(firma)
+def verbindung_fuer(firma: Firma, zugang: SmtpZugang | None = None) -> BaseEmailBackend:
+    zugang = zugang or eigenes_smtp(firma)
     if zugang is None:
         return get_connection(fail_silently=False)
     return smtp_verbindung(zugang)
@@ -92,6 +93,11 @@ def senden(firma: Firma, mail: MailInhalt, anhang: bytes | None) -> str:
     if not mail.empfaenger:
         raise Zustellfehler("Keine E-Mail-Adresse beim Kunden hinterlegt")
     message_id = make_msgid(domain=message_id_domain(parseaddr(mail.absender)[1]))
+    zugang = eigenes_smtp(firma)
+    kopfzeilen = {"Message-ID": message_id, "Auto-Submitted": "auto-generated"}
+    if zugang is None and settings.MAILVERSAND_ANBIETER == "mailjet":
+        # Mailjet meldet Ereignisse ohne die Message-ID; die CustomID kommt im Ereignis als "CustomID" zurück
+        kopfzeilen["X-MJ-CustomID"] = message_id.strip("<>")
     nachricht = EmailMessage(
         subject=mail.betreff,
         body=mail.text,
@@ -99,8 +105,8 @@ def senden(firma: Firma, mail: MailInhalt, anhang: bytes | None) -> str:
         to=[mail.empfaenger],
         bcc=[mail.bcc] if mail.bcc else None,
         reply_to=[mail.reply_to] if mail.reply_to else None,
-        headers={"Message-ID": message_id, "Auto-Submitted": "auto-generated"},
-        connection=verbindung_fuer(firma),
+        headers=kopfzeilen,
+        connection=verbindung_fuer(firma, zugang),
     )
     if anhang is not None:
         nachricht.attach(mail.anhang_name, anhang, "application/pdf")
@@ -112,16 +118,82 @@ def senden(firma: Firma, mail: MailInhalt, anhang: bytes | None) -> str:
 
 
 ZUSTELLFEHLER_EREIGNISSE = {"bounce", "hard_bounce", "soft_bounce", "dropped", "complaint", "rejected"}
+MAX_EREIGNISSE = 500
+
+
+class _UngueltigesFormat(ValueError):
+    pass
+
+
+def _mailjet(e: dict[str, object]) -> tuple[str, str, str] | None:
+    """Ein Mailjet-Ereignis (Event API) → (Message-ID, Ereignis, Grund). Nur Zustellprobleme, sonst None.
+
+    bounce → hard_bounce/soft_bounce (Feld hard_bounce), blocked → rejected (Mailjet hat nicht versendet),
+    spam → complaint. sent, open, click und unsub sind keine Zustellfehler."""
+    art = str(e.get("event", "")).lower()
+    if art == "bounce":
+        ereignis = "hard_bounce" if e.get("hard_bounce") is True else "soft_bounce"
+    elif art == "blocked":
+        ereignis = "rejected"
+    elif art == "spam":
+        ereignis = "complaint"
+    else:
+        return None
+    custom = str(e.get("CustomID") or "").strip()
+    if not custom:
+        return None  # ohne X-MJ-CustomID nicht zuordenbar (z. B. Mail über eigenes SMTP oder Testversand)
+    teile = [e.get("error_related_to"), e.get("error"), e.get("comment") or e.get("source")]
+    return custom, ereignis, " / ".join(str(t) for t in teile if t)
+
+
+def _ereignisse(daten: object) -> list[tuple[str, str, str]]:
+    """Zustellmeldungen aus dem generischen Format oder dem Mailjet-Format (einzeln oder als Liste)."""
+    if isinstance(daten, list):
+        if len(daten) > MAX_EREIGNISSE:
+            raise _UngueltigesFormat
+        return [m for e in daten if isinstance(e, dict) and (m := _mailjet(e)) is not None]
+    if not isinstance(daten, dict):
+        raise _UngueltigesFormat
+    if "event" in daten:
+        m = _mailjet(daten)
+        return [m] if m else []
+    if "message_id" not in daten:
+        raise _UngueltigesFormat
+    ereignis = str(daten.get("ereignis", "")).lower()
+    if ereignis not in ZUSTELLFEHLER_EREIGNISSE:
+        return []
+    return [(str(daten["message_id"]).strip(), ereignis, str(daten.get("grund", "")))]
+
+
+def _zustellfehler_vermerken(message_id: str, ereignis: str, grund: str) -> None:
+    from .models import Angebotserinnerung
+
+    if not message_id.startswith("<"):
+        message_id = f"<{message_id}>"
+    text = f"{ereignis}: {grund[:500]}"
+    for versand in Versand.objects.filter(message_id=message_id).select_related("firma"):
+        versand.zustellfehler = text
+        versand.zustellfehler_am = timezone.now()
+        versand.save(update_fields=["zustellfehler", "zustellfehler_am"])
+        protokolliere(versand.firma, "mahnung.zustellfehler", objekt=versand, daten={"ereignis": ereignis})
+    for erinnerung in Angebotserinnerung.objects.filter(message_id=message_id).select_related("firma"):
+        # sichtbar unter „Angebots-Erinnerung fehlgeschlagen“; keine zweite Erinnerung (eindeutig je Angebot)
+        erinnerung.status = Angebotserinnerung.Status.FEHLER
+        erinnerung.fehler = f"Nicht zugestellt ({text})"[:2000]
+        erinnerung.save(update_fields=["status", "fehler"])
+        protokolliere(erinnerung.firma, "angebot.zustellfehler", objekt=erinnerung, daten={"ereignis": ereignis})
 
 
 @csrf_exempt
 @login_not_required
 @require_POST
 def zustellung_webhook(request: HttpRequest, token: str) -> HttpResponse:
-    """Generischer Empfänger für Zustellmeldungen des SMTP-Anbieters.
+    """Empfänger für Zustellmeldungen des SMTP-Anbieters.
 
-    Erwartet JSON `{"message_id": "<…>", "ereignis": "bounce", "grund": "…"}`. Das konkrete Format hängt vom
-    gewählten EU-Anbieter ab (offene Frage); ein kleiner Adapter übersetzt es in dieses Format.
+    Formate: generisch `{"message_id": "<…>", "ereignis": "bounce", "grund": "…"}` oder das Mailjet-Ereignis
+    (`event`, `CustomID`, `hard_bounce`, `error_related_to`, `error`, …), einzeln oder gruppiert als Liste.
+    Mailjet signiert nicht; geschützt wird über das geheime Token im Pfad (HTTPS). Erfolgreich verarbeitete Meldungen
+    werden mit 200 bestätigt, denn Mailjet wiederholt jede andere Antwort 24 Stunden lang alle 30 Sekunden.
     """
     erwartet = settings.ZUSTELLUNG_WEBHOOK_TOKEN
     if not erwartet or not constant_time_compare(token, erwartet):
@@ -129,18 +201,9 @@ def zustellung_webhook(request: HttpRequest, token: str) -> HttpResponse:
     if is_ratelimited(request, group="zustellung", key=lambda _g, _r: "alle", rate="600/15m", increment=True):
         return HttpResponse(status=429)
     try:
-        daten = json.loads(request.body)
-        message_id = str(daten["message_id"]).strip()
-        ereignis = str(daten.get("ereignis", "")).lower()
-    except (ValueError, KeyError, TypeError):
+        meldungen = _ereignisse(json.loads(request.body))
+    except (ValueError, TypeError):
         return HttpResponse(status=400)
-    if ereignis not in ZUSTELLFEHLER_EREIGNISSE:
-        return HttpResponse(status=204)
-    if not message_id.startswith("<"):
-        message_id = f"<{message_id}>"
-    for versand in Versand.objects.filter(message_id=message_id).select_related("firma"):
-        versand.zustellfehler = f"{ereignis}: {str(daten.get('grund', ''))[:500]}"
-        versand.zustellfehler_am = timezone.now()
-        versand.save(update_fields=["zustellfehler", "zustellfehler_am"])
-        protokolliere(versand.firma, "mahnung.zustellfehler", objekt=versand, daten={"ereignis": ereignis})
-    return HttpResponse(status=204)
+    for message_id, ereignis, grund in meldungen:
+        _zustellfehler_vermerken(message_id, ereignis, grund)
+    return HttpResponse("ok", status=200, content_type="text/plain")

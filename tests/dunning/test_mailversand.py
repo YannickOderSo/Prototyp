@@ -123,7 +123,7 @@ def test_zustellfehler_webhook(client, client_inhaber, firma):
         client.post(
             url, json.dumps({"message_id": "abc@cockpit", "ereignis": "delivered"}), content_type="application/json"
         ).status_code
-        == 204
+        == 200  # Mailjet wiederholt jede andere Antwort als 200 einen Tag lang
     )
     versand.refresh_from_db()
     assert versand.zustellfehler == ""
