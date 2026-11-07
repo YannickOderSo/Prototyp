@@ -66,3 +66,13 @@ def test_asterisk_image_ohne_offene_verwaltung():
     assert "manager.conf" in datei and "http.conf" in datei  # entfernt: AMI und HTTP-Server bleiben aus
     for modul in ("chan_sip.so", "chan_iax2.so", "res_ari.so"):
         assert f"noload => {modul}" in module
+
+
+def test_systemcheck_kennungen_eindeutig():
+    """Jede Kennung `cockpit.E…`/`W…` gibt es nur einmal (E004 war doppelt vergeben, korrigiert am 7.11.2026)."""
+    import re
+
+    kennungen: list[str] = []
+    for datei in WURZEL.glob("*/checks.py"):
+        kennungen += re.findall(r'id="(cockpit\.[EW]\d{3})"', datei.read_text())
+    assert kennungen and len(kennungen) == len(set(kennungen)), sorted(kennungen)

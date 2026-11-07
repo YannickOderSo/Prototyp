@@ -1,6 +1,6 @@
 # Betriebshandbuch
 
-Für alle, die das Cockpit betreiben: aufsetzen, ausrollen, sichern, wiederherstellen und Störungen beheben. Grundlage sind [[Sicherheit-Datenschutz-Betrieb]] und ADR-005 (nur EU). Stand: M4-06, 5. November 2026.
+Für alle, die das Cockpit betreiben: aufsetzen, ausrollen, sichern, wiederherstellen und Störungen beheben. Grundlage sind [[Sicherheit-Datenschutz-Betrieb]] und ADR-005 (nur EU). Stand: M4-06, 5. November 2026; Abschnitt 2 am 7. November 2026 auf den dedizierten Server umgestellt.
 
 > Was hier steht, ist mit dem Smoke-Test `scripts/prod_smoke.sh` lokal und in der CI geprüft: Stack mit Caddy, App-Rolle, Health, Sicherung und Restore-Probe mit echtem restic. **Nicht** geprüft sind ein echter Hetzner-Server, eine echte Storage Box, echte Zertifikate von Let's Encrypt, der Deploy-Job per SSH und alle externen Dienste (Lexware, Bedrock, Mistral, SMTP, IMAP). Diese Punkte stehen in der Echtlauf-Checkliste unten.
 
@@ -23,11 +23,17 @@ Datenbankrollen:
 
 ## 2. Erstinstallation
 
-1. **Server** bei Hetzner Cloud anlegen: Standort Nürnberg oder Falkenstein, 4 vCPU / 8 GB, Ubuntu LTS.
-   - Nur SSH mit Schlüssel, kein Passwort-Login.
-   - Firewall: eingehend nur 22 (wenn möglich nur feste IPs), 80 und 443.
-   - Automatische Sicherheitsupdates (`unattended-upgrades`).
-2. **Docker** installieren (offizielles Paket mit Compose-Plugin). Einen Benutzer `cockpit` anlegen und in die Gruppe `docker` aufnehmen.
+1. **Server** (Stand 7. November 2026: dedizierter Hetzner AX41 in Falkenstein für App und Telefon, Go-Live-Plan „p0-hosting“; die Hetzner-Cloud-Typen waren bei der Preisrecherche nicht verfügbar, Offene-Fragen.md):
+   - Im Hetzner Robot zuerst den eigenen öffentlichen SSH-Schlüssel hinterlegen, dann den Server bestellen. Beide Hetzner-Konten des Teams mit Zwei-Faktor-Anmeldung.
+   - **Installation** über das Rescue-System mit `installimage`: Ubuntu 24.04 LTS, Software-RAID 1 über beide NVMe-Platten (`SWRAID 1`, `SWRAIDLEVEL 1`), Hostname z. B. `belegfluss-1`. Danach neu starten und per Schlüssel anmelden.
+   - **System:** `apt update && apt full-upgrade`, Zeitzone `Europe/Berlin` (`timedatectl set-timezone Europe/Berlin`), Zeitabgleich mit `systemd-timesyncd` (Standard).
+   - **SSH:** Benutzer `cockpit` mit `sudo` und eigenem Schlüssel anlegen; in `/etc/ssh/sshd_config` `PasswordAuthentication no` und `PermitRootLogin no`, dann `systemctl reload ssh` (vorher in einer zweiten Sitzung testen, sonst sperrt man sich aus).
+   - **Firewall** zweistufig:
+     - Hetzner-Robot-Firewall vor dem Server (zustandslos): Vorlage für Webserver als Grundlage, sie lässt Antworten auf ausgehende Verbindungen zu. Eingehend erlauben: 22/tcp nur von festen IPs des Teams, 80/tcp, 443/tcp und 443/udp; mit Telefon zusätzlich 5061/tcp und 10000–10100/udp nur von den IP-Bereichen des SIP-Anbieters.
+     - `ufw` auf dem Server mit denselben Regeln (`ufw default deny incoming`, `ufw allow from <IP> to any port 22 proto tcp`, …). Achtung: Docker umgeht `ufw` für veröffentlichte Container-Ports. Deshalb veröffentlicht `docker-compose.prod.yml` nur 80/443 (Caddy) und `127.0.0.1:9092` (Telefon, nur lokal); Postgres hat keinen Port. Asterisk läuft im Host-Netz, dort greift `ufw`.
+   - **Automatische Updates:** `apt install unattended-upgrades` und `dpkg-reconfigure -plow unattended-upgrades`; in `/etc/apt/apt.conf.d/50unattended-upgrades` `Unattended-Upgrade::Automatic-Reboot "true";` und `Unattended-Upgrade::Automatic-Reboot-Time "04:15";` (nach den Löschfristen um 3:30, vor dem Vorschlagslauf um 5:00; die Container starten danach von selbst, `restart: unless-stopped`).
+   - **Platten überwachen:** `apt install smartmontools`; in `/etc/mdadm/mdadm.conf` `MAILADDR <Betriebs-Postfach>` setzen, damit ein ausgefallenes RAID-Laufwerk eine Mail auslöst (vorher Mailversand des Hosts einrichten, z. B. über das Plattform-SMTP). Prüfen: `cat /proc/mdstat` zeigt `[UU]`.
+2. **Docker** aus dem offiziellen Docker-Repository installieren (`docker-ce`, `docker-ce-cli`, `containerd.io`, `docker-compose-plugin`). Den Benutzer `cockpit` in die Gruppe `docker` aufnehmen. In `/etc/docker/daemon.json` die Log-Größe begrenzen (`{"log-driver": "json-file", "log-opts": {"max-size": "10m", "max-file": "5"}}`; die Compose-Datei setzt das für die eigenen Dienste ohnehin).
 3. **Code**: `git clone` des Repositorys nach `/srv/cockpit` und den gewünschten Tag auschecken (`git checkout v1.0.0`).
 4. **Umgebung**: `.env.prod.example` nach `/srv/cockpit/.env` kopieren und mit `chmod 600 .env` schützen. Alle Werte stehen in Abschnitt 9.
    - `COCKPIT_FERNET_KEYS` erzeugen mit `python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`.
@@ -274,7 +280,7 @@ Vor dem ersten Pilotbetrieb, in dieser Reihenfolge. Alles hier ist bisher nur mi
 4. **Sprachausgabe:** Standard ist Mistral Voxtral TTS (`TELEFON_SPRACHAUSGABE=voxtral`). Sie nutzt denselben `MISTRAL_API_KEY` wie die Spracherkennung, dazu `MISTRAL_TTS_MODELL` (`voxtral-mini-tts-3-0`) und `MISTRAL_TTS_STIMME` (`voice_481`, „Heidi“).
    - Piper nur mit einer gewerblich freigegebenen Stimme: `TELEFON_SPRACHAUSGABE=piper`, `PIPER_BEFEHL` und `PIPER_MODELL` (`.onnx`, die `.onnx.json` daneben). „thorsten“ ist nicht freigegeben (Offene-Fragen.md).
    - Für einen Einzelstart geht auch `python manage.py telefon_dienst --stimme piper`.
-5. `TELEFON_MODELL` steht auf `eu.anthropic.claude-haiku-5-5` (schnell, günstig, Mitdenken aus). Nur EU-Profile, sonst meldet der Systemcheck `cockpit.E004`.
+5. `TELEFON_MODELL` steht auf `eu.anthropic.claude-haiku-5-5` (schnell, günstig, Mitdenken aus). Nur EU-Profile, sonst meldet der Systemcheck `cockpit.E005`.
 6. `TELEFON_LIMIT_GESPRAECHE_MONAT` (Standard 400) begrenzt die Gespräche je Firma und Monat; darüber Ausfallbetrieb. Die Nutzung sieht der Inhaber unter Einstellungen → KI-Telefonassistent.
 
 **Abos und Kosten (Stand 5. November 2026, Details in [[Kostenkalkulation-Telefonassistent]]):** easybell Business 10 (4,95 €/Monat) mit 100er-Rufnummernblock (49,95 € einmalig), Hetzner AX41 (59 €/Monat), Mistral und Bedrock nach Verbrauch (zusammen ca. 1,4 ct je Anruf). Budget-Alarm in AWS und Ausgabenlimit bei Mistral einrichten.

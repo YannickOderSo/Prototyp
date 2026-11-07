@@ -183,7 +183,7 @@ MISTRAL_MODELL = env.str("MISTRAL_MODELL", default="voxtral-mini-latest")
 BEDROCK_REGION = env.str("BEDROCK_REGION", default="eu-central-1")
 # EU-Inferenzprofil (Präfix "eu."): Routing nur innerhalb der EU. "global." und "us." blockiert ein Systemcheck.
 BEDROCK_MODELL = env.str("BEDROCK_MODELL", default="eu.anthropic.claude-sonnet-5-5")
-# KI-Telefonassistent (ADR-010): schnelles Modell, nur EU-Profil (Systemcheck cockpit.E004); leer = BEDROCK_MODELL
+# KI-Telefonassistent (ADR-010): schnelles Modell, nur EU-Profil (Systemcheck cockpit.E005); leer = BEDROCK_MODELL
 TELEFON_MODELL = env.str("TELEFON_MODELL", default="eu.anthropic.claude-haiku-5-5")
 # Sprachausgabe: "voxtral" (Mistral EU, Standard) oder "piper" (nur mit freigegebener Stimme, Offene-Fragen.md)
 TELEFON_SPRACHAUSGABE = env.str("TELEFON_SPRACHAUSGABE", default="voxtral")

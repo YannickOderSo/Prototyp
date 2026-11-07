@@ -34,7 +34,7 @@ Die App zeigt unter `/rechtliches/<slug>/` derzeit deutlich markierte Platzhalte
 - [ ] Mailanbieter für das Belegpostfach (Plus-Adressierung, IMAP, DKIM/SPF-Prüfung): AVV.
 - [ ] Fehlererfassung: GlitchTip selbst hosten oder Sentry mit EU-Datenhaltung; ggf. AVV.
 - [ ] Lexware: Nutzungsbedingungen der Public API für Partner-Anwendungen lesen. Prüfen, ob eine Registrierung als Partner oder eine Freigabe nötig ist. Jede Firma schließt ihren Vertrag mit Lexware selbst (XL-Tarif erforderlich).
-- [ ] Liste der Unterauftragsverarbeiter in App (Datenschutzerklärung) und AVV abgleichen.
+- [ ] Liste der Unterauftragsverarbeiter in App (Datenschutzerklärung) und AVV abgleichen. Entwurf der Liste: [[Datenschutz-Unterlagen]] Abschnitt 1 (7. November 2026).
 
 ## 3. Mahnwesen und Zinsen: Prüfung durch Anwalt oder Steuerberater
 
@@ -63,7 +63,7 @@ Grundlage sind [[Mahnlogik-und-Recht]] und die Tabellentests in `tests/dunning/`
 ## 5. Organisation
 
 - [ ] Verantwortliche für Betrieb, Sicherheitsmeldungen und Datenschutzanfragen benennen (Kontakt im Impressum und in der AVV).
-- [ ] Verzeichnis von Verarbeitungstätigkeiten als Auftragsverarbeiter (Art. 30 Abs. 2 DSGVO).
-- [ ] Ablauf bei Datenpannen (72 Stunden) schriftlich festhalten.
+- [ ] Verzeichnis von Verarbeitungstätigkeiten als Auftragsverarbeiter (Art. 30 Abs. 2 DSGVO). Entwurf: [[Datenschutz-Unterlagen]] Abschnitt 2, TOMs für die AVV in Abschnitt 3.
+- [ ] Ablauf bei Datenpannen (72 Stunden) schriftlich festhalten. Entwurf: [[Datenpannen-Ablauf]]; Namen, Telefonnummern und Aufsichtsbehörde eintragen.
 - [ ] Pilotvereinbarung mit dem ersten Betrieb: Umfang, Ansprechpartner, Feedback, Testdaten. Klären, ob mit einem Lexware-Testkonto begonnen wird.
 - [ ] Offene Produktfragen aus [[Offene-Fragen]] entscheiden, die „Yannick“ oder „Team“ zugeordnet sind (Produktname und Domain, Validierung Keil A, Altersstruktur, Wochenbericht, technische Löschfristen, Löschung je Firma).

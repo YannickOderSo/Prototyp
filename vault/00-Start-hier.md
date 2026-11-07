@@ -24,7 +24,7 @@ Siehe `05-Kontext/Konzept-Zusammenfassung.md`. Kurz: Ein eigenes Rechnungsprogra
 | --- | --- |
 | `01-Produkt/` | Vision, Personas, MVP-Anforderungen mit Abnahmekriterien, Abgleich mit Lukas' und Yannicks Wünschen |
 | `02-Architektur/` | Architektur, Datenmodell, Lexware-Integration, KI-Pipeline, Mahnlogik und Recht, Sicherheit und Betrieb |
-| `03-Umsetzung/` | Meilensteine und Tickets in Bau-Reihenfolge, Teststrategie, Konventionen, Fortschritt, Betriebshandbuch |
+| `03-Umsetzung/` | Meilensteine und Tickets in Bau-Reihenfolge, Teststrategie, Konventionen, Fortschritt, Betriebshandbuch, Prüfliste für das Team, Datenschutz-Unterlagen und Ablauf bei Datenpannen (Entwürfe) |
 | `04-Entscheidungen/` | Architecture Decision Records (bindend) |
 | `05-Kontext/` | Konzept-Zusammenfassung, Lehren aus Belegfluss, offene Fragen, Glossar |
 

@@ -123,8 +123,8 @@ def test_standard_ist_eu():
         ({"BEDROCK_MODELL": "us.anthropic.claude-sonnet-5-5"}, "cockpit.E002"),
         ({"BEDROCK_MODELL": "anthropic.claude-sonnet-5-5"}, "cockpit.E002"),
         ({"MISTRAL_BASIS_URL": "https://api.us.example.com"}, "cockpit.E003"),
-        ({"TELEFON_MODELL": "us.anthropic.claude-haiku-5-5"}, "cockpit.E004"),
-        ({"TELEFON_MODELL": "global.anthropic.claude-haiku-5-5"}, "cockpit.E004"),
+        ({"TELEFON_MODELL": "us.anthropic.claude-haiku-5-5"}, "cockpit.E005"),
+        ({"TELEFON_MODELL": "global.anthropic.claude-haiku-5-5"}, "cockpit.E005"),
     ],
 )
 def test_nicht_eu_endpunkte_werden_blockiert(einstellung, fehler):
