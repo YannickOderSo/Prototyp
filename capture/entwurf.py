@@ -8,7 +8,7 @@ from typing import Any
 from django.utils import timezone
 
 from connectors.fehler import ConnectorFehler
-from connectors.services import aktive_verbindung, connector_fuer
+from connectors.services import aktive_verbindung, connector_fuer, ohne_lexware
 from ledger.models import Artikel, Beleg, Kontakt
 
 from . import rules
@@ -64,6 +64,7 @@ def regeln_anwenden(erfassung: Erfassung, zusatz_hinweise: list[str] | None = No
         angebot=_angebot(erfassung, str(erfassung.eingabe.get("angebot_nummer") or "")),
         steuerart=verbindung.steuerart if verbindung else "net",
         heute=timezone.localdate(),
+        ohne_lexware=ohne_lexware(firma),
     )
     erfassung.entwurf = rules.als_json(entwurf)
     erfassung.blocker = entwurf.blocker

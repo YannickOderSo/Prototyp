@@ -107,6 +107,8 @@ FAELLE: dict[str, Fabrik] = {
     "capture:pruefen": _erfassung,
     "capture:verwerfen": _erfassung,
     "capture:freigeben": _erfassung,
+    "capture:positionsliste": lambda firma, nutzer=None: _erfassung(firma, nutzer, status="ausgegeben"),
+    "capture:positionsliste_csv": lambda firma, nutzer=None: _erfassung(firma, nutzer, status="ausgegeben"),
     "dunning:vorschau": _vorschlag,
     "dunning:verwerfen": _vorschlag,
     "dunning:neuversuch": _vorschlag,

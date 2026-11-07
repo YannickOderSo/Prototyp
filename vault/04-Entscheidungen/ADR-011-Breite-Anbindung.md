@@ -28,4 +28,10 @@ Eine Pilotkundin „nutzt DATEV“. Belegfluss soll möglichst viele Betriebe er
 - Stand 6. November 2026: A (E-Rechnungs-Kopien), A2 (PDF per KI, Mensch bestätigt) und B1 (Kontoauszug camt.053/camt.052/CSV) sind gebaut (M9-02 bis M9-07). B2 (Kontoabruf über finAPI) folgt erst nach einem Vertrag mit finAPI.
 - Posten aus Kopien sind keine Spiegeldaten: Sie bleiben beim Trennen von Lexware erhalten. Ihre Kunden ebenfalls, auch wenn sie aus Lexware stammen.
 - Eine noch nicht zugeordnete Zahlung, die zu einem Posten passt, sperrt den Versand der Mahnung zu diesem Posten (zusätzlicher Frische-Check).
-- Grenzen: Artikel aus Excel nur mit Lexware. Erfasste Angebote und Rechnungen (Sprachmemo, Fotos) lassen sich ohne Lexware nicht übertragen; Stufe 1 („Positionsliste zum Abtippen“) ist noch nicht gebaut.
+- Grenzen: Artikel aus Excel nur mit Lexware.
+
+## Umsetzung Stufe 1: Positionsliste zum Abtippen (M9-09, 7. November 2026)
+- Ohne Lexware (keine oder nur getrennte Verbindung) endet die Belegerfassung nicht mit einem Entwurf in Lexware, sondern mit einer **Positionsliste**: Kunde, Leistungszeitraum, Angebotsbezug und Positionen (Beschreibung, Menge, Einheit; Preis und Steuersatz nur, wenn ein Mensch sie gesetzt hat).
+- Die Liste ist deutlich als „Entwurf – keine Rechnung“ markiert, hat keine Nummer und keinen Empfänger-Briefkopf und wird nicht versendet. Ansicht zum Drucken und CSV (Semikolon, deutsche Zahlen, gegen Formeln geschützt) zum Übertragen ins eigene Programm.
+- Freigeben wie bisher nur Inhaber und Freigeber; Status „als Positionsliste ausgegeben“, Protokoll für Ausgabe und CSV-Download.
+- Ohne Lexware sind ein Kunde, der nicht im Kundenstamm steht, und fehlende Preise **Hinweise statt Blocker**. Fehlende Menge, fehlende Belegart, fehlender Leistungszeitraum bei Rechnungen und ein ganz fehlender Kunde bleiben Blocker. Mit Lexware ändert sich nichts.

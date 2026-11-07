@@ -355,3 +355,15 @@ Anlass: Die Pilotkundin nutzt DATEV. Damit Betriebe ohne Lexware (oder mit einem
 - Einrichtung, Cockpit und Abgleich zeigen den Weg „offene Rechnungen aus Excel übernehmen“.
 - Tests: 8 neue, 3 bestehende auf „mit Lexware-Verbindung“ umgestellt (sie prüfen den Lexware-Weg). Kein Aufruf an Lexware im Weg ohne Lexware (Mock zählt 0 Anfragen). Nicht getestet: echte Excel-/CSV-Exporte aus DATEV (OP-Liste).
 - Ablauf für die DATEV-Pilotkundin: Start mit einer Liste offener Rechnungen (Excel/CSV), neue Rechnungen über Rechnungskopien, Zahlungen über den Kontoauszug.
+
+## Nachtrag 7. November 2026: Go-Live-Vorarbeiten und Positionsliste
+
+Plan mit Yannick: Punkte der Go-Live-Checkliste, die ohne Konten und Verträge gehen, jetzt erledigen.
+
+- **p3-bounce:** Zustellungs-Webhook versteht Mailjet-Ereignisse (bounce, blocked, spam; einzeln oder gruppiert), Zuordnung über `X-MJ-CustomID`, Antwort 200 (Mailjet wiederholt sonst einen Tag lang). Bounces von Angebots-Erinnerungen werden sichtbar. ADR-012 „Mailversand über Mailjet“ als Vorschlag. Gebaut nach den Beispielen der Mailjet-Doku; ein echtes Ereignis steht aus (Echtlauf p4-mail).
+- **p3-compose-telefon:** `telefon` und `asterisk` in `docker-compose.prod.yml` (Profil „telefon“), eigenes Asterisk-Image (Ubuntu 24.04, Asterisk 20.6, AudioSocket und CURL geladen, Manager/HTTP/ARI aus). Getestet: Image-Bau, Module, Beispiel-Dialplan, Gesundheitsprüfung. Nicht getestet: echter SIP-Trunk und Anruf.
+- **p3-handbuch:** Betriebshandbuch Abschnitt 2 für den dedizierten AX41 (installimage, RAID 1, SSH, zweistufige Firewall, automatische Updates, RAID-Überwachung).
+- **p1-panne, p1-vvt, p1-uav:** Entwürfe [[Datenpannen-Ablauf]] und [[Datenschutz-Unterlagen]] (Unterauftragsverarbeiter, Verzeichnis der Verarbeitungstätigkeiten, TOMs) für den Anwalt; Namen und Kontakte trägt das Team ein.
+- **M9-09 Positionsliste (ADR-011 Stufe 1):** Ohne Lexware endet die Belegerfassung mit einer Positionsliste zum Abtippen (Ansicht, CSV), als Entwurf markiert, ohne Nummer, Preise nur vom Menschen.
+- Korrektur: Die Systemcheck-Kennung `cockpit.E004` war doppelt vergeben (Fehlererfassung und Telefon-Modell); das Telefon-Modell prüft jetzt `cockpit.E005`, ein Test hält die Kennungen eindeutig.
+- `manage.py check --deploy` meldet mit Produktionseinstellungen nur noch `cockpit.W001` (Platzhalter-Rechtstexte).

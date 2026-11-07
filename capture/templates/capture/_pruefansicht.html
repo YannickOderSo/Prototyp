@@ -1,5 +1,5 @@
 {% load cockpit %}
-{% if e.status == "pruefung" or e.status == "freigegeben" or e.status == "uebertragen" %}
+{% if e.status == "pruefung" or e.status == "freigegeben" or e.status == "uebertragen" or e.status == "ausgegeben" %}
 <section aria-labelledby="pruefung">
   <h2 id="pruefung">{% if e.entwurf.belegart == "angebot" %}Angebotsentwurf{% elif e.entwurf.belegart == "rechnung" %}Rechnungsentwurf{% else %}Entwurf{% endif %} prüfen</h2>
   {% if e_rechnung_hinweis %}{% include "web/_e_rechnung.html" with kurz=1 %}{% endif %}
@@ -36,11 +36,11 @@
           <div class="feld pos-beschreibung"><label for="pos-{{ p.index }}-beschreibung">Beschreibung</label><input type="text" id="pos-{{ p.index }}-beschreibung" name="pos-{{ p.index }}-beschreibung" value="{{ p.beschreibung }}"></div>
           <div class="feld pos-menge"><label for="pos-{{ p.index }}-menge">Menge</label><input type="text" inputmode="decimal" id="pos-{{ p.index }}-menge" name="pos-{{ p.index }}-menge" value="{{ p.menge|zahl }}"></div>
           <div class="feld pos-einheit"><label for="pos-{{ p.index }}-einheit">Einheit</label><input type="text" id="pos-{{ p.index }}-einheit" name="pos-{{ p.index }}-einheit" value="{{ p.einheit }}"></div>
-          <div class="feld pos-artikel"><label for="pos-{{ p.index }}-artikel_id">Lexware-Artikel</label>
+          {% if artikel %}<div class="feld pos-artikel"><label for="pos-{{ p.index }}-artikel_id">Lexware-Artikel</label>
             <select id="pos-{{ p.index }}-artikel_id" name="pos-{{ p.index }}-artikel_id">
               <option value="">kein Artikel (Preis selbst setzen)</option>
               {% for a in artikel %}<option value="{{ a.extern_id }}"{% if a.extern_id == p.artikel_id %} selected{% endif %}>{{ a.bezeichnung }} ({{ a.netto|euro }} je {{ a.einheit }})</option>{% endfor %}
-            </select></div>
+            </select></div>{% endif %}
           {% if not p.artikel_id %}
           <div class="feld pos-preis"><label for="pos-{{ p.index }}-preis_nutzer">Preis netto je Einheit (€)</label><input type="text" inputmode="decimal" id="pos-{{ p.index }}-preis_nutzer" name="pos-{{ p.index }}-preis_nutzer" value="{{ p.preis_nutzer }}"></div>
           <div class="feld pos-satz"><label for="pos-{{ p.index }}-steuersatz_nutzer">Steuersatz</label>
@@ -62,13 +62,13 @@
       <div class="feld"><label for="neu-beschreibung">Beschreibung</label><input type="text" id="neu-beschreibung" name="neu-beschreibung"></div>
       <div class="feld"><label for="neu-menge">Menge</label><input type="text" inputmode="decimal" id="neu-menge" name="neu-menge"></div>
       <div class="feld"><label for="neu-einheit">Einheit</label><input type="text" id="neu-einheit" name="neu-einheit"></div>
-      <div class="feld"><label for="neu-artikel_id">Lexware-Artikel</label><select id="neu-artikel_id" name="neu-artikel_id"><option value="">kein Artikel</option>{% for a in artikel %}<option value="{{ a.extern_id }}">{{ a.bezeichnung }}</option>{% endfor %}</select></div>
+      {% if artikel %}<div class="feld"><label for="neu-artikel_id">Lexware-Artikel</label><select id="neu-artikel_id" name="neu-artikel_id"><option value="">kein Artikel</option>{% for a in artikel %}<option value="{{ a.extern_id }}">{{ a.bezeichnung }}</option>{% endfor %}</select></div>{% endif %}
     </details>
     {% if e.status == "pruefung" %}<div class="knopfreihe"><button type="submit" class="zweitrangig">Änderungen übernehmen und prüfen</button></div>{% endif %}
   </form>
 
   <div class="karte summenbox">
-    <p class="hilfe">Die endgültige Rechnung mit Nummer, Steuerausweis und E-Rechnung entsteht erst, wenn Sie den Entwurf in Lexware abschließen.</p>
+    <p class="hilfe">{% if ohne_lexware %}Belegfluss schreibt keine Rechnung: Nummer, Steuerausweis und E-Rechnung entstehen in Ihrem Rechnungsprogramm, wenn Sie die Positionen dort übernehmen. Summen zählen nur Positionen mit Preis.{% else %}Die endgültige Rechnung mit Nummer, Steuerausweis und E-Rechnung entsteht erst, wenn Sie den Entwurf in Lexware abschließen.{% endif %}</p>
     <div class="summen">
       <div class="zeile"><span>Summe netto</span><strong data-summe="netto">{{ e.entwurf.summen.netto|euro }}</strong></div>
       {% for satz, betrag in e.entwurf.summen.steuer_je_satz.items %}<div class="zeile neben"><span>USt {{ satz|zahl }} %</span><span>{{ betrag|euro }}</span></div>{% endfor %}
@@ -83,7 +83,7 @@
   {% if e.status == "pruefung" %}
   <div class="knopfreihe">
     {% if request.darf_freigeben %}
-    <form method="post" action="{% url 'capture:freigeben' e.pk %}">{% csrf_token %}<button type="submit"{% if e.blocker %} disabled title="Erst die Punkte oben klären"{% endif %}>Freigeben und als Entwurf in Lexware anlegen</button></form>
+    <form method="post" action="{% url 'capture:freigeben' e.pk %}">{% csrf_token %}<button type="submit"{% if e.blocker %} disabled title="Erst die Punkte oben klären"{% endif %}>{% if ohne_lexware %}Freigeben und als Positionsliste ausgeben{% else %}Freigeben und als Entwurf in Lexware anlegen{% endif %}</button></form>
     {% else %}<p class="hilfe">Freigeben dürfen nur Inhaber und Freigeber.</p>{% endif %}
     <form method="post" action="{% url 'capture:verwerfen' e.pk %}">{% csrf_token %}<button type="submit" class="zweitrangig" data-bestaetigen="Erfassung wirklich verwerfen?">Verwerfen</button></form>
   </div>

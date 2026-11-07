@@ -16,7 +16,7 @@ from django.utils import timezone
 from accounts.models import Nutzer
 from audit.services import protokolliere
 from connectors.base import DraftLine, ExternalRef, InvoiceDraft, QuotationDraft
-from connectors.services import aktive_verbindung, connector_fuer
+from connectors.services import aktive_verbindung, connector_fuer, ohne_lexware
 from jobs.models import Job
 from jobs.queue import enqueue
 
@@ -55,6 +55,39 @@ def freigeben(erfassung: Erfassung, nutzer: Nutzer) -> Job:
             firma=erfassung.firma,
             eindeutig=f"uebertragen:{erfassung.pk}",
         )
+
+
+def positionsliste_ausgeben(erfassung: Erfassung, nutzer: Nutzer) -> Erfassung:
+    """ADR-011 Stufe 1: ohne Lexware wird der freigegebene Entwurf als Positionsliste zum Abtippen ausgegeben.
+
+    Es entsteht kein Beleg, keine Nummer und nichts verlässt die App; der Betrieb überträgt die Positionen selbst in
+    sein Rechnungsprogramm. Preise stehen nur drin, wenn ein Mensch sie gesetzt hat."""
+    with transaction.atomic():
+        erfassung = Erfassung.objects.select_for_update().get(pk=erfassung.pk)
+        if erfassung.status != Erfassung.Status.PRUEFUNG:
+            raise ValueError("Diese Erfassung ist nicht zur Freigabe bereit.")
+        if not ohne_lexware(erfassung.firma):
+            raise ValueError("Mit Lexware entsteht der Entwurf direkt in Lexware.")
+        entwurf = regeln_anwenden(erfassung)
+        if not entwurf.freigabefaehig:
+            raise ValueError("Der Entwurf hat noch offene Punkte und kann nicht freigegeben werden.")
+        erfassung.status = Erfassung.Status.AUSGEGEBEN
+        erfassung.freigegeben_von = nutzer
+        erfassung.freigegeben_am = timezone.now()
+        erfassung.fehler = ""
+        erfassung.save(update_fields=["status", "freigegeben_von", "freigegeben_am", "fehler"])
+    protokolliere(
+        erfassung.firma,
+        "erfassung.positionsliste",
+        nutzer=nutzer,
+        objekt=erfassung,
+        daten={
+            "belegart": entwurf.belegart,
+            "positionen": len(entwurf.positionen),
+            "ohne_preis": sum(1 for p in entwurf.positionen if p.netto is None),
+        },
+    )
+    return erfassung
 
 
 def _datum(text: Any) -> date | None:

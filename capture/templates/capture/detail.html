@@ -11,6 +11,11 @@
 {% if e.status == "fehler" and not e.transkript and not e.quelltext %}<form method="post" action="{% url 'capture:neuversuch' e.pk %}" class="knopfreihe">{% csrf_token %}<button type="submit">Erneut versuchen</button></form>{% endif %}
 {% if e.status != "pruefung" %}{% for h in e.hinweise %}<p class="meldung warnung">{{ h }}</p>{% endfor %}{% endif %}
 
+{% if e.status == "ausgegeben" %}
+<div class="karte"><p><span class="marke-status gut">als Positionsliste ausgegeben</span></p>
+  <p>Freigegeben{% if e.freigegeben_von %} von {{ e.freigegeben_von.email }}{% endif %} am {{ e.freigegeben_am|date:"d.m.Y H:i" }}. Übertragen Sie die Positionen in Ihr Rechnungsprogramm; dort entstehen Nummer und Beleg.</p>
+  <div class="knopfreihe"><a class="knopf" href="{% url 'capture:positionsliste' e.pk %}">Positionsliste öffnen</a><a class="knopf zweitrangig" href="{% url 'capture:positionsliste_csv' e.pk %}">Als CSV herunterladen</a></div></div>
+{% endif %}
 {% if e.status == "uebertragen" %}
 <div class="karte"><p><span class="marke-status gut">in Lexware angelegt</span></p>
   <p>Der {% if e.ziel_art == "quotation" %}Angebots{% else %}Rechnungs{% endif %}entwurf liegt in Lexware. Prüfen und schließen Sie ihn dort ab.</p>
@@ -29,7 +34,7 @@
 {% if e.status == "transkribiert" or e.status == "pruefung" or e.status == "fehler" %}
 <section class="karte">
   <h2>{% if e.kanal == "aufnahme" %}Transkript prüfen{% else %}Text prüfen{% endif %}</h2>
-  <p class="hilfe">Korrigieren Sie Zahlen, Namen und Mengen, bevor der Entwurf entsteht. Preise legen Sie nicht hier fest; sie kommen aus Ihren Lexware-Artikeln.</p>
+  <p class="hilfe">Korrigieren Sie Zahlen, Namen und Mengen, bevor der Entwurf entsteht. {% if ohne_lexware %}Preise setzt die KI nie; Sie tragen sie im nächsten Schritt oder in Ihrem Rechnungsprogramm ein.{% else %}Preise legen Sie nicht hier fest; sie kommen aus Ihren Lexware-Artikeln.{% endif %}</p>
   <form method="post" action="{% url 'capture:transkript' e.pk %}">
     {% csrf_token %}
     <div class="feld"><label for="transkript">{% if e.kanal == "aufnahme" %}Transkript{% else %}Ergänzender Text{% endif %}</label>

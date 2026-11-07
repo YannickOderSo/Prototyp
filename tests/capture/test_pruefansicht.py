@@ -15,7 +15,7 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture
-def erfassung(firma, mitarbeiter):
+def erfassung(firma, mitarbeiter, verbindung):  # Lexware-Weg: Artikel und Kunden aus dem Spiegel
     Kontakt.objects.create(firma=firma, extern_id="k1", name="Bau AG", kundennummer="10001")
     Kontakt.objects.create(firma=firma, extern_id="k2", name="Erika Musterfrau")
     Artikel.objects.create(

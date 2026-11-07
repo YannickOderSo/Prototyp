@@ -15,4 +15,6 @@ urlpatterns = [
     path("<int:pk>/pruefen/", views.pruefen, name="pruefen"),
     path("<int:pk>/verwerfen/", views.verwerfen, name="verwerfen"),
     path("<int:pk>/freigeben/", views.freigeben, name="freigeben"),
+    path("<int:pk>/positionsliste/", views.positionsliste, name="positionsliste"),
+    path("<int:pk>/positionsliste.csv", views.positionsliste_csv, name="positionsliste_csv"),
 ]

@@ -144,6 +144,7 @@ Für Betriebe, deren Rechnungsprogramm keine Schnittstelle hat (z. B. DATEV Auft
 | K8 MUSS | Mahnwesen für Posten aus Kopien wie bei importierten Posten (H8); der tägliche Vorschlagslauf gilt auch für Firmen ohne Lexware-Verbindung; die Freigabe zeigt das Datum des letzten Kontoauszugs und warnt, wenn er älter als 2 Tage ist oder fehlt | Firma ohne Lexware bekommt Vorschläge; Warnung bei veraltetem Kontoauszug sichtbar |
 | K9 MUSS | Rohdateien werden nicht gespeichert, nur die gelesenen Felder; Kopien und Zahlungen werden nach 12 Monaten gelöscht; alles mandantengetrennt | Löschlauf entfernt alte Einträge; IDOR-Test deckt die neuen Seiten ab |
 | K10 SOLL | Cockpit zeigt keine Lexware-Warnung, wenn die Firma mit Rechnungskopien arbeitet; Einrichtung und Einstellungen zeigen den Weg ohne Lexware | Firma nur mit Kopien sieht im Cockpit keinen Lexware-Hinweis |
+| K11 MUSS | Belegerfassung ohne Lexware: Nach Freigabe durch Inhaber oder Freigeber entsteht eine Positionsliste (Ansicht und CSV), deutlich als „Entwurf – keine Rechnung“ markiert, ohne Nummer; Preise nur, wenn ein Mensch sie gesetzt hat; fehlender Kunde im Kundenstamm und fehlende Preise sind Hinweise, keine Blocker | Freigabe ohne Lexware ruft keine Schnittstelle auf; Liste und CSV zeigen alle Positionen, Positionen ohne Preis bleiben leer |
 
 ## G. sevdesk (Meilenstein 5)
 

@@ -117,3 +117,4 @@ Entschieden von Yannick am 6. November 2026. Ziel: Betriebe mit jedem Rechnungsp
 - [x] **M9-06** Zahlungen zuordnen und bestätigen, Hinweis auf den letzten Kontoauszug in der Freigabe (K7, K8).
 - [x] **M9-07** Oberfläche, Einrichtung, Löschfristen, IDOR, Demo-Daten, Vault (K9, K10).
 - [x] **M9-08** Excel-Import ohne Lexware: Kunden nur in Belegfluss, offene Rechnungen legen fehlende Kunden an, Artikel nur mit Lexware (H10, ADR-008 Nachtrag).
+- [x] **M9-09** Positionsliste zum Abtippen: Belegerfassung ohne Lexware endet mit einer als Entwurf markierten Liste (Ansicht, CSV), ohne Nummer, Preise nur vom Menschen (K11, ADR-011 Stufe 1).

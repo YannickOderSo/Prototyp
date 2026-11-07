@@ -870,3 +870,24 @@ details.meldung p, details.meldung ul { margin: 0 0 8px; }
 .anteil-98 { width: 98%; }
 .anteil-99 { width: 99%; }
 .anteil-100 { width: 100%; }
+
+/* ------------------------------------------------------------------ Positionsliste (ADR-011 Stufe 1) */
+.entwurf-band {
+  border: 2px dashed var(--warnung);
+  background: var(--warnung-50);
+  color: var(--text);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin: 0 0 var(--abstand);
+}
+.liste-kopf { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px 24px; margin: 0 0 var(--abstand); }
+.liste-kopf dt { font-size: 0.8rem; color: var(--text-leise); }
+.liste-kopf dd { margin: 2px 0 0; font-weight: 600; }
+table.positionsliste td.zahl, table.positionsliste th.zahl { text-align: right; white-space: nowrap; }
+table.positionsliste tfoot td { font-weight: 600; }
+
+@media print {
+  .seitenleiste, .kopf, .kopf-handy, .unterleiste, .fuss, .nicht-drucken, .meldungen { display: none !important; }
+  body, main#inhalt { background: #fff; margin: 0; padding: 0; }
+  .entwurf-band { border-color: #000; background: #fff; }
+}

@@ -1,5 +1,8 @@
+from datetime import date
+from typing import Any
+
 from django.contrib import messages
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -65,11 +68,18 @@ def hochladen(request: FirmaRequest) -> HttpResponse:
 
 @firma_erforderlich
 def detail(request: FirmaRequest, pk: int) -> HttpResponse:
+    from connectors.services import ohne_lexware
+
     from .pruefung import ansicht
 
     erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
-    kontext: dict[str, object] = {"e": erfassung}
-    if erfassung.status in (Erfassung.Status.PRUEFUNG, Erfassung.Status.FREIGEGEBEN, Erfassung.Status.UEBERTRAGEN):
+    kontext: dict[str, object] = {"e": erfassung, "ohne_lexware": ohne_lexware(request.firma)}
+    if erfassung.status in (
+        Erfassung.Status.PRUEFUNG,
+        Erfassung.Status.FREIGEGEBEN,
+        Erfassung.Status.UEBERTRAGEN,
+        Erfassung.Status.AUSGEGEBEN,
+    ):
         kontext.update(ansicht(erfassung))
     return render(request, "capture/detail.html", kontext)
 
@@ -140,9 +150,20 @@ def transkript(request: FirmaRequest, pk: int) -> HttpResponse:
 @freigabe_berechtigt
 def freigeben(request: FirmaRequest, pk: int) -> HttpResponse:
     """Nur Inhaber und Freigeber (A3), nur per POST aus einer 2FA-Sitzung (ADR-004)."""
+    from connectors.services import ohne_lexware
+
     from .uebertragung import freigeben as dienst
+    from .uebertragung import positionsliste_ausgeben
 
     erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
+    if ohne_lexware(request.firma):
+        try:
+            positionsliste_ausgeben(erfassung, request.user)
+        except ValueError as fehler:
+            messages.error(request, str(fehler))
+            return redirect("capture:detail", pk=erfassung.pk)
+        messages.success(request, "Freigegeben. Übertragen Sie die Positionen jetzt in Ihr Rechnungsprogramm.")
+        return redirect("capture:positionsliste", pk=erfassung.pk)
     try:
         dienst(erfassung, request.user)
     except ValueError as fehler:
@@ -150,6 +171,95 @@ def freigeben(request: FirmaRequest, pk: int) -> HttpResponse:
     else:
         messages.success(request, "Freigegeben. Der Entwurf wird in Lexware angelegt.")
     return redirect("capture:detail", pk=erfassung.pk)
+
+
+def _ausgegeben(request: FirmaRequest, pk: int) -> Erfassung:
+    erfassung = hole_oder_404(Erfassung, request.firma, pk=pk)
+    if erfassung.status != Erfassung.Status.AUSGEGEBEN:
+        raise Http404
+    return erfassung
+
+
+@firma_erforderlich
+def positionsliste(request: FirmaRequest, pk: int) -> HttpResponse:
+    """ADR-011 Stufe 1: Positionsliste zum Abtippen, deutlich als Entwurf, ohne Nummer, keine Rechnung."""
+    erfassung = _ausgegeben(request, pk)
+    return render(request, "capture/positionsliste.html", {"e": erfassung, "liste": _liste(erfassung)})
+
+
+@firma_erforderlich
+def positionsliste_csv(request: FirmaRequest, pk: int) -> HttpResponse:
+    from audit.services import protokolliere
+    from reports.export import csv_text
+
+    erfassung = _ausgegeben(request, pk)
+    liste = _liste(erfassung)
+    zeilen = [
+        [p["nr"], p["beschreibung"], p["menge"], p["einheit"], p["netto"], p["steuersatz"], p["summe"]]
+        for p in liste["positionen"]
+    ]
+    kopf = ["Pos.", "Beschreibung", "Menge", "Einheit", "Einzelpreis netto (EUR)", "USt (%)", "Summe netto (EUR)"]
+    antwort = HttpResponse(csv_text(kopf, zeilen), content_type="text/csv; charset=utf-8")
+    antwort["Content-Disposition"] = f'attachment; filename="Positionsliste-Entwurf_{erfassung.pk}.csv"'
+    protokolliere(request.firma, "erfassung.positionsliste_csv", nutzer=request.user, objekt=erfassung)
+    return antwort
+
+
+def _deutsch(wert: object) -> str:
+    """Zahl als deutsche Schreibweise für CSV und Anzeige (1234.5 → 1234,50; Mengen ohne unnötige Nullen)."""
+    from decimal import Decimal, InvalidOperation
+
+    if wert in (None, ""):
+        return ""
+    try:
+        zahl = Decimal(str(wert))
+    except InvalidOperation:
+        return ""
+    return f"{zahl:.2f}".replace(".", ",")
+
+
+def _menge(wert: object) -> str:
+    from decimal import Decimal, InvalidOperation
+
+    try:
+        zahl = Decimal(str(wert))
+    except InvalidOperation:
+        return str(wert or "")
+    text = format(zahl.normalize(), "f")
+    return text.replace(".", ",")
+
+
+def _iso_datum(wert: object) -> date | None:
+    try:
+        return date.fromisoformat(str(wert)) if wert else None
+    except ValueError:
+        return None
+
+
+def _liste(erfassung: Erfassung) -> dict[str, Any]:
+    entwurf = erfassung.entwurf
+    positionen = [
+        {
+            "nr": i,
+            "beschreibung": p.get("beschreibung", ""),
+            "menge": _menge(p.get("menge")),
+            "einheit": p.get("einheit", ""),
+            "netto": _deutsch(p.get("netto")),
+            "steuersatz": _menge(p.get("steuersatz")) if p.get("steuersatz") not in (None, "") else "",
+            "summe": _deutsch(p.get("summe")),
+        }
+        for i, p in enumerate(entwurf.get("positionen", []), start=1)
+    ]
+    return {
+        "belegart": entwurf.get("belegart", ""),
+        "kunde": entwurf.get("kunde_name", ""),
+        "leistung_von": _iso_datum(entwurf.get("leistung_von")),
+        "leistung_bis": _iso_datum(entwurf.get("leistung_bis")),
+        "angebot_nummer": entwurf.get("angebot_nummer", ""),
+        "positionen": positionen,
+        "ohne_preis": sum(1 for p in positionen if not p["netto"]),
+        "summe_netto": _deutsch((entwurf.get("summen") or {}).get("netto")),
+    }
 
 
 @nur_inhaber

@@ -171,7 +171,9 @@ def injektionen(texte: Iterable[str]) -> list[str]:
 
 
 # ------------------------------------------------------------------ Positionen
-def _position(roh: Mapping[str, Any], artikel: Mapping[str, ArtikelInfo], entwurf: Entwurf) -> Position | None:
+def _position(
+    roh: Mapping[str, Any], artikel: Mapping[str, ArtikelInfo], entwurf: Entwurf, ohne_lexware: bool = False
+) -> Position | None:
     beschreibung = str(roh.get("beschreibung") or "").strip()[:255] or "(ohne Beschreibung)"
     menge = _decimal(roh.get("menge"))
     herkunft = str(roh.get("herkunft") or "notiz")
@@ -207,6 +209,9 @@ def _position(roh: Mapping[str, Any], artikel: Mapping[str, ArtikelInfo], entwur
         position.netto = preis.quantize(CENT, rounding=ROUND_HALF_UP)
         position.steuersatz = satz
         position.preis_herkunft = "vom Nutzer gesetzt"
+    elif ohne_lexware:
+        # Positionsliste: den Preis trägt der Betrieb in seinem Rechnungsprogramm ein (nie die KI)
+        position.hinweis = "Preis in Ihrem Rechnungsprogramm eintragen oder hier setzen."
     else:
         entwurf.blocker.append(
             f"„{beschreibung}“: Kein passender Lexware-Artikel. Bitte Artikel wählen oder Preis und Steuersatz setzen."
@@ -277,7 +282,10 @@ def entwurf_bilden(
     angebot: AngebotInfo | None = None,
     steuerart: str = "net",
     heute: date | None = None,
+    ohne_lexware: bool = False,
 ) -> Entwurf:
+    """Bildet den Entwurf. `ohne_lexware` (ADR-011 Stufe 1): Ziel ist eine Positionsliste zum Abtippen; ein fehlender
+    Kunde im Kundenstamm und fehlende Preise sind dann Hinweise statt Blocker."""
     kunde = finde_kunde(str(ki.get("kunde") or ""), kontakte)
     entwurf = Entwurf(
         belegart=str(ki.get("belegart") or "unklar"),
@@ -290,15 +298,28 @@ def entwurf_bilden(
     )
     if entwurf.belegart not in ("angebot", "rechnung"):
         entwurf.blocker.append("Bitte wählen Sie, ob ein Angebot oder eine Rechnung entstehen soll.")
-    if kunde is None:
+    if kunde is None and ohne_lexware and entwurf.kunde_name:
+        entwurf.hinweise.append(
+            f"Kunde „{entwurf.kunde_name}“ steht nicht im Kundenstamm von Belegfluss; "
+            "die Positionsliste nennt den Namen aus der Quelle."
+        )
+    elif kunde is None and ohne_lexware:
+        entwurf.blocker.append("Bitte den Kunden angeben.")
+    elif kunde is None:
         name = entwurf.kunde_name or "(ohne Namen)"
         entwurf.blocker.append(
             f"Kunde „{name}“ ist nicht in Lexware angelegt. Bitte Kunden wählen oder zuerst in Lexware anlegen."
         )
     for roh in ki.get("positionen") or []:
-        position = _position(roh, artikel, entwurf)
+        position = _position(roh, artikel, entwurf, ohne_lexware)
         if position is not None:
             entwurf.positionen.append(position)
+    ohne_preis = [p for p in entwurf.positionen if p.netto is None]
+    if ohne_lexware and ohne_preis:
+        entwurf.hinweise.append(
+            f"{len(ohne_preis)} Position(en) ohne Preis: Den Preis tragen Sie in Ihrem Rechnungsprogramm ein "
+            "(oder setzen ihn hier selbst). Belegfluss setzt nie Preise."
+        )
     if not entwurf.positionen:
         entwurf.blocker.append("Der Entwurf enthält keine Positionen.")
     if entwurf.belegart == "rechnung":

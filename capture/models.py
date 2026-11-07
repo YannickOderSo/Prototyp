@@ -35,6 +35,7 @@ class Erfassung(FirmaModel):
         PRUEFUNG = "pruefung", "Entwurf prüfen"
         FREIGEGEBEN = "freigegeben", "wird übertragen"
         UEBERTRAGEN = "uebertragen", "in Lexware angelegt"
+        AUSGEGEBEN = "ausgegeben", "als Positionsliste ausgegeben"
         VERWORFEN = "verworfen", "verworfen"
         FEHLER = "fehler", "Fehler"
 
