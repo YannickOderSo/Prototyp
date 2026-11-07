@@ -209,9 +209,15 @@ def test_ohne_https_keine_registrierung(firma, lex_verbindung, lexware_api, ohne
 
 @pytest.mark.django_db
 def test_webhook_rate_limit(client, lex_verbindung, test_schluessel):
+    from datetime import UTC, datetime
+
+    import time_machine
     from django.core.cache import cache
 
     cache.clear()
-    for i in range(600):
-        _senden(client, lex_verbindung, "contact.changed", f"k{i}")
-    assert _senden(client, lex_verbindung, "contact.changed", "k-letzter").status_code == 429
+    # Zeit anhalten: Das 15-Minuten-Fenster von django-ratelimit beginnt je Schlüssel zu einer zufälligen Minute.
+    # Lief der Test über diese Grenze, begann die Zählung neu und der Test schlug gelegentlich fehl (CI am 7.11.2026).
+    with time_machine.travel(datetime(2026, 11, 7, 12, 0, tzinfo=UTC), tick=False):
+        for i in range(600):
+            _senden(client, lex_verbindung, "contact.changed", f"k{i}")
+        assert _senden(client, lex_verbindung, "contact.changed", "k-letzter").status_code == 429
