@@ -43,3 +43,26 @@ def test_keine_env_datei_im_repo():
 
     dateien = subprocess.run(["git", "ls-files"], cwd=WURZEL, capture_output=True, text=True, check=True).stdout
     assert not any(z == ".env" for z in dateien.splitlines())
+
+
+def test_telefon_dienste_nur_mit_profil_und_ohne_offene_ports():
+    """p3-compose-telefon: Asterisk und AudioSocket-Dienst starten nur mit Profil „telefon“; AudioSocket nur lokal."""
+    compose = yaml.safe_load((WURZEL / "docker-compose.prod.yml").read_text())
+    dienste = compose["services"]
+    assert dienste["telefon"]["profiles"] == ["telefon"] and dienste["asterisk"]["profiles"] == ["telefon"]
+    assert dienste["telefon"]["command"][:3] == ["python", "manage.py", "telefon_dienst"]
+    assert dienste["telefon"]["ports"] == ["127.0.0.1:9092:9092"]
+    assert dienste["asterisk"]["network_mode"] == "host"
+    # Zugangsdaten nur vom Server, schreibgeschützt eingebunden
+    assert all(str(v).endswith(":ro") for v in dienste["asterisk"]["volumes"])
+    # Datenbank bleibt ohne öffentlichen Port, auch mit Telefon
+    assert "ports" not in dienste["db"]
+
+
+def test_asterisk_image_ohne_offene_verwaltung():
+    datei = (WURZEL / "docker" / "asterisk" / "Dockerfile").read_text()
+    module = (WURZEL / "docker" / "asterisk" / "modules.conf").read_text()
+    assert "USER asterisk" in datei
+    assert "manager.conf" in datei and "http.conf" in datei  # entfernt: AMI und HTTP-Server bleiben aus
+    for modul in ("chan_sip.so", "chan_iax2.so", "res_ari.so"):
+        assert f"noload => {modul}" in module

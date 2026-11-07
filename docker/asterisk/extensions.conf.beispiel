@@ -1,5 +1,7 @@
 ; Belegfluss KI-Telefonassistent (ADR-010) – Beispiel-Dialplan für Asterisk 20+
-; Voraussetzungen: Module func_curl und res_audiosocket/app_audiosocket geladen.
+; Voraussetzungen: Module func_curl und res_audiosocket/app_audiosocket geladen (Image docker/asterisk).
+; Ansage „nicht erreichbar“ als WAV (8 kHz, mono, 16 Bit) unter <COCKPIT_ASTERISK>/sounds/belegfluss-nicht-erreichbar.wav.
+; Asterisk läuft im Host-Netz: Den AudioSocket-Dienst (Container „telefon“) erreicht es über 127.0.0.1:9092.
 ; Das Geheimnis steht NICHT im Repository: BELEGFLUSS_TOKEN = TELEFON_ASTERISK_TOKEN der App.
 
 [globals]
@@ -15,5 +17,5 @@ exten => _X.,1,NoOp(Belegfluss: Anruf an ${EXTEN} von ${CALLERID(num)})
  same => n,GotoIf($[${REGEX("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" ${UUID})}]?gespraech:nicht_erreichbar)
  same => n(gespraech),AudioSocket(${UUID},${BELEGFLUSS_AUDIOSOCKET})
  same => n,Hangup()
- same => n(nicht_erreichbar),Playback(belegfluss-nicht-erreichbar)
+ same => n(nicht_erreichbar),Playback(custom/belegfluss-nicht-erreichbar)
  same => n,Hangup()

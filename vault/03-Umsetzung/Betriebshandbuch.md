@@ -264,8 +264,8 @@ Vor dem ersten Pilotbetrieb, in dieser Reihenfolge. Alles hier ist bisher nur mi
 
 **Bausteine auf dem Server**
 1. **SIP-Trunk** eines deutschen Anbieters mit Rufnummern. Den Anbieter und die Kosten nennt die Kostenkalkulation Telefonassistent. Zugangsdaten nur in `/etc/asterisk/pjsip.conf` auf dem Server, nie im Repository.
-2. **Asterisk 20+** auf dem Server in Deutschland, mit `func_curl` und `app_audiosocket`.
-   - Beispiele liegen in `docker/asterisk/` (`pjsip.conf.beispiel`, `extensions.conf.beispiel`).
+2. **Asterisk 20+** auf dem Server in Deutschland, mit `func_curl` und `app_audiosocket` (Image `docker/asterisk/`, Start siehe unten).
+   - Beispiele liegen in `docker/asterisk/` (`pjsip.conf.beispiel`, `extensions.conf.beispiel`, `rtp.conf.beispiel`).
    - SIP über TLS (5061) und SRTP. Die Firewall öffnet nur 5061 und den RTP-Bereich für den Anbieter.
 3. **Belegfluss-Dienst** `python manage.py telefon_dienst`:
    - Er hört auf `TELEFON_AUDIOSOCKET_HOST:PORT`, Standard `127.0.0.1:9092`, also nur lokal.
@@ -278,6 +278,24 @@ Vor dem ersten Pilotbetrieb, in dieser Reihenfolge. Alles hier ist bisher nur mi
 6. `TELEFON_LIMIT_GESPRAECHE_MONAT` (Standard 400) begrenzt die Gespräche je Firma und Monat; darüber Ausfallbetrieb. Die Nutzung sieht der Inhaber unter Einstellungen → KI-Telefonassistent.
 
 **Abos und Kosten (Stand 5. November 2026, Details in [[Kostenkalkulation-Telefonassistent]]):** easybell Business 10 (4,95 €/Monat) mit 100er-Rufnummernblock (49,95 € einmalig), Hetzner AX41 (59 €/Monat), Mistral und Bedrock nach Verbrauch (zusammen ca. 1,4 ct je Anruf). Budget-Alarm in AWS und Ausgabenlimit bei Mistral einrichten.
+
+**Start mit Docker Compose (Profil „telefon“)**
+
+Seit dem 7. November 2026 stehen beide Dienste in `docker-compose.prod.yml`, sie starten nur mit dem Profil:
+- `telefon`: dasselbe App-Image mit `python manage.py telefon_dienst`, lauscht im Container auf 9092, nach außen nur `127.0.0.1:9092`.
+- `asterisk`: eigenes Image aus `docker/asterisk/` (Ubuntu 24.04, Asterisk 20.6 mit `app_audiosocket` und `func_curl`; Manager, HTTP, ARI, chan_sip und IAX2 aus). Läuft im Host-Netz.
+
+1. Auf dem Server `/srv/cockpit/asterisk/` anlegen (oder `COCKPIT_ASTERISK` in `.env` auf einen anderen Ordner setzen) mit:
+   - `pjsip.conf` und `extensions.conf` aus den Beispielen in `docker/asterisk/`, Platzhalter ersetzen (Trunk-Zugang, `BELEGFLUSS_URL=https://<domain>/telefon/asterisk/anruf/`, `BELEGFLUSS_TOKEN` = `TELEFON_ASTERISK_TOKEN`),
+   - `rtp.conf` aus `rtp.conf.beispiel` (RTP-Ports 10000–10100),
+   - `keys/asterisk.pem` und `keys/asterisk.key` (TLS für SIP; Zertifikat für `sip.<domain>`, z. B. Let's Encrypt; ob der Anbieter eingehend eine eigene TLS-Verbindung aufbaut, beim Anbieter klären),
+   - `sounds/belegfluss-nicht-erreichbar.wav` (8 kHz, mono, 16 Bit; Ansage „Der Assistent ist gerade nicht erreichbar, bitte rufen Sie später an“).
+   Rechte: `chmod 600` für Schlüssel und `pjsip.conf`, Eigentümer `cockpit`.
+2. Firewall des Servers: `5061/tcp` und `10000–10100/udp` nur für die IP-Bereiche des SIP-Anbieters öffnen (Liste im Kundenbereich des Anbieters), alles andere bleibt zu.
+3. Starten: `docker compose -f docker-compose.prod.yml --profile telefon up -d --build asterisk telefon`.
+4. Prüfen: `docker compose -f docker-compose.prod.yml exec asterisk asterisk -rx "pjsip show registrations"` zeigt „Registered“; `... asterisk -rx "module show like audiosocket"` zeigt drei Module; `docker compose ... ps` zeigt beide Dienste „healthy“.
+
+Getestet am 7. November 2026: Image gebaut, Module geladen, Beispiel-Dialplan lädt, Manager und HTTP-Server aus, Telefon-Dienst startet mit dem Compose-Aufruf und antwortet der Gesundheitsprüfung. Nicht getestet: echter SIP-Trunk, echter Anruf, TLS-Zertifikat.
 
 **Neuen Betrieb freischalten**
 1. Eine Rufnummer aus dem Trunk zuteilen. In der Admin-Shell: `Telefonassistent.objects.update_or_create(firma=…, defaults={"rufnummer": "+49…"})`. Die Nummer muss eindeutig sein.

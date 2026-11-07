@@ -1,0 +1,7 @@
+; Belegfluss KI-Telefonassistent (ADR-010) – RTP-Ports für die Sprachdaten.
+; Schmaler Bereich, damit die Firewall nur diese Ports (UDP) für die Adressen des SIP-Anbieters öffnen muss.
+; 100 Ports reichen für rund 50 gleichzeitige Gespräche.
+[general]
+rtpstart=10000
+rtpend=10100
+icesupport=no
